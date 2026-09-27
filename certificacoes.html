@@ -9,8 +9,10 @@
     <link rel="stylesheet" href="css/fonts.css">
     <link rel="stylesheet" href="css/utilities.css">
     <link rel="stylesheet" href="css/certificacoes.css">
+    <script src="js/ux.js"></script>
 </head>
 <body>
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
     <nav class="nav" aria-label="Navegação principal do site">
         <div class="nav-inner">
             <a href="index.html">Início</a>
@@ -22,13 +24,14 @@
             <a href="perfis-profissionais.html">Perfis Profissionais</a>
         </div>
     </nav>
-    <div class="grid-bg"></div>
-    <div class="glow-orb glow-orb-1"></div>
-    <div class="glow-orb glow-orb-2"></div>
+    <div class="grid-bg" aria-hidden="true"></div>
+    <div class="glow-orb glow-orb-1" aria-hidden="true"></div>
+    <div class="glow-orb glow-orb-2" aria-hidden="true"></div>
+    <div class="glow-orb glow-orb-3" aria-hidden="true"></div>
 
-    <main>
+    <main id="conteudo" tabindex="-1">
         <header class="page-header">
-            <div class="logo">SENTINELA</div>
+            <a href="index.html" class="logo">SENTINELA</a>
             <p class="tagline">// guia de certificações em cibersegurança</p>
         </header>
 

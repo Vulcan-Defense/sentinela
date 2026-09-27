@@ -9,11 +9,13 @@
     <link rel="stylesheet" href="css/fonts.css">
     <link rel="stylesheet" href="css/utilities.css">
     <link rel="stylesheet" href="css/index.css">
+    <script src="js/ux.js"></script>
 </head>
 <body>
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
     <nav class="nav" aria-label="Navegação principal do site">
         <div class="nav-inner">
-            <a href="#inicio" aria-current="page">Início</a>
+            <a href="index.html" aria-current="page">Início</a>
             <a href="certificacoes.html">Guia de Certificações</a>
             <a href="https://academy.vulcandefense.com.br" target="_blank" rel="noopener noreferrer">Vulcan Academy</a>
             <a href="certificacoes-gratuitas.html">Treinamentos, Certificações Grátis</a>
@@ -22,12 +24,13 @@
             <a href="perfis-profissionais.html">Perfis Profissionais</a>
         </div>
     </nav>
-    <div class="grid-bg"></div>
-    <div class="glow-orb glow-orb-1"></div>
-    <div class="glow-orb glow-orb-2"></div>
+    <div class="grid-bg" aria-hidden="true"></div>
+    <div class="glow-orb glow-orb-1" aria-hidden="true"></div>
+    <div class="glow-orb glow-orb-2" aria-hidden="true"></div>
+    <div class="glow-orb glow-orb-3" aria-hidden="true"></div>
 
-    <main id="inicio">
-        <div class="logo">SENTINELA</div>
+    <main id="conteudo" tabindex="-1">
+        <a href="index.html" class="logo">SENTINELA</a>
         <p class="tagline">// comunidade de cibersegurança</p>
 
         <section class="hero">
@@ -65,7 +68,7 @@
             </a>
         </div>
 
-        <div class="posts-columns">
+        <div class="posts-columns" data-reveal>
             <section class="posts-section">
                 <h2>
                     <a href="https://tiparaleigo.wordpress.com/" target="_blank" rel="noopener noreferrer">Blog de Ti</a>
@@ -148,6 +151,7 @@
 
         <footer class="footer" id="cookies">
             <p>Participe com responsabilidade. Respeite a privacidade e as boas práticas.</p>
+            <p class="footer-cookies">Usamos cookies apenas para lembrar sua preferência de consentimento neste dispositivo. Não rastreamos você para publicidade.</p>
         </footer>
     </main>
 

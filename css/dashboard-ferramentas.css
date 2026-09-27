@@ -11,26 +11,11 @@
         html { -webkit-text-size-adjust: 100%; }
         body {
             font-family: 'Space Grotesk', sans-serif;
-            background: var(--bg-dark);
+            background-color: var(--bg-dark);
             color: var(--text);
             min-height: 100vh;
             overflow-x: hidden;
         }
-        .grid-bg {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: 
-                linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
-            pointer-events: none; z-index: 0;
-        }
-        .glow-orb {
-            position: fixed; width: 600px; height: 600px; border-radius: 50%;
-            background: radial-gradient(circle, var(--accent-dim) 0%, transparent 70%);
-            pointer-events: none; z-index: 0;
-        }
-        .glow-orb-1 { top: -200px; right: -200px; }
-        .glow-orb-2 { bottom: -200px; left: -200px; opacity: 0.5; }
         .nav {
             position: fixed; top: 0; left: 0; right: 0; z-index: 100;
             padding: 0.65rem 0.75rem;
@@ -190,7 +175,6 @@
             .stat-card { padding: 0.85rem; }
         }
         .cookie-consent { position: fixed; bottom: 0; left: 0; right: 0; padding: 1rem 1.5rem; padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px)); background: rgba(17, 24, 39, 0.98); border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 1rem; z-index: 999; flex-wrap: wrap; }
-        .cookie-consent.hidden { display: none; }
         .cookie-consent p { font-size: 0.9rem; color: var(--text-muted); margin: 0; flex: 1; min-width: 200px; }
         .cookie-consent p a { color: var(--accent); text-decoration: none; }
         .cookie-consent .btn-aceitar { padding: 0.5rem 1.25rem; background: var(--accent); color: var(--bg-dark); border: none; border-radius: 6px; font-family: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; white-space: nowrap; }

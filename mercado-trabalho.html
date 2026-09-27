@@ -10,8 +10,10 @@
     <link rel="stylesheet" href="css/utilities.css">
     <link rel="stylesheet" href="css/mercado-trabalho.css">
     <script src="vendor/chart.umd.min.js" integrity="sha384-vsrfeLOOY6KuIYKDlmVH5UiBmgIdB1oEf7p01YgWHuqmOHfZr374+odEv96n9tNC" defer></script>
+    <script src="js/ux.js"></script>
 </head>
 <body>
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
     <nav class="nav" aria-label="Navegação principal do site">
         <div class="nav-inner">
             <a href="index.html">Início</a>
@@ -23,14 +25,15 @@
             <a href="perfis-profissionais.html">Perfis profissionais</a>
         </div>
     </nav>
-    <div class="grid-bg"></div>
-    <div class="glow-orb glow-orb-1"></div>
-    <div class="glow-orb glow-orb-2"></div>
+    <div class="grid-bg" aria-hidden="true"></div>
+    <div class="glow-orb glow-orb-1" aria-hidden="true"></div>
+    <div class="glow-orb glow-orb-2" aria-hidden="true"></div>
+    <div class="glow-orb glow-orb-3" aria-hidden="true"></div>
 
-    <main id="topo">
+    <main id="conteudo" tabindex="-1">
         <div class="page-hero">
             <header class="page-header">
-                <div class="logo">SENTINELA</div>
+                <a href="index.html" class="logo">SENTINELA</a>
                 <p class="tagline">// mercado de trabalho em TI, DevSecOps e cibersegurança</p>
             </header>
 

@@ -19,10 +19,13 @@
             function openModal() {
                 modal.classList.add('open');
                 document.body.style.overflow = 'hidden';
+                var email = modal.querySelector('input[type="email"]');
+                if (email) email.focus();
             }
             function closeModal() {
                 modal.classList.remove('open');
                 document.body.style.overflow = '';
+                if (btn) btn.focus();
             }
 
             if (btn) btn.addEventListener('click', openModal);
