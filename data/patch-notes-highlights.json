@@ -4,7 +4,8 @@
     "date": "2026-09-10",
     "title": "Experiência visual e gestão da academia",
     "summary": "A interface pública e a área logada receberam uma revisão completa de legibilidade, navegação e consistência.",
-    "items": [
+  "items": [
+    "Cadastro para testes mobile agora encaminha participantes ao canal de contato do projeto.",
         "Nova página de testes mobile facilita o cadastro de participantes com Android ou iPhone.",
         "Guia de certificações passou a destacar a formação de governança de IA da VulcanAcademy para facilitar a escolha do próximo aprendizado.",
         "Fundo do site ganhou animação suave de terminal para reforçar o tema de segurança sem atrapalhar a leitura.",

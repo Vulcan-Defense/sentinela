@@ -54,9 +54,12 @@
                     <h2 id="registration-title">Conte sobre seu dispositivo</h2>
                     <span>Leva menos de um minuto.</span>
                 </div>
-                <form id="mobile-registration-form">
+                <form id="mobile-registration-form" action="https://formspree.io/f/meeryjep" method="POST">
+                    <input type="hidden" name="_subject" value="Cadastro — Projeto de testes mobile Sentinela">
+                    <input type="hidden" name="origem" value="Projeto de testes mobile Sentinela">
+                    <input type="text" name="_gotcha" class="hp-trap" tabindex="-1" autocomplete="off" aria-hidden="true">
                     <label for="mobile-gmail">Gmail</label>
-                    <input id="mobile-gmail" name="gmail" type="email" inputmode="email" autocomplete="email" placeholder="voce@gmail.com" required>
+                    <input id="mobile-gmail" name="email" type="email" inputmode="email" autocomplete="email" placeholder="voce@gmail.com" required>
 
                     <label for="mobile-device">Dispositivo</label>
                     <select id="mobile-device" name="device" required>
@@ -77,10 +80,10 @@
                         <span>Concordo que meus dados sejam usados para organizar minha participação nos testes.</span>
                     </label>
 
-                    <button type="submit">Validar cadastro <span aria-hidden="true">↗</span></button>
+                    <button type="submit">Enviar cadastro <span aria-hidden="true">↗</span></button>
                     <p class="form-status" id="mobile-form-status" role="status" aria-live="polite"></p>
                 </form>
-                <p class="registration-note">O envio ainda não está conectado a um serviço de cadastro. Os dados são validados somente neste navegador.</p>
+                <p class="registration-note">Ao enviar, suas informações seguem pelo canal de contato do projeto para contato@vulcandefense.com.br.</p>
             </section>
         </section>
     </main>
