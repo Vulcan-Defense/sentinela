@@ -59,10 +59,10 @@
                     <input type="hidden" name="origem" value="Projeto de testes mobile Sentinela">
                     <input type="text" name="_gotcha" class="hp-trap" tabindex="-1" autocomplete="off" aria-hidden="true">
                     <label for="mobile-gmail">Gmail</label>
-                    <input id="mobile-gmail" name="email" type="email" inputmode="email" autocomplete="email" placeholder="voce@gmail.com" required>
+                    <input id="mobile-gmail" name="email" type="email" inputmode="email" autocomplete="email" placeholder="voce@gmail.com" required data-fs-field>
 
                     <label for="mobile-device">Dispositivo</label>
-                    <select id="mobile-device" name="device" required>
+                    <select id="mobile-device" name="device" required data-fs-field>
                         <option value="" selected disabled>Selecione seu dispositivo</option>
                         <option value="android">Android</option>
                         <option value="ios">iPhone (iOS)</option>
@@ -70,23 +70,25 @@
                     </select>
 
                     <label for="mobile-name">Nome completo</label>
-                    <input id="mobile-name" name="name" type="text" autocomplete="name" placeholder="Como devemos chamar você" required>
+                    <input id="mobile-name" name="name" type="text" autocomplete="name" placeholder="Como devemos chamar você" required data-fs-field>
 
                     <label for="mobile-phone">Telefone</label>
-                    <input id="mobile-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(00) 00000-0000" required>
+                    <input id="mobile-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(00) 00000-0000" required data-fs-field>
 
                     <label class="consent-row" for="mobile-consent">
-                        <input id="mobile-consent" name="consent" type="checkbox" required>
+                        <input id="mobile-consent" name="consent" type="checkbox" required data-fs-field>
                         <span>Concordo que meus dados sejam usados para organizar minha participação nos testes.</span>
                     </label>
 
-                    <button type="submit">Enviar cadastro <span aria-hidden="true">↗</span></button>
-                    <p class="form-status" id="mobile-form-status" role="status" aria-live="polite"></p>
+                    <button type="submit" data-fs-submit-btn>Enviar cadastro <span aria-hidden="true">↗</span></button>
+                    <p class="form-status" data-fs-success role="status" aria-live="polite">Cadastro enviado. A equipe entrará em contato caso seu dispositivo seja selecionado.</p>
+                    <p class="form-status form-status--error" data-fs-error role="alert" aria-live="assertive"></p>
                 </form>
                 <p class="registration-note">Ao enviar, suas informações seguem pelo canal de contato do projeto para contato@vulcandefense.com.br.</p>
             </section>
         </section>
     </main>
     <script src="js/testes-mobile.js" defer></script>
+    <script src="https://unpkg.com/@formspree/ajax@1" defer></script>
 </body>
 </html>
