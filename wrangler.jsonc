@@ -1,0 +1,29 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "vulcan-academy",
+  "main": "./worker/index.ts",
+  "compatibility_date": "2026-08-26",
+  "compatibility_flags": ["nodejs_compat"],
+  "routes": [
+    { "pattern": "academy.vulcandefense.com.br", "custom_domain": true },
+    { "pattern": "verify.vulcandefense.com.br", "custom_domain": true }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "vulcan-academy",
+      "database_id": "db67df06-f3a9-4df9-961d-e21a0576c72f"
+    }
+  ],
+  "vars": {
+    "MYSQL_HOST": "vulcanacademy.mysql.dbaas.com.br",
+    "MYSQL_PORT": "3306",
+    "MYSQL_USER": "vulcanacademy",
+    "MYSQL_DATABASE": "vulcanacademy",
+    "GOOGLE_CLIENT_ID": "260504790625-k31tfjedi5pcvhb1duqm6uko8f1g1p53.apps.googleusercontent.com",
+    "AUTH_COOKIE_DOMAIN": ".vulcandefense.com.br"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

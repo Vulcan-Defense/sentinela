@@ -1,0 +1,238 @@
+.admin-account-plans {
+  padding: 25px 35px 70px;
+  color: #edf0f5;
+}
+
+.admin-account-plans .admin-section-head input {
+  min-width: 250px;
+  border: 1px solid #3a4050;
+  border-radius: 8px;
+  padding: 11px 13px;
+  background: #0d1017;
+  color: #f4f6fa;
+  font-size: 12px;
+}
+
+.admin-account-plans .admin-section-head input::placeholder {
+  color: #929bad;
+  opacity: 1;
+}
+
+.plan-management-summary {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 9px;
+  margin: 18px 0;
+}
+
+.plan-management-summary article {
+  padding: 17px;
+  border: 1px solid #303644;
+  border-radius: 10px;
+  background: #171a24;
+}
+
+.plan-management-summary span,
+.plan-management-summary strong,
+.plan-management-summary small {
+  display: block;
+}
+
+.plan-management-summary span {
+  color: #aab2c2;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .6px;
+}
+
+.plan-management-summary strong {
+  margin: 7px 0;
+  color: #ffffff;
+  font-size: 22px;
+}
+
+.plan-management-summary small {
+  color: #a1aabb;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.admin-plan-table {
+  overflow: hidden;
+  border: 1px solid #303644;
+  border-radius: 12px;
+  background: #141720;
+}
+
+.admin-plan-row {
+  display: grid;
+  grid-template-columns: 1.5fr .7fr .55fr .6fr 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 17px;
+  border-bottom: 1px solid #2b303d;
+  color: #d8dde7;
+}
+
+.admin-plan-row:last-child {
+  border-bottom: 0;
+}
+
+.admin-plan-row.head {
+  background: #0f121a;
+  color: #a8b0c0;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+
+.admin-plan-row .student-cell strong,
+.admin-plan-row .student-cell small {
+  display: block;
+}
+
+.admin-plan-row .student-cell strong {
+  color: #f7f8fb;
+  font-size: 12px;
+}
+
+.admin-plan-row .student-cell small {
+  margin-top: 4px;
+  color: #a0a9ba;
+  font-size: 10px;
+}
+
+.admin-plan-row .role-badge {
+  display: inline-block;
+  font-size: 9px;
+}
+
+.admin-plan-row .role-badge.aluno {
+  background: #172536;
+  color: #9cc8f4;
+}
+
+.admin-plan-row .status-badge.active {
+  background: #153126;
+  color: #71ddb1;
+}
+
+.admin-plan-row > span > strong {
+  color: #ffffff;
+  font-size: 12px;
+}
+
+.admin-plan-row select {
+  width: 100%;
+  border: 1px solid #42495a;
+  border-radius: 7px;
+  padding: 10px;
+  background: #1b1f2a;
+  color: #f4f6fa;
+  font-size: 11px;
+}
+
+.admin-plan-row select:focus-visible,
+.admin-account-plans .admin-section-head input:focus-visible {
+  border-color: #ff9561;
+  outline: 2px solid #ff956155;
+  outline-offset: 1px;
+}
+
+.admin-plan-row select:disabled {
+  opacity: .65;
+}
+
+.admin-plan-row > span > small {
+  display: block;
+  margin-top: 5px;
+  color: #c6a8ff;
+  font-size: 10px;
+}
+
+.admin-accounts-empty {
+  display: grid;
+  place-items: center;
+  min-height: 210px;
+  border: 1px solid #303644;
+  border-radius: 12px;
+  background: #141720;
+  color: #b1b9c8;
+}
+
+.admin-accounts-empty span {
+  color: #ff9561;
+  font-size: 26px;
+}
+
+.admin-accounts-empty p {
+  font-size: 12px;
+}
+
+.plan-audit-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 14px;
+  border: 1px solid #2c5c49;
+  border-radius: 9px;
+  background: #14241f;
+}
+
+.plan-audit-note span {
+  color: #73d9b0;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.plan-audit-note p {
+  margin: 0;
+  color: #b6c9c1;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+@media (max-width: 1100px) {
+  .plan-management-summary {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .admin-plan-row {
+    grid-template-columns: 1.4fr .7fr .7fr 1fr;
+  }
+
+  .admin-plan-row > span:nth-child(3),
+  .admin-plan-row.head > span:nth-child(3) {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .admin-account-plans {
+    padding: 20px 16px 60px;
+  }
+
+  .plan-management-summary {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .admin-plan-table {
+    overflow-x: auto;
+  }
+
+  .admin-plan-row {
+    min-width: 680px;
+  }
+
+  .admin-account-plans .admin-section-head input {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .plan-audit-note {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}

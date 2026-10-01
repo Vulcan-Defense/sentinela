@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "include": ["/*"],
+  "exclude": [
+    "/_next/static/*",
+    "/favicon.svg",
+    "/file.svg",
+    "/globe.svg",
+    "/window.svg",
+    "/logo-vulcan-defense.png"
+  ]
+}

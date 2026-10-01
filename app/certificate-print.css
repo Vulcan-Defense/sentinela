@@ -1,0 +1,138 @@
+/* Certificate polish: central brand lockup and a true A4 landscape dark print. */
+.dark-certification header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
+  position: relative;
+  padding-bottom: 13px;
+}
+
+.dark-certification header > img {
+  grid-column: 2;
+  display: block;
+  width: 58px;
+  height: 58px;
+  margin: 0 auto;
+  object-fit: contain;
+  object-position: center;
+}
+
+.dark-certification header > span {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 62px;
+  text-align: center;
+  font-size: 9px;
+  line-height: 1.05;
+  letter-spacing: 1.2px;
+}
+
+.dark-certification header > b {
+  grid-column: 3;
+  grid-row: 1 / 3;
+  justify-self: end;
+  align-self: center;
+  margin-left: 0;
+}
+
+.dark-cert-body { padding-top: 3.5%; }
+
+.vulcan-certificate-preview > header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
+  position: relative;
+  padding-bottom: 9px;
+}
+
+.vulcan-certificate-preview > header > img {
+  grid-column: 2;
+  display: block;
+  width: 40px;
+  height: 40px;
+  margin: 0 auto;
+  object-fit: contain;
+  object-position: center;
+}
+
+.vulcan-certificate-preview > header > span {
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 43px;
+  text-align: center;
+  font-size: 6px;
+  line-height: 1.05;
+  letter-spacing: .8px;
+}
+
+.vulcan-certificate-preview > header > b {
+  grid-column: 3;
+  grid-row: 1 / 3;
+  justify-self: end;
+  align-self: center;
+  margin-left: 0;
+}
+
+@media (max-width: 680px) {
+  .dark-certification header > img { width: 50px; height: 50px; }
+  .dark-certification header > span { margin-top: 54px; }
+}
+
+@page { size: A4 landscape; margin: 0; }
+
+@media print {
+  html, body {
+    width: 297mm;
+    height: 210mm;
+    margin: 0 !important;
+    background: #050907 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  body * { visibility: hidden; }
+  .sidebar, .topbar, .dark-cert-layout > aside { display: none !important; }
+  .app-shell, main, .vulcan-cert-page, .dark-cert-layout,
+  .dark-certification, .dark-certification * { visibility: visible; }
+
+  .app-shell, main, .vulcan-cert-page, .dark-cert-layout {
+    width: 297mm !important;
+    height: 210mm !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: #050907 !important;
+  }
+
+  .dark-cert-layout { display: block !important; }
+  .dark-certification {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 297mm !important;
+    height: 210mm !important;
+    min-height: 0 !important;
+    aspect-ratio: auto !important;
+    padding: 14mm 20mm !important;
+    border: 1.4mm solid #24d47b !important;
+    box-shadow: none !important;
+    background: radial-gradient(circle at 82% 10%, #143b2a 0, transparent 34%), #050907 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .dark-cert-grid, .dark-certification::before { animation: none !important; }
+  .dark-certification header { padding-bottom: 4mm !important; }
+  .dark-certification header > img { width: 18mm !important; height: 18mm !important; }
+  .dark-certification header > span { margin-top: 19mm !important; font-size: 2.7mm !important; }
+  .dark-cert-body { padding-top: 5mm !important; }
+  .dark-cert-body h1 { margin: 3mm !important; font-size: 10mm !important; }
+  .dark-cert-body h2 { font-size: 6mm !important; }
+  .dark-cert-body > p { font-size: 2.5mm !important; }
+  .dark-cert-signatures { left: 20mm !important; right: 20mm !important; bottom: 22mm !important; }
+  .dark-certification > footer { left: 20mm !important; right: 20mm !important; bottom: 10mm !important; font-size: 1.8mm !important; }
+}

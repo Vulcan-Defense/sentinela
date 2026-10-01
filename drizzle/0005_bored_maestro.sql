@@ -1,0 +1,1 @@
+CREATE INDEX `idx_certification_attempts_user_certification` ON `certification_attempts` (`user_id`,`certification_id`);

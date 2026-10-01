@@ -1,0 +1,238 @@
+.offensive-panel{max-width:1180px;color:var(--theme-text)}
+.offensive-panel .page-title{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;flex-wrap:wrap}
+.offensive-hero{
+  display:grid;
+  grid-template-columns:minmax(0,1.15fr) minmax(280px,.7fr);
+  gap:18px;
+  margin-bottom:22px;
+}
+.offensive-streak-card,
+.offensive-prize{
+  position:relative;
+  overflow:hidden;
+  border:1px solid var(--theme-border);
+  border-radius:20px;
+  background:var(--theme-surface);
+  box-shadow:var(--theme-shadow);
+}
+.offensive-streak-card{padding:28px 28px 24px}
+.offensive-streak-card>small{
+  color:var(--theme-accent);
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.offensive-streak-card h2{
+  margin:8px 0 6px;
+  font-size:clamp(40px,5vw,64px);
+  letter-spacing:-.06em;
+  line-height:1;
+}
+.offensive-streak-card h2 em{color:var(--theme-accent);font-style:normal}
+.offensive-streak-card>p{margin:0;max-width:520px;color:var(--theme-muted);font-size:15px;line-height:1.6}
+.offensive-streak-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.offensive-streak-actions button{
+  min-height:44px;
+  padding:0 16px;
+  border-radius:12px;
+  font-weight:800;
+}
+.offensive-streak-actions .primary-button:disabled{opacity:.45}
+.offensive-streak-actions .outline-button{border:1px solid var(--theme-border);background:var(--theme-surface-soft);color:var(--theme-text)}
+.offensive-prize{
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  padding:24px;
+  background:
+    radial-gradient(circle at 88% 0,color-mix(in srgb,var(--theme-accent) 28%,transparent),transparent 46%),
+    var(--theme-surface);
+}
+.offensive-prize.ready{
+  border-color:color-mix(in srgb,var(--theme-accent) 55%,var(--theme-border));
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--theme-accent) 30%,transparent),var(--theme-shadow);
+}
+.offensive-prize>span{font-size:36px}
+.offensive-prize h3{margin:10px 0 8px;font-size:22px}
+.offensive-prize p{margin:0 0 18px;color:var(--theme-muted);font-size:14px;line-height:1.55}
+.offensive-prize button{width:100%;min-height:46px}
+.offensive-prize.claimed{opacity:.92}
+.offensive-prize.claimed button{background:var(--theme-surface-soft);color:var(--theme-muted);border:1px solid var(--theme-border)}
+
+.offensive-layout{
+  display:grid;
+  grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);
+  gap:18px;
+  align-items:start;
+}
+.offensive-calendar,
+.offensive-badges{
+  border:1px solid var(--theme-border);
+  border-radius:20px;
+  background:var(--theme-surface);
+  box-shadow:var(--theme-shadow);
+}
+.offensive-calendar{padding:22px}
+.offensive-cal-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:16px;
+}
+.offensive-cal-head h3{margin:0;font-size:18px;text-transform:capitalize}
+.offensive-cal-head button{
+  width:36px;height:36px;
+  border:1px solid var(--theme-border);
+  border-radius:10px;
+  background:var(--theme-surface-soft);
+  color:var(--theme-text);
+  font-size:16px;
+}
+.offensive-weekdays,
+.offensive-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.offensive-weekdays span{
+  text-align:center;
+  color:var(--theme-muted);
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.06em;
+}
+.offensive-grid button{
+  aspect-ratio:1;
+  border:0;
+  border-radius:12px;
+  background:transparent;
+  color:var(--theme-text);
+  font-size:13px;
+  font-weight:750;
+}
+.offensive-grid button.muted{color:var(--theme-muted);opacity:.42}
+.offensive-grid button.hot{
+  background:color-mix(in srgb,var(--theme-accent) 18%,transparent);
+  color:var(--theme-accent);
+  box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--theme-accent) 28%,transparent);
+}
+.offensive-grid button.today{
+  box-shadow:inset 0 0 0 2px var(--theme-accent);
+  font-weight:900;
+}
+.offensive-grid button.hot.today{
+  background:var(--theme-accent);
+  color:#fff;
+}
+.offensive-grid button:not(:disabled):hover{background:var(--theme-surface-soft)}
+.offensive-legend{
+  display:flex;flex-wrap:wrap;gap:12px 16px;
+  margin-top:16px;
+  color:var(--theme-muted);
+  font-size:12px;
+}
+.offensive-legend i{
+  display:inline-block;
+  width:10px;height:10px;
+  margin-right:6px;
+  border-radius:3px;
+  vertical-align:middle;
+}
+.offensive-legend .lg-hot{background:color-mix(in srgb,var(--theme-accent) 55%,transparent)}
+.offensive-legend .lg-today{box-shadow:inset 0 0 0 2px var(--theme-accent)}
+
+.offensive-badges{padding:22px}
+.offensive-badges>header{margin-bottom:16px}
+.offensive-badges>header p{margin:0 0 4px;color:var(--theme-accent);font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.offensive-badges>header h3{margin:0;font-size:22px}
+.offensive-badge-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.obadge{
+  position:relative;
+  display:grid;
+  grid-template-columns:52px 1fr;
+  gap:12px;
+  align-items:center;
+  min-height:88px;
+  padding:12px 14px;
+  overflow:hidden;
+  border:1px solid var(--theme-border);
+  border-radius:16px;
+  background:var(--theme-surface-soft);
+  text-align:left;
+}
+.obadge.locked{opacity:.48;filter:saturate(.55)}
+.obadge.earned{opacity:1;filter:none}
+.obadge .mark{
+  width:52px;height:52px;
+  display:grid;place-items:center;
+  border-radius:16px;
+  font-size:22px;
+  isolation:isolate;
+}
+.obadge strong,.obadge small{display:block}
+.obadge strong{font-size:14px}
+.obadge small{margin-top:3px;color:var(--theme-muted);font-size:12px;line-height:1.4}
+.obadge .need{margin-top:4px;color:var(--theme-accent);font-size:11px;font-weight:800}
+
+.obadge.spark .mark{background:linear-gradient(145deg,#f4d7b5,#c9844a);color:#3b2410;box-shadow:0 8px 16px #c9844a33}
+.obadge.ember .mark{background:linear-gradient(145deg,#ffb087,#e26a32);color:#fff;box-shadow:0 8px 18px #e26a3240}
+.obadge.flame.earned{
+  border-color:#f08a4a;
+  background:linear-gradient(160deg,color-mix(in srgb,#ff8a3d 16%,var(--theme-surface)),var(--theme-surface));
+}
+.obadge.flame .mark{background:linear-gradient(145deg,#ffd36a,#ff7a2f);color:#fff;box-shadow:0 0 18px #ff8a3d66}
+.obadge.amber.earned{border-color:#e3b34a}
+.obadge.amber .mark{background:linear-gradient(145deg,#ffe08a,#e09a2b);color:#3a2708;box-shadow:0 8px 20px #e09a2b44}
+.obadge.gold.earned{
+  border-color:#d4b14a;
+  background:linear-gradient(160deg,color-mix(in srgb,#f0d58a 22%,var(--theme-surface)),var(--theme-surface));
+}
+.obadge.gold .mark{background:linear-gradient(145deg,#fff3b0,#d4a017);color:#3d2c06;box-shadow:0 0 22px #e6c35a77}
+.obadge.violet.earned{border-color:#8b6cff}
+.obadge.violet .mark{background:linear-gradient(145deg,#c9b6ff,#6d49e6);color:#fff;box-shadow:0 0 22px #7b5cff66}
+.obadge.plasma.earned{
+  border-color:#67e0ff;
+  background:linear-gradient(160deg,color-mix(in srgb,#39c6ff 14%,var(--theme-surface)),var(--theme-surface));
+}
+.obadge.plasma .mark{
+  background:linear-gradient(145deg,#9af0ff,#5b7bff);
+  color:#fff;
+  box-shadow:0 0 26px #5ee0ff77;
+  animation:obadge-pulse 2.4s ease-in-out infinite;
+}
+.obadge.legend.earned{
+  border-color:#f0c14a;
+  background:
+    radial-gradient(circle at 12% 0,#ffe9a8 0,transparent 42%),
+    linear-gradient(160deg,#2a2112,color-mix(in srgb,#e3b34a 12%,var(--theme-surface)));
+  color:var(--theme-text);
+}
+.obadge.legend .mark{
+  background:linear-gradient(145deg,#fff6c2,#e8b423 45%,#b88710);
+  color:#3a2a08;
+  box-shadow:0 0 28px #f0c14aaa;
+  animation:obadge-spin-glow 3.2s ease-in-out infinite;
+}
+.obadge.mythic.earned{
+  border-color:#b9a0ff;
+  background:linear-gradient(160deg,#1b1430,color-mix(in srgb,#8b6cff 18%,var(--theme-surface)));
+}
+.obadge.mythic .mark{
+  background:linear-gradient(145deg,#f4e8ff,#9d6dff 40%,#5b2fd6);
+  color:#fff;
+  box-shadow:0 0 32px #b9a0ffaa;
+  animation:obadge-pulse 2s ease-in-out infinite;
+}
+
+.weekly-card.is-active{
+  border-color:color-mix(in srgb,var(--theme-accent) 45%,var(--theme-border));
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--theme-accent) 25%,transparent);
+}
+
+@keyframes obadge-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+@keyframes obadge-spin-glow{0%,100%{filter:saturate(1) brightness(1)}50%{filter:saturate(1.25) brightness(1.12)}}
+
+@media(max-width:980px){
+  .offensive-hero,.offensive-layout,.offensive-badge-grid{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){
+  .obadge .mark{animation:none !important}
+}

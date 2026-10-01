@@ -1,0 +1,49 @@
+.certification-track > article + article {
+  margin-top: 12px;
+}
+
+.certification-track > article.coming-soon-cert {
+  position: relative;
+  overflow: hidden;
+  border-color: #594f79;
+  background: radial-gradient(circle at 86% 8%, rgba(128, 100, 215, 0.25), transparent 38%), #141821;
+}
+
+.certification-track > article.coming-soon-cert::after {
+  content: "EM BREVE";
+  position: absolute;
+  top: 18px;
+  right: -36px;
+  width: 144px;
+  padding: 7px 0;
+  transform: rotate(35deg);
+  background: #8064d7;
+  color: #fff;
+  text-align: center;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 1.2px;
+}
+
+.cert-card-code.ai {
+  border-color: #63548d;
+  background: #241f38;
+  color: #b8a1ff;
+}
+
+.cert-card-status .coming-soon {
+  background: #2d2742;
+  color: #c1adff;
+}
+
+.coming-soon-cert .cert-card-main > div strong {
+  color: #fff;
+  font-size: 13px;
+}
+
+.coming-soon-cert .cert-card-action .primary-button:disabled {
+  opacity: 1;
+  background: #2a2e39;
+  color: #858d9c;
+  cursor: not-allowed;
+}

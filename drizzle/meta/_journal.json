@@ -1,0 +1,83 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1786713600000,
+      "tag": "0000_create_certificates",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1786740184288,
+      "tag": "0001_stale_jubilee",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1786740642434,
+      "tag": "0002_brown_jack_murdock",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1786743157599,
+      "tag": "0003_robust_thor_girl",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1786744895310,
+      "tag": "0004_violet_triathlon",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1786744942660,
+      "tag": "0005_bored_maestro",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1787688000000,
+      "tag": "0006_user_activity_days",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1787688600000,
+      "tag": "0007_mysql_ready_progress",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1787692800000,
+      "tag": "0008_certificate_ownership",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1787695200000,
+      "tag": "0009_plan_cycles_and_demo_users",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1787698800000,
+      "tag": "0010_profile_and_printed_certificates",
+      "breakpoints": true
+    }
+  ]
+}

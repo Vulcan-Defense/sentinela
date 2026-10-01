@@ -1,0 +1,1 @@
+ALTER TABLE `accounts` ADD `system_role` text DEFAULT 'aluno' NOT NULL;

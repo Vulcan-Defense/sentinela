@@ -1,0 +1,24 @@
+[
+  {
+    "version": "Setembro 2026",
+    "date": "2026-09-10",
+    "title": "Experiência visual e gestão da academia",
+    "summary": "A interface pública e a área logada receberam uma revisão completa de legibilidade, navegação e consistência.",
+    "items": [
+        "Página inicial da Sentinela renovada com visual de cibersegurança, fundo animado opcional e destaque para a participação da VulcanDefense no Guardião Cibernético 8.0.",
+        "Painel do aluno destaca a próxima atividade pendente, reconhece formações concluídas e mantém as recomendações acessíveis em todas as telas.",
+        "Gestão de permissões modernizada com seleção de função compacta e responsiva.",
+        "Ranking agora exibe as fotos de perfil dos participantes, mantendo iniciais quando não houver imagem.",
+        "Catálogo revisado para facilitar busca, comparação, leitura de ementas e navegação por teclado.",
+        "Ranking revisado com Top 3 em linhas estáveis, melhor leitura de nomes e XP em qualquer tela.",
+        "Ranking da comunidade com posição pessoal, Top 3 e progresso em XP.",
+      "Painel administrativo reorganizado para cursos, usuários, cupons e permissões.",
+      "Gestão de cupons com filtro por status e exclusão para manter a política de descontos sob controle.",
+      "Página inicial, autenticação, perfil, laboratórios e certificados modernizados.",
+      "Modo claro com cores ajustadas e telas readequadas para leitura confortável em qualquer dispositivo.",
+      "Cadastro protegido por código de acesso e fluxo de login revisado.",
+      "A mesma conta agora pode abrir reuniões no VulcanMeet sem criar um novo cadastro.",
+      "Reuniões do VulcanMeet agora guardam participantes e duração para consulta posterior."
+    ]
+  }
+]

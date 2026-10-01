@@ -1,0 +1,2041 @@
+"use client";
+
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { courses, findModule, learningTrails, owaspModules as modules, planRank, plans, type Course, type Module, type PlanId } from "../data/site-catalog";
+import { courseQuizQuestions } from "../data/course-quizzes";
+import { extraLearningGuides, moduleStudyPack, studyChapters } from "../data/learning-guides";
+import { linkedInAddCertificationUrl } from "../data/linkedin-certification";
+import { AdminCertifications, VulcanCertifications } from "./vulcan-certifications";
+import "./certificate-listing.css";
+import "./certificate-print.css";
+import "./certificate-executive.css";
+import "./catalog-ux.css";
+import "./profile-print.css";
+import "./profile-achievements.css";
+
+type View = "inicio" | "trilha" | "matriculas" | "aula" | "laboratorio" | "ranking" | "certificado" | "certificacoes_vulcan" | "planos" | "patch_notes" | "administracao" | "perfil" | "ofensiva" | "comunidade_ideia" | "comunidade_bug";
+type UserRole = "aluno" | "professor" | "admin";
+type StudentProfile = {name:string;role:string;email:string;goal:string;phone:string;postalCode:string;addressLine:string;addressNumber:string;addressComplement:string;neighborhood:string;city:string;state:string;receivePrintedCertificate:boolean;addressConfirmed:boolean;photoUrl:string};
+
+type LabTheme = "appsec"|"api-identidade"|"cloud-devsecops"|"red-blue"|"ia-governanca";
+type LabDefinition = { id:string; courseId:string; theme?:LabTheme; title:string; summary:string; duration:number; xp:number; environment:string; provider:string; objective:string; terminalCommands:{command:string;output:string}[]; systemPanels:{label:string;value:string;status:"ok"|"warn"|"info"}[] };
+
+function kaliNmap(host:string,ip:string,ports:string,title:string){
+  return `Starting Nmap 7.95 ( https://nmap.org ) Kali Linux\nNmap scan report for ${host} (${ip})\nHost is up (0.004s latency).\n${ports}\n|_http-title: ${title}\nService detection performed on isolated lab range 10.20.0.0/28 only.`;
+}
+
+const coreCourseLabs: LabDefinition[] = [
+  {id:"LAB-WEB-01",courseId:"owasp",title:"Portal vulnerável OWASP",summary:"Reconheça o alvo com Nmap, inspecione a superfície com Nikto e demonstre injeção educacional com sqlmap — tudo em web.lab.local.",duration:35,xp:450,environment:"Kali Linux · web isolada",provider:"Docker local",objective:"Mapear portas, listar misconfigurações e mostrar o ponto de injeção no cenário sintético.",terminalCommands:[{command:"nmap -sV -sC -p 80,443 web.lab.local",output:kaliNmap("web.lab.local","10.20.0.10","PORT    STATE SERVICE VERSION\n80/tcp  open  http    nginx 1.24.0 (lab)\n443/tcp open  ssl/http nginx 1.24.0","Vulcan Lab — portal OWASP")},{command:"nikto -h http://web.lab.local",output:"+ Server: nginx/1.24.0 (lab)\n+ /admin: directory listing (simulado)\n+ The anti-clickjacking X-Frame-Options header is not present.\n+ /search?q=test: parameter appears to reflect input\n+ 3 items reported · target=web.lab.local · no external hosts"},{command:"sqlmap -u \"http://web.lab.local/search?q=1\" --batch --level=1 --risk=1",output:"sqlmap/1.8.11#kali\n[*] testing connection to the target URL\n[*] GET parameter 'q' appears to be injectable (boolean-based)\n[PAYLOAD] q=1' AND 1=1--  · dataset=synthetic_users\n[INFO] fetched 3 dummy rows: alice, bob, lab_admin\n[~] educational run stopped · --dump disabled in sandbox"}],systemPanels:[{label:"Alvo",value:"web.lab.local",status:"ok"},{label:"Nmap",value:"80/443 open",status:"info"},{label:"sqlmap",value:"q injectable",status:"warn"}]},
+  {id:"LAB-API-01",courseId:"api",title:"API de pedidos e autorização",summary:"Enumere a API com Nmap e ffuf, depois inspecione BOLA com curl no gateway sintético.",duration:30,xp:420,environment:"Kali Linux · API sandbox",provider:"AWS sandbox",objective:"Descobrir endpoints, identificar objeto 104 sem checagem de dono e validar o deny do gateway.",terminalCommands:[{command:"nmap -sV -p 8080,8443 api.lab.local",output:kaliNmap("api.lab.local","10.20.0.21","PORT     STATE SERVICE VERSION\n8080/tcp open  http    Node.js Express (lab)\n8443/tcp open  ssl/http Kong gateway (lab)","Vulcan Lab — orders API")},{command:"ffuf -u http://api.lab.local/FUZZ -w /usr/share/wordlists/dirb/common.txt -mc 200,401,403 -t 10",output:"ffuf v2.1.0-dev Kali\norders                  [Status: 200, Size: 412]\norders/104              [Status: 200, Size: 188]  ← objeto de outro tenant (lab)\nprofile                 [Status: 401, Size: 32]\nadmin                   [Status: 403, Size: 19]\n:: Progress: [4613/4613] :: Job [1/1] :: 0 req/sec (sandbox throttle)"},{command:"curl -i http://api.lab.local/orders/104 -H \"Authorization: Bearer lab-token-alice\"",output:"HTTP/1.1 200 OK\nX-Lab-Warning: BOLA — owner_id=104 not bound to sub=alice\n{\"id\":104,\"owner\":\"bob\",\"total\":91.4,\"status\":\"paid\"}\n# após policy: HTTP/1.1 403 Forbidden  {\"error\":\"object_not_owned\"}"}],systemPanels:[{label:"Gateway",value:"Kong lab",status:"ok"},{label:"ffuf",value:"4 paths",status:"info"},{label:"BOLA",value:"orders/104",status:"warn"}]},
+  {id:"LAB-RED-01",courseId:"pentest",title:"Operação Red Team autorizada",summary:"Reconhecimento autorizado com Nmap, Gobuster e WhatWeb no range 10.20.0.0/28.",duration:50,xp:600,environment:"Kali Linux · range autorizado",provider:"Servidor local",objective:"Catalogar serviços, diretórios e fingerprint — sem sair do /28 de treinamento.",terminalCommands:[{command:"nmap -sS -sV --top-ports 100 10.20.0.0/28",output:"Starting Nmap 7.95  (lab scope ONLY 10.20.0.0/28)\nNmap scan report for 10.20.0.10\n80/tcp   open  http     nginx 1.24\n443/tcp  open  ssl/http nginx 1.24\nNmap scan report for 10.20.0.11\n22/tcp   open  ssh      OpenSSH 9.6 (lab keys)\n445/tcp  filtered microsoft-ds\n# 14 hosts scanned · 0 hosts outside scope · 0 packets leaked"},{command:"gobuster dir -u http://10.20.0.10 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -t 20",output:"Gobuster v3.6  Kali Linux\n===============================================================\n/login                (Status: 200) [Size: 2411]\n/api                  (Status: 401) [Size: 27]\n/backup               (Status: 403) [Size: 153]\n/server-status        (Status: 403) [Size: 153]\nProgress: 22000 / 22000 (100.00%)  · wordlist truncated in lab"},{command:"whatweb http://10.20.0.10",output:"http://10.20.0.10 [200 OK] Country[LAB], HTML5, HTTPServer[nginx/1.24.0], IP[10.20.0.10], Title[Vulcan Lab — intranet], UncommonHeaders[x-lab-scope], X-Powered-By[Express-lab]\n[+] fingerprint stored as evidence · sanitised"}],systemPanels:[{label:"Escopo",value:"10.20.0.0/28",status:"ok"},{label:"Hosts",value:"2 up",status:"info"},{label:"Dirs",value:"4 hits",status:"warn"}]},
+  {id:"LAB-CLOUD-01",courseId:"cloud",title:"Postura de segurança em nuvem",summary:"Nmap no console de treino, Nuclei em misconfig e curl no metadata service sintético.",duration:40,xp:500,environment:"Kali Linux · cloud lab",provider:"GCP sandbox",objective:"Encontrar bucket público, IAM amplo e metadata alcançável só dentro do sandbox.",terminalCommands:[{command:"nmap -sV -p 443 console.lab.local",output:kaliNmap("console.lab.local","10.20.0.40","PORT    STATE SERVICE VERSION\n443/tcp open  ssl/http Google frontend (lab emulator)","Vulcan Lab — cloud console")},{command:"nuclei -t http/misconfiguration -u https://storage.lab.local -silent",output:"[public-s3-bucket] [medium] https://storage.lab.local/lab-public\n[missing-security-headers] [low] https://storage.lab.local\n[gcp-unauth-api] [info] skipped — emulator has no public IAM\n[INF] Templates loaded: 42 (lab pack)  Matches: 2  Duration: 1.8s"},{command:"curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/",output:"lab-workload-role\n# IMDS v1 emulator · credentials are fake:\n{\"Code\":\"Success\",\"AccessKeyId\":\"LABFAKEAKIA...\",\"Token\":\"sandbox-only\"}\nBLOCKED: requests outside 169.254.169.254/32 dropped by lab firewall"}],systemPanels:[{label:"Bucket",value:"lab-public",status:"warn"},{label:"IMDS",value:"emulado",status:"info"},{label:"IAM",value:"1 excesso",status:"warn"}]},
+  {id:"LAB-CODE-01",courseId:"secure-code",title:"Code review defensivo",summary:"Use sqlmap e Nmap http-security-headers para localizar o trecho inseguro antes do patch.",duration:30,xp:400,environment:"Kali Linux · app + testes",provider:"Docker local",objective:"Reproduzir a injeção, listar headers ausentes e confirmar o fechamento após o patch.",terminalCommands:[{command:"nmap --script http-security-headers,http-csrf -p 443 app.lab.local",output:"PORT    STATE SERVICE\n443/tcp open  https\n| http-security-headers:\n|   Strict_Transport_Security: missing\n|   Content_Security_Policy: missing\n|_  X_Frame_Options: missing\n|_http-csrf: Token not found on /item form (lab)"},{command:"sqlmap -u \"http://app.lab.local/item?id=1\" --technique=B --batch --threads=1",output:"parameter: id (GET)\n    type: boolean-based blind\n    title: AND boolean-based blind — WHERE or HAVING clause\n    payload: id=1 AND 1=1\n[INFO] the back-end DBMS is SQLite (lab fixture)\navailable databases [1]:\n[*] lab_app\n[~] --os-shell disabled in training image"},{command:"nikto -h https://app.lab.local -Tuning 1,2,3",output:"+ Retrieved x-powered-by header: Express-lab\n+ Allowed HTTP Methods: GET, POST, OPTIONS, PUT\n+ /item?id=1: SQLi signature previously confirmed (see sqlmap)\n+ After patch replay: 0 injection signatures · CSP present"}],systemPanels:[{label:"Headers",value:"3 missing",status:"warn"},{label:"DBMS",value:"SQLite lab",status:"info"},{label:"Patch",value:"pendente",status:"warn"}]},
+  {id:"LAB-DSO-01",courseId:"devsecops",title:"Pipeline DevSecOps",summary:"Nuclei no staging, Nmap no runner e busca de segredos com strings/grep estilo Kali.",duration:35,xp:460,environment:"Kali Linux · CI efêmero",provider:"DigitalOcean sandbox",objective:"Falhar o gate quando Nuclei achar CVE de treino ou segredo no artefato.",terminalCommands:[{command:"nmap -sV -p 22,80,443 ci.lab.local",output:kaliNmap("ci.lab.local","10.20.0.50","PORT    STATE SERVICE VERSION\n22/tcp  open  ssh     OpenSSH 9.6 (lab runner)\n80/tcp  open  http    nginx 1.24 (artifact preview)\n443/tcp open  ssl/http nginx 1.24","Vulcan Lab — CI")},{command:"nuclei -t cves/ -u http://staging.lab.local -severity critical,medium -silent",output:"[CVE-2021-44228] [critical] http://staging.lab.local/log4j-probe (fixture)\n[CVE-2017-5638] [medium] http://staging.lab.local/struts-lab (fixture)\n[INF] 2 matches · pipeline policy: BLOCK on critical"},{command:"grep -RInE \"AKIA|BEGIN RSA PRIVATE KEY|ghp_\" /opt/lab/src | head",output:"/opt/lab/src/.env:4:AWS_ACCESS_KEY_ID=AKIALABEXAMPLE\n/opt/lab/src/deploy/id_rsa:1:-----BEGIN RSA PRIVATE KEY-----\n[!] gitleaks-equivalent: 2 secrets · gate=fail\n# after rotation: 0 matches · SBOM written to /opt/lab/sbom.json"}],systemPanels:[{label:"Nuclei",value:"1 critical",status:"warn"},{label:"Secrets",value:"2 hits",status:"warn"},{label:"SBOM",value:"pending",status:"info"}]},
+  {id:"LAB-AIG-01",courseId:"ai-governance",title:"Inventário e política de IA",summary:"Fingerprint do portal de governança com WhatWeb e Nmap; inventário via curl.",duration:25,xp:380,environment:"Kali Linux · gov portal",provider:"Docker local",objective:"Confirmar superfície do portal e extrair o inventário sintético de casos de uso.",terminalCommands:[{command:"nmap -sV -p 443 policy.lab.local",output:kaliNmap("policy.lab.local","10.20.0.70","PORT    STATE SERVICE VERSION\n443/tcp open  ssl/http nginx 1.24 (lab)","Vulcan Lab — AI policy")},{command:"whatweb https://policy.lab.local",output:"https://policy.lab.local [200 OK] HTML5, HTTPServer[nginx], Title[Inventário de IA], UncommonHeaders[x-policy-owner], Cookies[lab_session]"},{command:"curl -s https://policy.lab.local/api/inventory | jq '.cases[] | {id,owner,risk}'",output:"{\"id\":\"AI-014\",\"owner\":\"legal\",\"risk\":\"alto\"}\n{\"id\":\"AI-021\",\"owner\":\"secops\",\"risk\":\"médio\"}\nWARN: AI-014 missing human-review flag"}],systemPanels:[{label:"Portal",value:"policy.lab.local",status:"ok"},{label:"Casos",value:"2",status:"info"},{label:"Revisão",value:"AI-014",status:"warn"}]},
+  {id:"LAB-AIR-01",courseId:"ai-redteam",title:"Red Team de agente de IA",summary:"Nmap e ffuf no agente, depois curl nas ferramentas expostas — sandbox sem modelo real.",duration:45,xp:650,environment:"Kali Linux · agente isolado",provider:"GCP sandbox",objective:"Enumerar tools HTTP e demonstrar prompt que tentaria chamar deploy.",terminalCommands:[{command:"nmap -sV -p 8000,8080 agent.lab.local",output:kaliNmap("agent.lab.local","10.20.0.80","PORT     STATE SERVICE VERSION\n8000/tcp open  http    uvicorn (lab agent)\n8080/tcp open  http    nginx reverse-proxy (lab)","Vulcan Lab — agent")},{command:"ffuf -u http://agent.lab.local/v1/FUZZ -w /usr/share/seclists/Discovery/Web-Content/api/objects.txt -mc 200,401 -t 5",output:"tools                   [Status: 200]\nprompt                  [Status: 200]\nmemory                  [Status: 401]\ndeploy                  [Status: 200]  ← tool sem confirmação humana (lab)"},{command:"curl -s http://agent.lab.local/v1/tools | jq '.[].name'",output:"\"search_docs\"\n\"create_ticket\"\n\"deploy\"\nWARN deploy.scope=unrestricted  · after allowlist: deploy requires human_ack=true"}],systemPanels:[{label:"Tools",value:"3 expostas",status:"warn"},{label:"ffuf",value:"4 paths",status:"info"},{label:"Allowlist",value:"pendente",status:"warn"}]},
+  {id:"LAB-LLM-01",courseId:"llm-security",title:"RAG seguro e proveniência",summary:"Nmap, Nikto e curl nas fontes do RAG sintético para achar documento não confiável.",duration:40,xp:620,environment:"Kali Linux · RAG lab",provider:"AWS sandbox",objective:"Listar coleções, marcar fonte não confiável e confirmar o bloqueio.",terminalCommands:[{command:"nmap -sV -p 443 rag.lab.local",output:kaliNmap("rag.lab.local","10.20.0.81","PORT    STATE SERVICE VERSION\n443/tcp open  ssl/http nginx 1.24 (lab RAG)","Vulcan Lab — RAG")},{command:"nikto -h https://rag.lab.local",output:"+ /sources: collection listing enabled (lab)\n+ /query: POST without CSRF token\n+ Retrieved x-vector-index: faiss-lab\n+ 1 untrusted document advertised in /sources?filter=all"},{command:"curl -s https://rag.lab.local/sources | jq '.[] | {id,trust}'",output:"{\"id\":\"kb-hr\",\"trust\":\"authorised\"}\n{\"id\":\"kb-ext-paste\",\"trust\":\"untrusted\"}\nDENY: kb-ext-paste excluded from retrieval after policy apply"}],systemPanels:[{label:"Fontes",value:"8+1",status:"info"},{label:"Untrusted",value:"kb-ext-paste",status:"warn"},{label:"Isolamento",value:"namespace",status:"ok"}]},
+  {id:"LAB-AGA-01",courseId:"agentic-defense",title:"Permissões de agentes autônomos",summary:"Nmap e Nuclei no orquestrador; curl na matriz de permissões.",duration:40,xp:640,environment:"Kali Linux · orchestrator",provider:"Servidor local",objective:"Expor a tool de escrita ampla e validar pausa para aprovação humana.",terminalCommands:[{command:"nmap -sV -p 8443 orch.lab.local",output:kaliNmap("orch.lab.local","10.20.0.82","PORT     STATE SERVICE VERSION\n8443/tcp open  ssl/http Go httpd (lab orchestrator)","Vulcan Lab — agents")},{command:"nuclei -t exposures/configs -u https://orch.lab.local -silent",output:"[exposed-env] [low] https://orch.lab.local/debug/env (lab)\n[memory-dump] [medium] https://orch.lab.local/memory?raw=1  ← memória não confiável\n[INF] 2 findings · training pack"},{command:"curl -s https://orch.lab.local/permissions | jq '.tools[] | {name,write}'",output:"{\"name\":\"read_ticket\",\"write\":false}\n{\"name\":\"deploy\",\"write\":true}\nAFTER restrict: deploy.write=false unless approval_id present"}],systemPanels:[{label:"Orch",value:"8443/tls",status:"ok"},{label:"Memória",value:"exposta",status:"warn"},{label:"Write",value:"deploy",status:"warn"}]},
+  {id:"LAB-GT-01",courseId:"git-ops",title:"Histórico Git com segredo",summary:"Clone o repositório sintético, gitleaks no histórico e inspeção das regras de proteção de branch.",duration:25,xp:360,environment:"Kali Linux · git lab",provider:"Docker local",objective:"Achar token no commit antigo, .gitignore incompleto e main sem required review.",terminalCommands:[{command:"nmap -sV -p 443 git.lab.local",output:kaliNmap("git.lab.local","10.20.0.59","PORT    STATE SERVICE VERSION\n443/tcp open  ssl/http nginx (gitea lab)","Vulcan Lab — git")},{command:"gitleaks detect -s /opt/lab/repo --no-git -v | tail",output:"Secret: ghp_LABTOKEN\nFile: .env\nCommit: 9c2a1e4  wip: add env\nRule: github-pat  · leaks: 1"},{command:"git -C /opt/lab/repo log --oneline -5; curl -s https://git.lab.local/api/v1/repos/shop/protect",output:"9c2a1e4 wip: add env\na11b0c2 ignore later (file deleted, blob remains)\n{\"branch\":\"main\",\"required_reviews\":0,\"allow_force\":true}\nAFTER: required_reviews=1 · force=false · .env in gitignore"}],systemPanels:[{label:"Leaks",value:"1 PAT",status:"warn"},{label:"main",value:"unprotected",status:"warn"},{label:"gitignore",value:".env missing",status:"warn"}]},
+  {id:"LAB-LX-01",courseId:"linux-hardening",title:"Host Linux endurecido",summary:"Nmap no SSH do host de treino, auditoria de permissões e journal do serviço sintético.",duration:30,xp:380,environment:"Kali Linux · host ops",provider:"Docker local",objective:"Achar SSH com senha, processo root e log com token em claro.",terminalCommands:[{command:"nmap -sV -p 22 ops.lab.local",output:kaliNmap("ops.lab.local","10.20.0.60","PORT   STATE SERVICE VERSION\n22/tcp open  ssh     OpenSSH 9.6 (lab · password auth ON)","Vulcan Lab — linux ops")},{command:"ssh labop@ops.lab.local 'find /opt/lab -perm -4000 -type f; ps -eo user,pid,cmd | head'",output:"/usr/bin/passwd\nroot  441 /usr/sbin/demo-agent --token=lab\nlabop 512 /opt/lab/monitor.sh\nWARN demo-agent running as root"},{command:"journalctl -u demo-agent -n 8 --no-pager",output:"demo-agent[441]: token=ghp_LABSECRET printed to log\n# after hardening: PrivilegeMode=labop · token redacted · ssh PasswordAuthentication no"}],systemPanels:[{label:"SSH",value:"password on",status:"warn"},{label:"UID",value:"root agent",status:"warn"},{label:"Journal",value:"secret leak",status:"warn"}]},
+  {id:"LAB-NT-01",courseId:"network-ops",title:"Perímetro, VLAN e TLS",summary:"Nmap na borda, testssl no VIP e verificação de VLAN trunk no switch sintético.",duration:35,xp:420,environment:"Kali Linux · edge lab",provider:"Servidor local",objective:"Detectar HTTP sem redirect, certificado autoassinado e VLAN nativa exposta.",terminalCommands:[{command:"nmap -sV -p 80,443,22 edge.lab.local",output:kaliNmap("edge.lab.local","10.20.0.61","PORT    STATE SERVICE VERSION\n22/tcp  open  ssh     OpenSSH 9.6\n80/tcp  open  http    nginx 1.24 (no redirect)\n443/tcp open  ssl/http nginx 1.24","Vulcan Lab — edge")},{command:"echo | openssl s_client -connect edge.lab.local:443 -servername edge.lab.local 2>/dev/null | openssl x509 -noout -issuer -dates",output:"issuer=CN = lab-ca-untrusted\nnotBefore=Jan 1 00:00:00 2024 GMT\nnotAfter=Jan 1 00:00:00 2025 GMT\nWARN chain not in lab trust store"},{command:"curl -s http://edge.lab.local/health -D - | head -n 8",output:"HTTP/1.1 200 OK\nServer: nginx/1.24\n# missing Strict-Transport-Security\n# AFTER policy: 301 → https://edge.lab.local/health"}],systemPanels:[{label:"HTTP",value:"no redirect",status:"warn"},{label:"TLS",value:"lab-ca",status:"warn"},{label:"HSTS",value:"ausente",status:"info"}]},
+  {id:"LAB-CK-01",courseId:"container-sec",title:"Imagem e cluster Kubernetes",summary:"Trivy na imagem de treino, kubectl nos Pods e NetworkPolicy dry-run.",duration:40,xp:500,environment:"Kali Linux · k3s lab",provider:"Docker local",objective:"Encontrar CVE crítica, container root e tráfego pod irrestrito.",terminalCommands:[{command:"nmap -sV -p 6443 k8s.lab.local",output:kaliNmap("k8s.lab.local","10.20.0.62","PORT     STATE SERVICE VERSION\n6443/tcp open  ssl/https kube-apiserver (lab k3s)","Vulcan Lab — k8s")},{command:"trivy image --severity CRITICAL lab.local/api:dev",output:"lab.local/api:dev (debian 12)\nTotal: 2 (CRITICAL: 2)\ncve-lab-openssl  pkg:libssl  installed: 3.0.0\nUSER: root  · after rebuild: USER 65532 · 0 CRITICAL"},{command:"kubectl -n shop get netpol,sa --show-labels",output:"No resources found in shop namespace.\nServiceAccount/default  ← pods use default SA\nAFTER: netpol deny-all + allow-app · SA/app-api bound"}],systemPanels:[{label:"API",value:"6443",status:"ok"},{label:"Trivy",value:"2 critical",status:"warn"},{label:"NetPol",value:"ausente",status:"warn"}]},
+  {id:"LAB-TF-01",courseId:"iac-ops",title:"Plano Terraform inseguro",summary:"Checkov no plano, grep de secrets e terraform show do state local.",duration:35,xp:460,environment:"Kali Linux · IaC sandbox",provider:"AWS sandbox",objective:"Falhar o gate em SG 0.0.0.0/0 e access key no código.",terminalCommands:[{command:"nmap -sV -p 443 iac.lab.local",output:kaliNmap("iac.lab.local","10.20.0.63","PORT    STATE SERVICE VERSION\n443/tcp open  ssl/http nginx (terraform runner lab)","Vulcan Lab — iac")},{command:"checkov -f /opt/lab/plan.json --compact --quiet",output:"Check: CKV_AWS_24  FAILED  SG ingress 0.0.0.0/0 :22\nCheck: CKV_SECRET_6 FAILED  hardcoded AWS key in main.tf\nPassed checks: 11  Failed: 2"},{command:"grep -n 'AKIA\\|password' /opt/lab/infra/*.tf | head",output:"/opt/lab/infra/main.tf:18:default     = \"AKIALABEXAMPLE\"\n# AFTER: secret in vault · SG cidr = 10.20.0.0/28"}],systemPanels:[{label:"Checks",value:"2 failed",status:"warn"},{label:"State",value:"local",status:"warn"},{label:"SG",value:"0.0.0.0/0",status:"warn"}]},
+  {id:"LAB-SR-01",courseId:"sre-reliability",title:"SLO e telemetria",summary:"PromQL no Prometheus de treino, Grafana e um trace OpenTelemetry quebrado.",duration:40,xp:520,environment:"Kali Linux · observability",provider:"GCP sandbox",objective:"Achar SLO sem dono, alerta ruidoso e serviço sem trace.",terminalCommands:[{command:"nmap -sV -p 9090,3000 sre.lab.local",output:kaliNmap("sre.lab.local","10.20.0.64","PORT     STATE SERVICE VERSION\n9090/tcp open  http    Prometheus (lab)\n3000/tcp open  http    Grafana (lab)","Vulcan Lab — sre")},{command:"curl -sG http://sre.lab.local:9090/api/v1/query --data-urlencode 'query=up{job=\"shop-api\"}'",output:"{\"status\":\"success\",\"data\":{\"result\":[{\"metric\":{\"job\":\"shop-api\"},\"value\":[0,\"0\"]}]}}\nWARN shop-api DOWN · no owner label"},{command:"curl -s http://sre.lab.local:3000/api/search?query=checkout | jq '.[].title'",output:"\"checkout-errors-spam\"\n# 400 alerts/hour · no runbook\nAFTER: SLO 99.5% · alert: burn-rate + link runbook"}],systemPanels:[{label:"up",value:"shop-api 0",status:"warn"},{label:"Alerts",value:"noisy",status:"warn"},{label:"SLO",value:"undefined",status:"info"}]},
+  {id:"LAB-PE-01",courseId:"platform-eng",title:"Golden path incompleto",summary:"Nmap no portal de plataforma, ffuf nas APIs de self-service e curl no catálogo de serviços.",duration:30,xp:440,environment:"Kali Linux · IDP lab",provider:"Docker local",objective:"Listar serviços sem dono e um template de pipeline sem SAST.",terminalCommands:[{command:"nmap -sV -p 443 platform.lab.local",output:kaliNmap("platform.lab.local","10.20.0.65","PORT    STATE SERVICE VERSION\n443/tcp open  ssl/http nginx (internal developer portal)","Vulcan Lab — platform")},{command:"ffuf -u https://platform.lab.local/catalog/FUZZ -w /usr/share/wordlists/dirb/common.txt -mc 200 -t 8",output:"services               [Status: 200]\ntemplates              [Status: 200]\ngolden-path            [Status: 404]  ← missing"},{command:"curl -s https://platform.lab.local/catalog/services | jq '.[] | {name,owner,sast}'",output:"{\"name\":\"billing-api\",\"owner\":null,\"sast\":false}\n{\"name\":\"edge-proxy\",\"owner\":\"platform\",\"sast\":true}\nAFTER: billing-api owner=payments · sast required in template"}],systemPanels:[{label:"Portal",value:"up",status:"ok"},{label:"Golden path",value:"404",status:"warn"},{label:"Owner",value:"faltando",status:"warn"}]},
+  {id:"LAB-FO-01",courseId:"finops-sec",title:"Waste e recursos sem tag",summary:"Inventário sintético de custo, Nmap em LB ocioso e grep de tags obrigatórias.",duration:30,xp:400,environment:"Kali Linux · cost lab",provider:"AWS sandbox",objective:"Achar load balancer idle, disco órfão e conta sem tag owner.",terminalCommands:[{command:"nmap -sV -p 443 cost.lab.local",output:kaliNmap("cost.lab.local","10.20.0.66","PORT    STATE SERVICE VERSION\n443/tcp open  ssl/http nginx (finops console lab)","Vulcan Lab — finops")},{command:"curl -s https://cost.lab.local/api/waste | jq '.[] | {id,type,idle}'",output:"{\"id\":\"lb-8\",\"type\":\"nlb\",\"idle\":true}\n{\"id\":\"vol-21\",\"type\":\"ebs\",\"idle\":true}\nWARN lb-8 still internet-facing"},{command:"curl -s https://cost.lab.local/api/assets | jq '.[] | select(.tags.owner==null) | .id'",output:"\"i-orphan-09\"\n\"s3-lab-public\"\nAFTER: policy deny untagged · lb-8 deleted · s3 private"}],systemPanels:[{label:"Idle LB",value:"lb-8",status:"warn"},{label:"Untagged",value:"2",status:"warn"},{label:"Public",value:"s3-lab",status:"warn"}]},
+];
+
+const labThemeDefinitions:{id:LabTheme;label:string;icon:string;description:string;courseIds:string[];topics:string[]}[]=[
+  {id:"appsec",label:"AppSec & OWASP",icon:"</>",description:"Aplicações, código seguro e vulnerabilidades web",courseIds:["owasp","secure-code","api"],topics:["Controle de acesso","Injeção SQL parametrizada","Sessões e cookies","Upload seguro","Validação de entrada","Criptografia aplicada","Tratamento de erros","Headers de segurança","Componentes vulneráveis","Logging sem dados sensíveis"]},
+  {id:"api-identidade",label:"APIs & Identidade",icon:"{ }",description:"Autorização, tokens, objetos e abuso de APIs",courseIds:["api","owasp","secure-code"],topics:["BOLA em pedidos","Autorização por função","Escopos OAuth","Rotação de tokens","Rate limiting","Mass assignment","Inventário de endpoints","GraphQL seguro","Webhooks assinados","Isolamento entre tenants"]},
+  {id:"cloud-devsecops",label:"Cloud & DevOps",icon:"☁",description:"IAM, Git, Linux, redes, containers, pipeline, IaC, SRE e FinOps",courseIds:["cloud","devsecops","git-ops","linux-hardening","network-ops","container-sec","iac-ops","sre-reliability","platform-eng","finops-sec"],topics:["IAM mínimo","Storage privado","Segredos no CI/CD","SAST como gate","SCA e SBOM","DAST controlado","Imagem de container","Policies as Code","Assinatura de artefato","Resposta a incidente cloud"]},
+  {id:"red-blue",label:"Red Team & Blue Team",icon:"◎",description:"Ataque autorizado, detecção e resposta",courseIds:["pentest","owasp","secure-code"],topics:["Escopo e regras","Reconhecimento seguro","Enumeração controlada","Evidências de pentest","Detecção no WAF","Correlação no SIEM","Triagem de alerta","Contenção simulada","Análise de causa","Relatório executivo"]},
+  {id:"ia-governanca",label:"IA & Governança",icon:"AI",description:"Políticas, LLMs, RAG e agentes autônomos",courseIds:["ai-governance","ai-redteam","llm-security","agentic-defense"],topics:["Inventário de IA","Classificação de risco","Política corporativa","Prompt injection","Jailbreak controlado","RAG e proveniência","Isolamento de contexto","Permissões de agentes","Aprovação humana","Monitoramento de modelos"]},
+];
+
+function kaliCommandsFor(theme:LabTheme,topic:string,number:string):{command:string;output:string}[]{
+  const host=`lab-${number}.vulcan.local`;
+  const ip=`10.20.0.${10+Number(number)}`;
+  if(theme==="api-identidade")return [
+    {command:`nmap -sV -p 8080 ${host}`,output:kaliNmap(host,ip,"PORT     STATE SERVICE VERSION\n8080/tcp open  http    Express (lab API)",`API lab — ${topic}`)},
+    {command:`ffuf -u http://${host}/FUZZ -w /usr/share/wordlists/dirb/common.txt -mc 200,401,403 -t 8`,output:`ffuf v2.1.0 Kali\n${topic.toLowerCase().replace(/\s+/g,"-")}  [Status: 200]\nhealth                    [Status: 200]\nadmin                     [Status: 403]\n:: Progress complete :: isolated wordlist`},
+    {command:`curl -i http://${host}/resource/104 -H "Authorization: Bearer lab-token"`,output:`HTTP/1.1 200 OK\nX-Lab-Finding: ${topic}\n{"id":104,"note":"synthetic object — owner not bound"}\n# policy replay → 403 object_not_owned`},
+  ];
+  if(theme==="cloud-devsecops")return [
+    {command:`nmap -sV -p 443 ${host}`,output:kaliNmap(host,ip,"PORT    STATE SERVICE VERSION\n443/tcp open  ssl/http nginx (lab CI/cloud)",`Cloud lab — ${topic}`)},
+    {command:`nuclei -t http/misconfiguration -u https://${host} -silent`,output:`[missing-security-headers] [low] https://${host}\n[exposed-panel] [medium] https://${host}/debug  · topic=${topic}\n[INF] lab pack · 2 matches`},
+    {command:`grep -RInE "AKIA|BEGIN RSA" /opt/lab/${number} | head`,output:`/opt/lab/${number}/.env:2:AKIALAB${number}\n# gate: fail until secret rotated · topic=${topic}`},
+  ];
+  if(theme==="red-blue")return [
+    {command:`nmap -sS --top-ports 50 ${ip}/32`,output:`Starting Nmap 7.95 (scope ${ip} only)\n80/tcp open  http\n443/tcp open ssl/http\n# ${topic} · 0 hosts outside 10.20.0.0/28`},
+    {command:`gobuster dir -u http://${host} -w /usr/share/wordlists/dirb/common.txt -t 10`,output:`Gobuster v3.6\n/login (Status: 200)\n/monitor (Status: 401)\n/evidence (Status: 403)\n# ${topic}`},
+    {command:`tshark -r /opt/lab/pcaps/${number}.pcap -q -z io,phs`,output:`Protocol Hierarchy Statistics (lab pcap)\n  eth: 812\n    ip: 812\n      tcp: 640\n        http: 210  · ${topic} telemetry only`},
+  ];
+  if(theme==="ia-governanca")return [
+    {command:`nmap -sV -p 443 ${host}`,output:kaliNmap(host,ip,"PORT    STATE SERVICE VERSION\n443/tcp open  ssl/http nginx (AI lab)",`IA lab — ${topic}`)},
+    {command:`whatweb https://${host}`,output:`https://${host} [200 OK] Title[${topic}], HTTPServer[nginx], UncommonHeaders[x-ai-case]`},
+    {command:`curl -s https://${host}/v1/inspect | jq '{tool,policy}'`,output:`{"tool":"${topic}","policy":"review_required"}\nWARN human_ack=false in sandbox fixture`},
+  ];
+  return [
+    {command:`nmap -sV -sC -p 80,443 ${host}`,output:kaliNmap(host,ip,"PORT    STATE SERVICE VERSION\n80/tcp  open  http    nginx 1.24 (lab)\n443/tcp open  ssl/http nginx 1.24",`AppSec — ${topic}`)},
+    {command:`nikto -h http://${host}`,output:`+ Server: nginx/1.24 (lab)\n+ The X-Frame-Options header is not present.\n+ Finding related to ${topic}\n+ 0 external hosts contacted`},
+    {command:`sqlmap -u "http://${host}/q?id=1" --batch --level=1`,output:`sqlmap/1.8.11#kali\n[*] parameter 'id' appears injectable (lab)\n[INFO] DBMS: SQLite fixture · topic=${topic}\n[~] --dump disabled in sandbox`},
+  ];
+}
+
+const themedLabs:LabDefinition[]=labThemeDefinitions.flatMap(theme=>theme.topics.map((topic,index)=>{
+  const courseId=theme.courseIds[index%theme.courseIds.length];
+  const number=String(index+1).padStart(2,"0");
+  return {id:`LAB-${theme.id.toUpperCase()}-${number}`,courseId,theme:theme.id,title:topic,summary:`Laboratório Kali Linux sobre ${topic.toLowerCase()}: Nmap, enumeração e validação em ${`lab-${number}.vulcan.local`} — sem tráfego externo.`,duration:30+(index%4)*5,xp:380+index*25,environment:`Kali Linux · ${theme.label}`,provider:index%3===0?"Docker local":index%3===1?"AWS sandbox":"GCP sandbox",objective:`Reconhecer o alvo, reproduzir o achado de ${topic.toLowerCase()} e confirmar o controle no sandbox.`,terminalCommands:kaliCommandsFor(theme.id,topic,number),systemPanels:[{label:"Host",value:`lab-${number}.vulcan.local`,status:"info"},{label:"Stack",value:"Kali 2024.4",status:"ok"},{label:"Tema",value:theme.label,status:"warn"}]};
+}));
+
+const courseLabs:LabDefinition[]=[...coreCourseLabs,...themedLabs];
+
+type LabTimelineEvent={time:string;source:string;message:string;severity:"info"|"warn"|"critical"|"ok"};
+
+function inferLabTheme(lab:LabDefinition):LabTheme{
+  if(lab.theme)return lab.theme;
+  if(lab.courseId==="api")return "api-identidade";
+  if(lab.courseId==="cloud"||lab.courseId==="devsecops"||["git-ops","linux-hardening","network-ops","container-sec","iac-ops","sre-reliability","platform-eng","finops-sec"].includes(lab.courseId))return "cloud-devsecops";
+  if(lab.courseId==="pentest")return "red-blue";
+  if(["ai-governance","ai-redteam","llm-security","agentic-defense"].includes(lab.courseId))return "ia-governanca";
+  return "appsec";
+}
+
+function createLabTimeline(lab:LabDefinition):LabTimelineEvent[]{
+  const topic=lab.title;
+  const timelines:Record<LabTheme,LabTimelineEvent[]>={
+    appsec:[{time:"00:00",source:"browser",message:`Fluxo de ${topic} iniciado com usuário sintético`,severity:"info"},{time:"00:03",source:"application",message:`Entrada relacionada a ${topic} alcançou o controlador`,severity:"warn"},{time:"00:06",source:"security-test",message:`Teste negativo reproduziu a condição de ${topic}`,severity:"critical"},{time:"00:09",source:"server-policy",message:`Controle defensivo para ${topic} aplicado no servidor`,severity:"info"},{time:"00:12",source:"regression",message:"Fluxo legítimo aprovado e tentativa indevida bloqueada",severity:"ok"},{time:"00:15",source:"audit",message:`Evidências de ${topic} registradas e cenário encerrado`,severity:"ok"}],
+    "api-identidade":[{time:"00:00",source:"api-client",message:`Requisição sintética para o cenário ${topic}`,severity:"info"},{time:"00:03",source:"gateway",message:"Token válido e limite de consumo avaliados",severity:"info"},{time:"00:06",source:"authorization",message:`Inconsistência de objeto, escopo ou tenant detectada em ${topic}`,severity:"critical"},{time:"00:09",source:"policy-engine",message:"Decisão deny aplicada antes do acesso ao recurso",severity:"warn"},{time:"00:12",source:"api-tests",message:"Casos permitido, negado e rate limited aprovados",severity:"ok"},{time:"00:15",source:"siem",message:`Evento de ${topic} correlacionado sem exposição de dados`,severity:"ok"}],
+    "cloud-devsecops":[{time:"00:00",source:"pipeline",message:`Avaliação de ${topic} iniciada no ambiente efêmero`,severity:"info"},{time:"00:03",source:"scanner",message:`Desvio de configuração relacionado a ${topic} identificado`,severity:"warn"},{time:"00:06",source:"policy-as-code",message:"Regra crítica bloqueou a promoção do artefato",severity:"critical"},{time:"00:09",source:"remediation",message:`Plano mínimo para ${topic} aplicado à simulação`,severity:"info"},{time:"00:12",source:"verification",message:"Gates, menor privilégio e auditoria aprovados",severity:"ok"},{time:"00:15",source:"supply-chain",message:"Artefato sintético assinado e cenário encerrado",severity:"ok"}],
+    "red-blue":[{time:"00:00",source:"scope",message:`Exercício ${topic} autorizado dentro do escopo`,severity:"info"},{time:"00:03",source:"sensor",message:"Telemetria sintética recebida do ativo de treinamento",severity:"info"},{time:"00:06",source:"detection",message:`Regra associada a ${topic} gerou alerta de alta confiança`,severity:"critical"},{time:"00:09",source:"analyst",message:"Analista correlacionou identidade, origem e comportamento",severity:"warn"},{time:"00:12",source:"response",message:"Contenção simulada aplicada sem afetar o fluxo legítimo",severity:"ok"},{time:"00:15",source:"report",message:"Evidências sanitizadas e recomendações registradas",severity:"ok"}],
+    "ia-governanca":[{time:"00:00",source:"ai-inventory",message:`Caso de uso ${topic} registrado com proprietário`,severity:"info"},{time:"00:03",source:"risk-engine",message:"Dados, finalidade, fornecedor e autonomia avaliados",severity:"info"},{time:"00:06",source:"ai-policy",message:`Lacuna de controle relacionada a ${topic} identificada`,severity:"critical"},{time:"00:09",source:"governance",message:"Guardrail, responsável e critério de exceção definidos",severity:"warn"},{time:"00:12",source:"evaluation",message:"Testes de segurança, privacidade e supervisão aprovados",severity:"ok"},{time:"00:15",source:"review-board",message:`Caso ${topic} aprovado com monitoramento contínuo`,severity:"ok"}],
+  };
+  return timelines[inferLabTheme(lab)];
+}
+
+type LabLearningContext = {application:string;flow:string;assets:string[];vulnerability:string;impact:string;commandGuides:{action:string;interpretation:string}[]};
+
+const labLearningContexts:Record<string,LabLearningContext> = {
+  owasp:{application:"Portal interno de uma empresa fictícia, com autenticação, perfis de usuário e banco de dados preenchido apenas com registros sintéticos.",flow:"O navegador envia uma solicitação ao serviço web; o servidor valida identidade e autorização antes de consultar o banco e devolver a resposta.",assets:["sessões de usuários","registros sintéticos","funções administrativas"],vulnerability:"Controles de acesso ausentes, entrada concatenada em consultas e cabeçalhos de segurança incompletos.",impact:"Em uma aplicação real, essas falhas poderiam permitir acesso indevido ou alteração de dados.",commandGuides:[{action:"Nmap -sV -sC no host web.lab.local: descoberta de portas e scripts padrão, só no range de treino.",interpretation:"80 e 443 abertos em nginx de laboratório. Título HTTP confirma o portal OWASP sintético."},{action:"Nikto aponta diretórios e headers ausentes no mesmo host isolado.",interpretation:"X-Frame-Options faltando e /search refletindo input — pista para XSS/clickjacking no cenário, não na internet."},{action:"sqlmap em modo --batch contra o parâmetro q, com --dump desabilitado no sandbox.",interpretation:"Boolean-based no SQLite de treino com 3 linhas dummy. Serve para ver a assinatura, não para extrair dados reais."}]},
+  api:{application:"API fictícia de pedidos com gateway, tokens de acesso e objetos pertencentes a usuários diferentes.",flow:"O cliente envia um token e o identificador do pedido; o gateway limita consumo e a API precisa verificar se o objeto pertence ao usuário autenticado.",assets:["tokens de treinamento","pedidos sintéticos","limites de consumo"],vulnerability:"BOLA, ou autorização quebrada em nível de objeto, combinada com limitação de requisições insuficiente.",impact:"Em produção, um usuário poderia consultar objetos de outra conta ou consumir recursos excessivamente.",commandGuides:[{action:"Nmap nas portas 8080/8443 do gateway Kong emulado.",interpretation:"Express + Kong no lab. Nenhum host fora de api.lab.local."},{action:"ffuf com wordlist dirb/common.txt e status 200/401/403 — throttle do sandbox.",interpretation:"orders/104 em 200 para o token da Alice é o BOLA. admin em 403 é esperado."},{action:"curl no objeto 104 com Bearer de outro usuário.",interpretation:"200 + owner bob é a evidência. Depois da policy o mesmo pedido vira 403."}]},
+  pentest:{application:"Rede corporativa simulada com serviços de treinamento e regras de engajamento já aprovadas.",flow:"O analista confere o escopo, cataloga apenas os serviços autorizados e transforma evidências sanitizadas em um relatório.",assets:["escopo autorizado","serviços fictícios","evidências sanitizadas"],vulnerability:"Exposição de serviços e controles inconsistentes dentro de um ambiente de treinamento limitado.",impact:"O risco é demonstrado sem persistência, movimentação lateral ou acesso a dados reais.",commandGuides:[{action:"Nmap SYN+versão no /28 autorizado 10.20.0.0/28.",interpretation:"Só 10.20.0.10 e .11 respondem. 445 filtrada. Zero pacotes fora do escopo."},{action:"Gobuster dir no http://10.20.0.10 com wordlist DirBuster.",interpretation:"/login 200, /api 401, /backup e /server-status 403 — superfície para o relatório."},{action:"WhatWeb para fingerprint de servidor e headers incomuns.",interpretation:"nginx + Express-lab e x-lab-scope. Evidência sanitizada, sem banner grabbing externo."}]},
+  cloud:{application:"Conta de nuvem fictícia com bucket, identidade de workload e trilha de auditoria.",flow:"A aplicação usa uma identidade para acessar storage; políticas IAM definem permissões e logs registram decisões administrativas.",assets:["políticas IAM","storage sintético","logs de auditoria"],vulnerability:"Storage público, permissões excessivas e observabilidade incompleta.",impact:"Em um ambiente real, dados poderiam ficar expostos e ações administrativas seriam difíceis de investigar.",commandGuides:[{action:"Nmap 443 no emulador do console cloud.",interpretation:"TLS no frontend de laboratório. Não é a API pública de um provedor real."},{action:"Nuclei pack de misconfig contra storage.lab.local.",interpretation:"Bucket público e headers fracos. Templates limitados ao lab pack."},{action:"curl no IMDS 169.254.169.254 emulado — firewall bloqueia o resto.",interpretation:"Role e chaves são fake. Demonstra o risco de IMDS v1 sem sair da máquina de treino."}]},
+  "secure-code":{application:"Serviço web fictício aberto em uma IDE de treinamento, acompanhado por testes automatizados de segurança.",flow:"Entradas chegam ao controlador, passam por validação e política de autorização, e então alcançam a regra de negócio.",assets:["código de treinamento","regras de autorização","suíte de testes"],vulnerability:"Validação insuficiente e autorização aplicada fora do ponto de decisão no servidor.",impact:"Em produção, entradas inesperadas poderiam alcançar regras de negócio ou recursos de outro usuário.",commandGuides:[{action:"NSE http-security-headers e http-csrf na 443 de app.lab.local.",interpretation:"HSTS, CSP, XFO ausentes e form /item sem token — backlog de headers."},{action:"sqlmap boolean-based no parâmetro id, SQLite de fixture.",interpretation:"DBMS lab_app. --os-shell está desligado na imagem de treino."},{action:"Nikto Tuning 1-3 no mesmo host após o patch.",interpretation:"Antes: PUT habilitado e SQLi. Depois: 0 signatures e CSP presente."}]},
+  devsecops:{application:"Pipeline fictício que recebe código de treinamento, verifica o artefato e decide se ele pode avançar.",flow:"O commit passa por SAST, análise de dependências, detecção de segredos e DAST antes da assinatura.",assets:["código sintético","SBOM","artefato assinado"],vulnerability:"Segredos no repositório, dependências vulneráveis e promoção sem gates obrigatórios.",impact:"Uma cadeia de entrega real poderia publicar software comprometido ou expor credenciais.",commandGuides:[{action:"Nmap 22/80/443 no runner ci.lab.local.",interpretation:"SSH do runner e preview nginx. Superfície do CI, não da sua nuvem."},{action:"Nuclei t/cves no staging com severidade critical/medium.",interpretation:"Log4j e Struts são fixtures. Policy: BLOCK em critical."},{action:"grep de AKIA e chaves RSA em /opt/lab/src.",interpretation:"Dois segredos de demo. Depois da rotação, SBOM em /opt/lab/sbom.json."}]},
+  "ai-redteam":{application:"Agente fictício de IA com ferramentas simuladas e conjunto fechado de prompts adversariais.",flow:"A entrada passa por políticas; o modelo propõe uma ação e o orquestrador decide se a ferramenta pode ser chamada.",assets:["prompts sintéticos","ferramentas simuladas","políticas de ação"],vulnerability:"Prompt injection e permissões excessivas em ferramentas conectadas ao agente.",impact:"Um agente real poderia revelar contexto ou iniciar uma ação que o usuário não autorizou.",commandGuides:[{action:"Nmap 8000/8080 no agente uvicorn + proxy.",interpretation:"Só agent.lab.local. Sem chamada a modelo externo."},{action:"ffuf em /v1/FUZZ com seclists de API objects.",interpretation:"deploy em 200 sem human_ack é o achado. memory em 401."},{action:"curl /v1/tools e jq nos nomes.",interpretation:"search_docs, create_ticket, deploy. Allowlist deve exigir human_ack no deploy."}]},
+  "llm-security":{application:"Pipeline RAG fictício que recupera documentos sintéticos e monta contexto para uma resposta.",flow:"A consulta seleciona fontes, aplica namespace do usuário, filtra proveniência e só então entrega trechos ao modelo simulado.",assets:["documentos sintéticos","índice vetorial fictício","contexto por usuário"],vulnerability:"Fonte não confiável e mistura de contexto entre usuários ou coleções.",impact:"Em produção, uma resposta poderia incorporar instruções maliciosas ou conteúdo de outro usuário.",commandGuides:[{action:"Nmap 443 no frontend do RAG.",interpretation:"nginx lab. Índice Faiss só existe neste host."},{action:"Nikto em https://rag.lab.local.",interpretation:"/sources listável e /query sem CSRF. Documento untrusted anunciado."},{action:"curl /sources | jq trust.",interpretation:"kb-ext-paste untrusted. Policy remove da retrieval."}]},
+  "agentic-defense":{application:"Orquestrador fictício de agentes com memória, identidade delegada e ferramentas de leitura e escrita.",flow:"O agente propõe uma ação; o controlador verifica identidade, escopo e necessidade de aprovação antes de executar a ferramenta simulada.",assets:["identidade delegada","memória de treinamento","ferramentas simuladas"],vulnerability:"Permissões amplas, memória não confiável e ausência de confirmação humana.",impact:"Um agente real poderia reutilizar instruções maliciosas ou executar uma mudança sensível sem aprovação.",commandGuides:[{action:"Nmap 8443 no orquestrador Go de laboratório.",interpretation:"TLS local. Não há peering com clusters reais."},{action:"Nuclei exposures/configs no mesmo origin.",interpretation:"/debug/env e memory?raw=1 são achados de treino."},{action:"curl /permissions | jq write.",interpretation:"deploy.write=true. Depois do restrict, só com approval_id."}]},
+  "ai-governance":{application:"Portal corporativo fictício que reúne casos de uso, responsáveis, níveis de risco e políticas internas de Inteligência Artificial.",flow:"A área solicitante registra o caso de uso; segurança, jurídico e negócio classificam o risco, definem controles e aprovam ou recusam a utilização.",assets:["inventário de IA","políticas corporativas","registros de aprovação"],vulnerability:"Uso de IA sem inventário, critérios de risco, responsabilidade definida ou processo de exceção.",impact:"Uma organização poderia adotar sistemas sem conhecer dados utilizados, decisões automatizadas ou responsabilidades de supervisão.",commandGuides:[{action:"Nmap 443 no portal de políticas.",interpretation:"nginx do lab de governança."},{action:"WhatWeb no mesmo URL.",interpretation:"Título Inventário de IA e cookie lab_session."},{action:"curl /api/inventory | jq casos.",interpretation:"AI-014 risco alto sem human-review. AI-021 médio com owner secops."}]},
+  "git-ops":{application:"Forge Git fictício (Gitea de laboratório) com um repositório shop e regras de branch.",flow:"O operador clona, inspeciona o histórico e as proteções; o CI sintético deveria recusar o push com segredo.",assets:["histórico Git","CODEOWNERS","hooks de servidor"],vulnerability:"PAT no commit antigo, .env rastreado e main sem required review.",impact:"Em um remoto real, o token vazado e o force-push em main comprometeriam o produto inteiro.",commandGuides:[{action:"Nmap 443 no forge.",interpretation:"Gitea/nginx de laboratório em git.lab.local."},{action:"gitleaks no clone.",interpretation:"ghp_ no commit 9c2a. Arquivo .env ainda no objeto."},{action:"API de proteção de branch.",interpretation:"required_reviews=0 e force permitido. Depois: review=1 e force=false."}]},
+  "linux-hardening":{application:"Servidor Linux fictício com SSH, um agente de monitoramento e journald.",flow:"O operador autentica, inspeciona processos e logs, e aplica hardening sem derrubar o serviço sintético.",assets:["contas nomeadas","unidades systemd","scripts de operação"],vulnerability:"SSH com senha, daemon como root e segredo impresso no log.",impact:"Em produção, um host assim amplia movimento lateral e vaza credenciais.",commandGuides:[{action:"Nmap 22 em ops.lab.local.",interpretation:"OpenSSH do lab com password auth ligado."},{action:"SSH de treino lista SUID e processos.",interpretation:"demo-agent como root. monitor.sh já no UID labop."},{action:"journalctl do unit demo-agent.",interpretation:"token ghp_ em claro. Depois: redacted + PasswordAuthentication no."}]},
+  "network-ops":{application:"Borda fictícia com HTTP, HTTPS e um VIP de treinamento.",flow:"O tráfego chega na 80/443; o proxy deveria redirecionar, terminar TLS e registrar acessos.",assets:["certificados de lab","VLANs sintéticas","VIP nginx"],vulnerability:"HTTP sem redirect, cadeia não confiável e HSTS ausente.",impact:"Usuários reais poderiam ser interceptados ou aceitar um certificado inválido.",commandGuides:[{action:"Nmap 80/443/22 na borda.",interpretation:"80 aberta sem redirect. 443 com nginx de lab."},{action:"openssl s_client no SNI edge.lab.local.",interpretation:"emissor lab-ca-untrusted. Fora do trust store do exercício."},{action:"curl HTTP /health.",interpretation:"200 na 80. Policy correta devolve 301 para HTTPS."}]},
+  "container-sec":{application:"Cluster k3s fictício com uma API de loja e a conta default.",flow:"A imagem sobe em um Pod; o apiserver autoriza e a rede deveria restringir leste-oeste.",assets:["imagens de treino","ServiceAccounts","NetworkPolicies"],vulnerability:"CVE crítica na imagem, container root e ausência de NetworkPolicy.",impact:"Um workload comprometido falaria com todo o namespace e rodaria como root.",commandGuides:[{action:"Nmap 6443 no apiserver k3s.",interpretation:"Só k8s.lab.local. Sem cluster real."},{action:"Trivy CRITICAL em lab.local/api:dev.",interpretation:"2 CRITICAL e USER root. Rebuild com 65532 zera CRITICAL."},{action:"kubectl get netpol,sa.",interpretation:"sem netpol, SA default. Depois deny-all + SA/app-api."}]},
+  "iac-ops":{application:"Repositório Terraform fictício com plano JSON e runner nginx.",flow:"O plan é avaliado por política; só então um apply com identidade efêmera seria permitido.",assets:["plan.json","módulos","backend de treino"],vulnerability:"SG 0.0.0.0/0:22 e access key hardcoded.",impact:"Infra real ficaria exposta na internet e com credencial no Git.",commandGuides:[{action:"Nmap 443 no runner IaC.",interpretation:"nginx do lab. Não é a API da AWS."},{action:"Checkov no plan.json.",interpretation:"CKV_AWS_24 e secret hardcoded. 2 failed."},{action:"grep AKIA nos .tf.",interpretation:"main.tf:18. Correção: vault + CIDR 10.20.0.0/28."}]},
+  "sre-reliability":{application:"Stack Prometheus/Grafana fictício observando shop-api.",flow:"Métricas sobem, alertas disparam e o time deveria seguir runbook e SLO.",assets:["SLIs","dashboards","traces"],vulnerability:"Serviço down sem owner, alerta ruidoso e SLO indefinido.",impact:"O time apagaria incêndio sem saber se o error budget estourou.",commandGuides:[{action:"Nmap 9090/3000.",interpretation:"Prometheus e Grafana de laboratório."},{action:"PromQL up{job=shop-api}.",interpretation:"value 0 e sem label owner."},{action:"Busca Grafana checkout.",interpretation:"dashboard spam 400/h. Correção: burn-rate + runbook."}]},
+  "platform-eng":{application:"Portal interno fictício de desenvolvedores (IDP).",flow:"Times pedem serviços no catálogo; a plataforma deveria oferecer golden path com SAST.",assets:["catálogo","templates","owners"],vulnerability:"Golden path 404, serviço sem dono e template sem SAST.",impact:"Cada squad inventaria um pipeline inseguro.",commandGuides:[{action:"Nmap 443 no portal.",interpretation:"IDP sintético em platform.lab.local."},{action:"ffuf /catalog/FUZZ.",interpretation:"golden-path 404. services e templates 200."},{action:"curl catálogo jq owner/sast.",interpretation:"billing-api sem owner e sast=false."}]},
+  "finops-sec":{application:"Console FinOps fictício com APIs de waste e assets.",flow:"Inventário de custo alimenta alertas; recursos idle e sem tag deveriam ser bloqueados.",assets:["tags","LBs","volumes"],vulnerability:"NLB idle ainda público, EBS órfão e S3 público sem owner.",impact:"Dinheiro perdido e superfície esquecida na internet.",commandGuides:[{action:"Nmap 443 no console de custo.",interpretation:"finops lab. Sem conta real de cloud."},{action:"curl /api/waste.",interpretation:"lb-8 idle e internet-facing. vol-21 idle."},{action:"curl assets sem tag owner.",interpretation:"i-orphan-09 e s3-lab-public. Policy deny untagged."}]},
+};
+
+const WEEKDAY_LABELS = ["D", "S", "T", "Q", "Q", "S", "S"];
+const OFFENSIVE_PRIZE_XP = 1500;
+const offensiveBadges = [
+  { days: 3, name: "Fagulha", blurb: "Três dias seguidos no range.", icon: "✦", rarity: "spark" },
+  { days: 6, name: "Brasa viva", blurb: "A ofensiva não esfriou.", icon: "✹", rarity: "ember" },
+  { days: 7, name: "Semana em chamas", blurb: "Sete dias sem quebrar a linha.", icon: "🔥", rarity: "flame" },
+  { days: 8, name: "Oitavo assalto", blurb: "Além da primeira semana.", icon: "☄️", rarity: "amber" },
+  { days: 9, name: "Nove lâminas", blurb: "Quase na casa dos dois dígitos.", icon: "⚔", rarity: "gold" },
+  { days: 10, name: "Deca ofensiva", blurb: "Dez dias. Agora é hábito.", icon: "◆", rarity: "gold" },
+  { days: 11, name: "Assalto contínuo", blurb: "A sequência já intimida.", icon: "🜂", rarity: "violet" },
+  { days: 12, name: "Cerco", blurb: "Doze dias no mesmo fogo.", icon: "⬡", rarity: "violet" },
+  { days: 13, name: "Tempestade", blurb: "Ninguém segura esse ritmo.", icon: "⚡", rarity: "plasma" },
+  { days: 14, name: "Véspera do arsenal", blurb: "Falta um dia para o prêmio.", icon: "♛", rarity: "plasma" },
+  { days: 15, name: "Arsenal de 15", blurb: "Quinze dias. Recolha o prêmio.", icon: "🏆", rarity: "legend" },
+  { days: 21, name: "Três semanas", blurb: "Ofensiva de elite.", icon: "✪", rarity: "mythic" },
+  { days: 30, name: "Imparável", blurb: "Um mês inteiro no range.", icon: "👑", rarity: "mythic" },
+] as const;
+
+function dateKey(date: Date) {
+  return date.toLocaleDateString("en-CA", { timeZone: "America/Sao_Paulo" });
+}
+function parseDateKey(key: string) {
+  const [year, month, day] = key.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+function shiftDate(date: Date, days: number) {
+  const next = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  next.setDate(next.getDate() + days);
+  return next;
+}
+function runEndingOn(days: Set<string>, end: Date) {
+  let count = 0;
+  const cursor = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+  while (days.has(dateKey(cursor))) {
+    count += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return count;
+}
+function currentOffensiveStreak(days: string[]) {
+  const set = new Set(days);
+  const today = new Date();
+  if (set.has(dateKey(today))) return runEndingOn(set, today);
+  const yesterday = shiftDate(today, -1);
+  if (set.has(dateKey(yesterday))) return runEndingOn(set, yesterday);
+  return 0;
+}
+function longestOffensiveStreak(days: string[]) {
+  const sorted = [...new Set(days)].sort();
+  if (sorted.length === 0) return 0;
+  let best = 1;
+  let run = 1;
+  for (let index = 1; index < sorted.length; index += 1) {
+    const diff = Math.round((parseDateKey(sorted[index]).getTime() - parseDateKey(sorted[index - 1]).getTime()) / 86400000);
+    if (diff === 1) {
+      run += 1;
+      best = Math.max(best, run);
+    } else if (diff > 0) run = 1;
+  }
+  return best;
+}
+
+type NavIconName = "home"|"catalog"|"enrollments"|"lab"|"ranking"|"certificate"|"shield"|"plans"|"notes"|"admin"|"menu"|"close"|"flame"|"chevron"|"bulb"|"bug";
+
+function NavIcon({name}:{name:NavIconName}){
+  return <svg className="nav-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    {name==="home"&&<path d="M4 10.5 12 3.5l8 7V20a1 1 0 0 1-1 1h-5.2v-6.2H10.2V21H5a1 1 0 0 1-1-1z"/>}
+    {name==="catalog"&&<><rect x="3.5" y="3.5" width="7.5" height="7.5" rx="1.6"/><rect x="13" y="3.5" width="7.5" height="7.5" rx="1.6"/><rect x="3.5" y="13" width="7.5" height="7.5" rx="1.6"/><rect x="13" y="13" width="7.5" height="7.5" rx="1.6"/></>}
+    {name==="enrollments"&&<><path d="M5 7.5 12 4l7 3.5v6.2c0 3.4-3 5.6-7 7.3-4-1.7-7-3.9-7-7.3z"/><path d="M9 12.1l2 2 4-4"/></>}
+    {name==="lab"&&<><path d="M9 3h6"/><path d="M10 3v5.2L5.4 19.2A2 2 0 0 0 7.2 22h9.6a2 2 0 0 0 1.8-2.8L14 8.2V3"/><path d="M8.6 14.5h6.8"/></>}
+    {name==="ranking"&&<><path d="M7.5 20v-8H11v8H7.5zM12.5 20V7h3.5v13H12.5zM4 20v-5h3.5v5H4z"/><path d="M14 5.2 16.2 7.2 20 3.6"/></>}
+    {name==="certificate"&&<><circle cx="12" cy="9.2" r="5.2"/><path d="M9.4 13.6 8 21l4-1.6L16 21l-1.4-7.4"/></>}
+    {name==="shield"&&<><path d="M12 3 5 6.2v5.4c0 4.2 2.8 7.4 7 8.9 4.2-1.5 7-4.7 7-8.9V6.2z"/><path d="M9.2 12.1 11.2 14l3.8-4.1"/></>}
+    {name==="plans"&&<><rect x="3.5" y="6" width="17" height="12.5" rx="2"/><path d="M3.5 10h17M8 14.2h3.4"/></>}
+    {name==="notes"&&<><path d="M6 3.5h9l3 3V20a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1z"/><path d="M14.5 3.5V7H18M8 11h7M8 15h7M8 18h4"/></>}
+    {name==="admin"&&<><circle cx="12" cy="12" r="3"/><path d="M12 3.5v2.3M12 18.2v2.3M5 6.7 6.7 8.4M17.3 15.6l1.7 1.7M3.5 12h2.3M18.2 12h2.3M5 17.3 6.7 15.6M17.3 8.4 19 6.7"/></>}
+    {name==="menu"&&<path d="M4 7h16M4 12h16M4 17h16"/>}
+    {name==="close"&&<path d="M6 6l12 12M18 6 6 18"/>}
+    {name==="flame"&&<path d="M12 21c3.7 0 6.4-2.7 6.4-6.2 0-3.3-2-5.3-3.6-7C13.8 6.5 13 5 13 3.2c-2.3 1.8-4.7 4.5-4.3 8-1-.7-1.8-2.1-1.8-2.1.2 3.4 1 5.2 2.1 6.4C7.8 14.7 7 13 7 13c.4 3.5 2.4 8 5 8z"/>}
+    {name==="bulb"&&<><path d="M9 21h6"/><path d="M10 17.4h4"/><path d="M12 3.2a5.6 5.6 0 0 0-3.3 10.1c.7.6 1.1 1.4 1.2 2.3.1.4.4.7.8.7h2.6c.4 0 .7-.3.8-.7.1-.9.5-1.7 1.2-2.3A5.6 5.6 0 0 0 12 3.2z"/></>}
+    {name==="bug"&&<><path d="M8 13H4.5M19.5 13H16M8.2 8.6 5.6 6M15.8 8.6 18.4 6M8.2 17.4 5.6 20M15.8 17.4 18.4 20"/><ellipse cx="12" cy="13" rx="4.2" ry="5"/><path d="M12 8V4.5"/></>}
+    {name==="chevron"&&<path d="M9 6.5 14.5 12 9 17.5"/>}
+  </svg>;
+}
+
+const navGroups = [
+  {
+    id: "learn",
+    label: "Aprender",
+    items: [
+      { id: "inicio", icon: "home", label: "Início" },
+      { id: "trilha", icon: "catalog", label: "Catálogo" },
+      { id: "matriculas", icon: "enrollments", label: "Matrículas" },
+      { id: "laboratorio", icon: "lab", label: "Laboratórios" },
+    ],
+  },
+  {
+    id: "progress",
+    label: "Progresso",
+    items: [
+      { id: "ranking", icon: "ranking", label: "Ranking" },
+      { id: "certificado", icon: "certificate", label: "Certificados" },
+      { id: "certificacoes_vulcan", icon: "shield", label: "Prova oficial" },
+      { id: "planos", icon: "plans", label: "Planos" },
+      { id: "patch_notes", icon: "notes", label: "Patch notes" },
+    ],
+  },
+] as const;
+
+const initialCompleted: string[] = [];
+
+export default function Home() {
+  const [view, setView] = useState<View>("inicio");
+  const [completed, setCompleted] = useState<string[]>(initialCompleted);
+  const [enrolledCourses, setEnrolledCourses] = useState<string[]>([]);
+  const [passedQuizzes, setPassedQuizzes] = useState<string[]>([]);
+  const [lessonSteps, setLessonSteps] = useState<Record<string, number[]>>({});
+  const [selectedModule, setSelectedModule] = useState("A03");
+  const [selectedCourse, setSelectedCourse] = useState("owasp");
+  const [toast, setToast] = useState("");
+  const [profile, setProfile] = useState<StudentProfile>({name:"",role:"Estudante de Segurança",email:"",goal:"AppSec Specialist",phone:"",postalCode:"",addressLine:"",addressNumber:"",addressComplement:"",neighborhood:"",city:"",state:"",receivePrintedCertificate:false,addressConfirmed:false,photoUrl:""});
+  const [editing, setEditing] = useState(false);
+  const [activePlan, setActivePlan] = useState<PlanId>("gratuito");
+  const [authMode, setAuthMode] = useState<"login" | "signup" | null>(null);
+  const [signedIn, setSignedIn] = useState(false);
+  const [emailVerified, setEmailVerified] = useState(false);
+  const [userRole, setUserRole] = useState<UserRole>("aluno");
+  const [authSource, setAuthSource] = useState<"platform"|"manual"|null>(null);
+  const [communityMember, setCommunityMember] = useState(false);
+  const [colorMode, setColorMode] = useState<"day"|"night">("night");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarHidden, setSidebarHidden] = useState(false);
+  const [offensiveDays, setOffensiveDays] = useState<string[]>([]);
+  const [bonusXp, setBonusXp] = useState(0);
+  const [prizeClaimed, setPrizeClaimed] = useState(false);
+  const [serverOffensiveStreak, setServerOffensiveStreak] = useState<number | null>(null);
+  const [serverBestOffensiveStreak, setServerBestOffensiveStreak] = useState<number | null>(null);
+
+  useEffect(() => {
+    const savedMode = localStorage.getItem("vulcanlab-color-mode");
+    const preferredMode = window.matchMedia("(prefers-color-scheme: light)").matches ? "day" : "night";
+    const nextMode = savedMode === "day" || savedMode === "night" ? savedMode : preferredMode;
+    setColorMode(nextMode);
+    document.documentElement.dataset.theme = nextMode;
+    setSidebarHidden(localStorage.getItem("vulcanlab-sidebar-hidden") === "true");
+  }, []);
+
+  function changeColorMode(nextMode: "day"|"night") {
+    setColorMode(nextMode);
+    document.documentElement.dataset.theme = nextMode;
+    localStorage.setItem("vulcanlab-color-mode", nextMode);
+  }
+
+  function toggleDesktopSidebar() {
+    const next=!sidebarHidden;
+    setSidebarHidden(next);
+    localStorage.setItem("vulcanlab-sidebar-hidden",String(next));
+  }
+
+  function toggleNavigation() {
+    if(window.matchMedia("(max-width: 760px)").matches)setSidebarOpen(open=>!open);
+    else toggleDesktopSidebar();
+  }
+
+  useEffect(() => {
+    const params=new URLSearchParams(window.location.search);
+    const authError=params.get("auth_error");
+    if (authError) {
+      notify(authError);
+      setAuthMode(params.get("signup")==="1"?"signup":"login");
+      window.history.replaceState(null,"",window.location.pathname);
+      return;
+    }
+    if (params.get("login") === "1") {
+      const isSignup=params.get("signup")==="1";
+      const draftRaw=localStorage.getItem("vulcanlab-signup-draft");
+      let draft=isSignup?{name:"",role:""}:{name:"",role:"",accessCode:""};
+      if(draftRaw){try{draft=JSON.parse(draftRaw)}catch{/* usa os dados padrão */}}
+      void (async()=>{
+        try{
+          const response=await fetch(isSignup?"/api/account":"/api/account?login=1",isSignup?{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({name:draft.name,role:draft.role,accessCode:(draft as {accessCode?:string}).accessCode})}:{method:"GET"});
+          const data=await response.json() as {account?:{email:string;name:string;role:string;systemRole:UserRole;plan:PlanId;status:string;emailVerified:boolean;communityMember?:boolean};authSource?:"platform"|"manual";error?:string};
+          if(!response.ok||!data.account)throw new Error(data.error||"Conta não encontrada");
+          setProfile(currentProfile=>({...currentProfile,name:data.account!.name,email:data.account!.email,role:data.account!.role}));
+          setActivePlan(data.account.plan||"gratuito");
+          setUserRole(["admin","professor","aluno"].includes(data.account.systemRole)?data.account.systemRole:"aluno");
+          setCommunityMember(Boolean(data.account.communityMember));
+          setEmailVerified(data.account.emailVerified&&data.account.status==="active");
+          setSignedIn(true);
+          setAuthSource(data.authSource||"platform");
+          localStorage.removeItem("vulcanlab-signup-draft");
+          notify(isSignup?"E-mail confirmado. Sua conta gratuita está ativa.":"Acesso confirmado com e-mail verificado.");
+        }catch{
+          setSignedIn(false);setEmailVerified(false);setAuthMode("signup");notify("Crie sua conta e confirme o e-mail para continuar.");
+        }finally{window.history.replaceState(null,"",window.location.pathname)}
+      })();
+    }else{
+      void (async()=>{try{const response=await fetch("/api/account");if(!response.ok)return;const data=await response.json() as {account?:{email:string;name:string;role:string;systemRole:UserRole;plan:PlanId;status:string;emailVerified:boolean;communityMember?:boolean};authSource?:"platform"|"manual"};if(!data.account)return;setProfile(currentProfile=>({...currentProfile,name:data.account!.name,email:data.account!.email,role:data.account!.role}));setActivePlan(data.account.plan||"gratuito");setUserRole(["admin","professor","aluno"].includes(data.account.systemRole)?data.account.systemRole:"aluno");setCommunityMember(Boolean(data.account.communityMember));setEmailVerified(data.account.emailVerified&&data.account.status==="active");setSignedIn(true);setAuthSource(data.authSource||null)}catch{/* visitante permanece na landing page */}})();
+    }
+  }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const payment = params.get("payment");
+    const sessionId = params.get("session_id");
+    if (payment === "cancelled") {
+      notify("Pagamento cancelado. Nenhuma cobrança foi realizada.");
+      window.history.replaceState({}, "", window.location.pathname);
+      return;
+    }
+    if (payment !== "success" || !sessionId || !signedIn) return;
+    void (async () => {
+      try {
+        const response = await fetch(`/api/stripe/confirm?session_id=${encodeURIComponent(sessionId)}`);
+        const data = await response.json() as { confirmed?: boolean; plan?: PlanId; courseId?: string; printedCertificate?:boolean; error?: string };
+        if (!response.ok || !data.confirmed) throw new Error(data.error || "Pagamento não confirmado.");
+        if (data.plan) setActivePlan(data.plan);
+        if (data.courseId) setEnrolledCourses(current => current.includes(data.courseId!) ? current : [...current, data.courseId!]);
+        await refreshMe();
+        notify(data.plan ? "Pagamento confirmado. Seu novo plano já está ativo." : data.printedCertificate?"Pagamento confirmado. A solicitação do certificado impresso foi enviada à administração.":"Pagamento confirmado. A especialização foi liberada.");
+      } catch (error) {
+        notify(error instanceof Error ? error.message : "Não foi possível confirmar o pagamento.");
+      } finally {
+        window.history.replaceState({}, "", window.location.pathname);
+      }
+    })();
+  }, [signedIn]);
+
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    function onKey(event: KeyboardEvent) {
+      if (event.key === "Escape") setSidebarOpen(false);
+    }
+    const mobile = window.matchMedia("(max-width: 760px)").matches;
+    if (mobile) document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [sidebarOpen]);
+
+  const allModules = useMemo(() => courses.flatMap(course => course.modules), []);
+  const score = useMemo(() => completed.reduce((sum, id) => sum + (allModules.find(m => m.id === id)?.xp || 0), 0) + bonusXp, [completed, allModules, bonusXp]);
+  const computedOffensiveStreak = useMemo(() => currentOffensiveStreak(offensiveDays), [offensiveDays]);
+  const computedBestOffensiveStreak = useMemo(() => Math.max(longestOffensiveStreak(offensiveDays), computedOffensiveStreak), [offensiveDays, computedOffensiveStreak]);
+  const offensiveStreak = serverOffensiveStreak ?? computedOffensiveStreak;
+  const bestOffensiveStreak = serverBestOffensiveStreak ?? computedBestOffensiveStreak;
+  const weekDays = useMemo(() => {
+    const now = new Date();
+    const marked = new Set(offensiveDays);
+    return Array.from({ length: 7 }, (_, index) => {
+      const day = shiftDate(now, -6 + index);
+      const key = dateKey(day);
+      return {
+        key,
+        date: day.getDate(),
+        today: index === 6,
+        hot: marked.has(key),
+      };
+    });
+  }, [offensiveDays]);
+  const enrolledLabCount = useMemo(() => courseLabs.filter(lab => enrolledCourses.includes(lab.courseId)).length, [enrolledCourses]);
+  const initials = profile.name.split(" ").map(part => part[0]).join("").slice(0, 2).toUpperCase();
+  const progress = modules.filter((module) => completed.includes(module.id)).length * 10;
+  const current = allModules.find(m => m.id === selectedModule) || modules[2];
+
+  function go(next: View) {
+    setSidebarOpen(false);
+    if (next === "administracao" && userRole === "aluno") {
+      notify("Seu perfil não possui permissão para acessar a administração.");
+      return;
+    }
+    if ((next === "comunidade_ideia" || next === "comunidade_bug") && !communityMember) {
+      notify("O menu Comunidade Sentinela é exclusivo de quem se cadastrou com o código da comunidade.");
+      return;
+    }
+    if (next === "laboratorio" && enrolledCourses.length === 0) {
+      setView("matriculas");
+      notify("Matricule-se em um curso para liberar seus laboratórios.");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    setView(next);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function notify(message: string) {
+    setToast(message);
+    window.setTimeout(() => setToast(""), 2600);
+  }
+
+  function applyMe(me: { profile?: Partial<StudentProfile>; plan?: PlanId; communityMember?: boolean; enrolledCourses?: string[]; completed?: string[]; passedQuizzes?: string[]; lessonSteps?: Record<string, number[]> }) {
+    if (me.profile) setProfile(current => ({ ...current, ...me.profile! }));
+    if (me.plan) setActivePlan(me.plan);
+    if (typeof me.communityMember === "boolean") setCommunityMember(me.communityMember);
+    if (Array.isArray(me.enrolledCourses)) setEnrolledCourses(me.enrolledCourses);
+    if (Array.isArray(me.completed)) setCompleted(me.completed);
+    if (Array.isArray(me.passedQuizzes)) setPassedQuizzes(me.passedQuizzes);
+    if (me.lessonSteps) setLessonSteps(me.lessonSteps);
+  }
+
+  const refreshMe = useCallback(async () => {
+    try {
+      const response = await fetch("/api/me");
+      if (!response.ok) return;
+      const payload = await response.json() as { me?: Parameters<typeof applyMe>[0] };
+      if (payload.me) applyMe(payload.me);
+    } catch { /* progresso permanece vazio até o MySQL responder */ }
+  }, []);
+
+  function applyOffensivePayload(payload: { days?: string[]; streak?: number; bestStreak?: number; bonusXp?: number; prizeClaimed?: boolean }) {
+    if (Array.isArray(payload.days)) setOffensiveDays(payload.days);
+    if (typeof payload.streak === "number") setServerOffensiveStreak(payload.streak);
+    if (typeof payload.bestStreak === "number") setServerBestOffensiveStreak(payload.bestStreak);
+    if (typeof payload.bonusXp === "number") setBonusXp(payload.bonusXp);
+    if (typeof payload.prizeClaimed === "boolean") setPrizeClaimed(payload.prizeClaimed);
+  }
+
+  const refreshOffensive = useCallback(async () => {
+    try {
+      const response = await fetch("/api/ofensiva");
+      if (!response.ok) return;
+      const payload = await response.json() as { days?: string[]; streak?: number; bestStreak?: number; bonusXp?: number; prizeClaimed?: boolean };
+      applyOffensivePayload(payload);
+    } catch { /* mantém o último estado conhecido */ }
+  }, []);
+
+  useEffect(() => {
+    if (!signedIn || !emailVerified) return;
+    void refreshMe();
+    void refreshOffensive();
+  }, [signedIn, emailVerified, refreshMe, refreshOffensive]);
+
+  useEffect(() => {
+    if (!communityMember && (view === "comunidade_ideia" || view === "comunidade_bug")) setView("inicio");
+  }, [communityMember, view]);
+
+  function openModule(id: string) {
+    const ownerCourse = courses.find(course => course.modules.some(module => module.id === id));
+    if (ownerCourse) setSelectedCourse(ownerCourse.id);
+    if (ownerCourse && !enrolledCourses.includes(ownerCourse.id)) {
+      setView("trilha");
+      notify("Faça sua matrícula para iniciar os módulos deste curso.");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    setSelectedModule(id);
+    setView("aula");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function completeModule(id: string) {
+    try {
+      const response = await fetch("/api/me/modules", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ moduleId: id }) });
+      const payload = await response.json() as { me?: Parameters<typeof applyMe>[0]; error?: string };
+      if (!response.ok) throw new Error(payload.error || "Falha ao gravar módulo");
+      if (payload.me) applyMe(payload.me);
+      notify("Módulo concluído! Progresso gravado no banco.");
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Não foi possível gravar o módulo no banco.");
+    }
+  }
+
+  function openCourse(id: string) {
+    setSelectedCourse(id);
+    setView("trilha");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  async function enrollCourse(id: string) {
+    const course = courses.find(item=>item.id===id);
+    if (!course) return;
+    if (course.premium) {
+      setView("planos");
+      notify(`A especialização ${course.title} exige matrícula premium de R$ 500,00.`);
+      return;
+    }
+    if (planRank[activePlan] < planRank[course.access]) {
+      setView("planos");
+      notify(`O curso ${course.title} requer o plano ${plans.find(plan=>plan.id===course.access)?.name}.`);
+      return;
+    }
+    try {
+      const response = await fetch("/api/me/enrollments", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ courseId: id }) });
+      const payload = await response.json() as { me?: Parameters<typeof applyMe>[0]; error?: string };
+      if (!response.ok) throw new Error(payload.error || "Falha ao matricular");
+      if (payload.me) applyMe(payload.me);
+      setSelectedCourse(id);
+      setView("matriculas");
+      notify(`Matrícula gravada no banco: ${course.title}.`);
+      window.scrollTo({top:0,behavior:"smooth"});
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Não foi possível gravar a matrícula no banco.");
+    }
+  }
+
+  async function completeLab(moduleId:string, xp:number) {
+    await completeModule(moduleId);
+    notify(`Laboratório concluído! +${xp} XP gravados no banco.`);
+  }
+
+  async function saveProfile() {
+    try {
+      const response = await fetch("/api/me", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify(profile) });
+      const payload = await response.json() as { me?: Parameters<typeof applyMe>[0]; error?: string };
+      if (!response.ok) throw new Error(payload.error || "Falha ao salvar perfil");
+      if (payload.me) applyMe(payload.me);
+      setEditing(false);
+      notify("Perfil gravado no banco.");
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Não foi possível salvar o perfil no banco.");
+    }
+  }
+
+  async function recordLessonStep(moduleId: string, step: number) {
+    try {
+      const response = await fetch("/api/me/lesson-steps", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ moduleId, step }) });
+      const payload = await response.json() as { me?: Parameters<typeof applyMe>[0] };
+      if (response.ok && payload.me) applyMe(payload.me);
+    } catch { /* etapa local permanece até a próxima sincronização */ }
+  }
+
+  async function passCourseQuiz(courseId: string) {
+    try {
+      const response = await fetch("/api/me/quizzes", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ courseId }) });
+      const payload = await response.json() as { me?: Parameters<typeof applyMe>[0]; error?: string };
+      if (!response.ok) throw new Error(payload.error);
+      if (payload.me) applyMe(payload.me);
+    } catch {
+      notify("Não foi possível gravar a aprovação do quiz no banco.");
+    }
+  }
+
+  async function registerOffensiveDay() {
+    try {
+      const response = await fetch("/api/ofensiva", { method: "POST" });
+      const payload = await response.json() as { days?: string[]; streak?: number; bestStreak?: number; bonusXp?: number; prizeClaimed?: boolean; error?: string };
+      if (!response.ok) throw new Error(payload.error || "Falha ao sincronizar");
+      applyOffensivePayload(payload);
+      notify("Ofensiva sincronizada com os logins em auth_sessions.");
+    } catch {
+      notify("Não foi possível sincronizar a ofensiva. Entre novamente na conta.");
+    }
+  }
+
+  async function claimOffensivePrize() {
+    try {
+      const response = await fetch("/api/ofensiva/prize", { method: "POST" });
+      const payload = await response.json() as { days?: string[]; streak?: number; bestStreak?: number; bonusXp?: number; prizeClaimed?: boolean; claimedNow?: boolean; prizeXp?: number; error?: string };
+      applyOffensivePayload(payload);
+      if (!response.ok) {
+        notify(payload.error || "Não foi possível recolher o prêmio.");
+        return;
+      }
+      notify(payload.claimedNow ? `Prêmio recolhido: +${(payload.prizeXp||OFFENSIVE_PRIZE_XP).toLocaleString("pt-BR")} XP e insígnia Arsenal de 15.` : "Prêmio já estava recolhido.");
+    } catch {
+      notify("Não foi possível recolher o prêmio.");
+    }
+  }
+
+  async function logout() {
+    await fetch("/api/auth/manual/logout",{method:"POST",credentials:"same-origin"}).catch(()=>undefined);
+    localStorage.removeItem("vulcanlab-student-v3");
+    setSignedIn(false);setEmailVerified(false);setUserRole("aluno");setAuthSource(null);setOffensiveDays([]);setBonusXp(0);setPrizeClaimed(false);setServerOffensiveStreak(null);setServerBestOffensiveStreak(null);setCompleted([]);setEnrolledCourses([]);setPassedQuizzes([]);setLessonSteps({});
+    if(authSource==="platform") window.location.assign("/signout-with-chatgpt?return_to=/");
+  }
+
+  if (!signedIn) {
+    return <><Landing onLogin={()=>setAuthMode("login")} onSignup={()=>setAuthMode("signup")} colorMode={colorMode} changeColorMode={changeColorMode}/>{authMode&&<VerifiedAuthModal mode={authMode} setMode={setAuthMode} profile={profile} setProfile={setProfile} setUserRole={setUserRole} setSignedIn={setSignedIn} setEmailVerified={setEmailVerified} setActivePlan={setActivePlan} setAuthSource={setAuthSource} setCommunityMember={setCommunityMember} notify={notify}/>} {toast&&<div className="toast"><span>✓</span>{toast}</div>}</>;
+  }
+
+  if (!emailVerified) {
+    return <EmailVerificationGate profile={profile} setSignedIn={setSignedIn} colorMode={colorMode} changeColorMode={changeColorMode}/>;
+  }
+
+  return (
+    <div className={`app-shell ${sidebarHidden ? "sidebar-hidden" : ""}`}>
+      {sidebarOpen && <button type="button" className="sidebar-backdrop is-open" aria-label="Fechar menu" onClick={() => setSidebarOpen(false)} />}
+      <aside id="app-sidebar" className={`sidebar ${sidebarOpen ? "is-open" : ""}`} aria-label="Navegação da plataforma">
+        <button className="brand" onClick={() => go("inicio")} aria-label="Ir para o início">
+          <span className="brand-mark">V</span>
+          <span>Vulcan<span>Academy</span><sup className="brand-beta">Beta</sup></span>
+        </button>
+        <button type="button" className="sidebar-hide-button" onClick={toggleDesktopSidebar} aria-label="Ocultar menu lateral"><span>←</span> Ocultar menu</button>
+        <div className="sidebar-scroll">
+          {navGroups.map(group => (
+            <div className="nav-group" key={group.id}>
+              <p className="nav-label">{group.label}</p>
+              <nav aria-label={group.label}>
+                {group.items.map((item, index) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={`nav-item ${view === item.id ? "active" : ""}`}
+                    style={{"--i": index} as React.CSSProperties}
+                    aria-current={view === item.id ? "page" : undefined}
+                    onClick={() => go(item.id)}
+                  >
+                    <span className="nav-icon"><NavIcon name={item.icon}/></span>
+                    <span className="nav-text">{item.label}</span>
+                    {item.id === "laboratorio" && enrolledLabCount > 0 && <span className="nav-badge">{enrolledLabCount}</span>}
+                  </button>
+                ))}
+              </nav>
+            </div>
+          ))}
+          {communityMember&&<div className="nav-group"><p className="nav-label">Comunidade Sentinela</p><nav aria-label="Comunidade Sentinela"><button type="button" className={`nav-item ${view==="comunidade_ideia"?"active":""}`} aria-current={view==="comunidade_ideia"?"page":undefined} onClick={()=>go("comunidade_ideia")}><span className="nav-icon"><NavIcon name="bulb"/></span><span className="nav-text">Enviar sugestão/ideia</span></button><button type="button" className={`nav-item ${view==="comunidade_bug"?"active":""}`} aria-current={view==="comunidade_bug"?"page":undefined} onClick={()=>go("comunidade_bug")}><span className="nav-icon"><NavIcon name="bug"/></span><span className="nav-text">Reportar bug</span></button></nav></div>}
+          {userRole!=="aluno"&&<div className="nav-group"><p className="nav-label">Gestão</p><nav aria-label="Gestão"><button type="button" className={`nav-item ${view==="administracao"?"active":""}`} aria-current={view==="administracao"?"page":undefined} onClick={()=>go("administracao")}><span className="nav-icon"><NavIcon name="admin"/></span><span className="nav-text">Administração</span><span className="role-nav-badge">{userRole==="admin"?"ADMIN":"PROF"}</span></button></nav></div>}
+        </div>
+        <div className="sidebar-footer">
+          <button type="button" className={`weekly-card ${view==="ofensiva"?"is-active":""}`} onClick={() => go("ofensiva")} aria-current={view==="ofensiva"?"page":undefined}>
+            <div className="flame"><NavIcon name="flame"/></div>
+            <div><strong>Dias de Ofensiva</strong><span>{offensiveStreak ? `${offensiveStreak} dia${offensiveStreak===1?"":"s"} seguidos` : "Comece sua primeira ofensiva"}</span></div>
+            <div className="days">{weekDays.map(day => <i key={day.key} className={`${day.hot?"hot":""} ${day.today?"today":""}`}>{day.date}</i>)}</div>
+          </button>
+          <button className={`profile-mini ${view === "perfil" ? "selected" : ""}`} onClick={() => go("perfil")}>
+            <span className="avatar">{initials}</span>
+            <span><strong>{profile.name}</strong><small>{userRole==="admin"?"Administrador":userRole==="professor"?"Professor":"Nível 1"} · {score.toLocaleString("pt-BR")} XP</small></span>
+            <NavIcon name="chevron"/>
+          </button>
+        </div>
+      </aside>
+
+      {sidebarHidden&&<button type="button" className="sidebar-restore-button" onClick={toggleDesktopSidebar} aria-label="Mostrar menu lateral"><NavIcon name="menu"/><span>Mostrar menu</span></button>}
+
+      <main>
+        <header className="topbar">
+          <div className="topbar-start">
+            <button type="button" className="menu-toggle" aria-label={sidebarOpen ? "Fechar menu" : "Abrir menu"} aria-expanded={sidebarOpen} aria-controls="app-sidebar" onClick={toggleNavigation}><NavIcon name={sidebarOpen ? "close" : "menu"}/></button>
+            <div className="mobile-brand"><span className="brand-mark">V</span> VulcanAcademy <sup className="brand-beta">Beta</sup></div>
+          </div>
+          <div className="top-actions">
+            <ThemeModeSwitch colorMode={colorMode} changeColorMode={changeColorMode}/>
+            {userRole!=="aluno"&&<button className={`staff-role ${userRole}`} onClick={()=>go("administracao")}>{userRole==="admin"?"Administrador":"Professor"}</button>}
+            <button className="plan-pill" onClick={() => go("planos")}>Plano {plans.find(plan => plan.id === activePlan)?.name}</button>
+            <button className="score-pill" onClick={() => go("ranking")}><span>◆</span><b>{score.toLocaleString("pt-BR")}</b> XP</button>
+            <button className="icon-btn" aria-label="Notificações" onClick={() => notify("Você está em dia com seus desafios!")}>♧<i /></button>
+            {signedIn ? <><button className="top-avatar" onClick={() => go("perfil")}>{profile.name.split(" ").map(item => item[0]).join("").slice(0,2).toUpperCase()}</button><button className="logout-link" onClick={()=>void logout()}>Sair</button></> : <button className="login-button" onClick={() => setAuthMode("login")}>Entrar</button>}
+          </div>
+        </header>
+
+        {view === "inicio" && <Dashboard profile={profile} completed={completed} enrolledCourses={enrolledCourses} progress={progress} score={score} openModule={openModule} openCourse={openCourse} go={go} />}
+        {view === "trilha" && <CourseCatalogUX completed={completed} enrolledCourses={enrolledCourses} enrollCourse={enrollCourse} selectedCourse={selectedCourse} openCourse={openCourse} activePlan={activePlan} go={go} />}
+        {view === "matriculas" && <Enrollments completed={completed} enrolledCourses={enrolledCourses} openCourse={openCourse} openModule={openModule} go={go} />}
+        {view === "aula" && <ModuleLesson current={current} selectedCourse={selectedCourse} completed={completed} completeModule={completeModule} openModule={openModule} quizPassed={passedQuizzes.includes(selectedCourse)} onQuizPass={passCourseQuiz} studiedSteps={lessonSteps} onRecordStep={recordLessonStep} go={go} />}
+        {view === "laboratorio" && <EnhancedLab selectedCourse={selectedCourse} enrolledCourses={enrolledCourses} completeLab={completeLab} notify={notify} />}
+        {view === "ranking" && <Ranking score={score} profile={profile} />}
+        {view === "certificado" && <Certificate profile={profile} completed={completed} notify={notify} go={go} />}
+        {view === "certificacoes_vulcan" && <VulcanCertifications profile={profile} notify={notify} />}
+        {view === "planos" && <Plans activePlan={activePlan} setActivePlan={setActivePlan} notify={notify} openCourse={openCourse} />}
+        {view === "patch_notes" && <PatchNotes />}
+        {view === "administracao" && <AdminPanel userRole={userRole} notify={notify} />}
+        {view === "perfil" && <StudentProfileView profile={profile} completed={completed} passedQuizzes={passedQuizzes} score={score} editing={editing} setEditing={setEditing} setProfile={setProfile} saveProfile={saveProfile} logout={logout} notify={notify} streak={offensiveStreak} bestStreak={bestOffensiveStreak} go={go} />}
+        {view === "ofensiva" && <OffensivePanel profile={profile} days={offensiveDays} streak={offensiveStreak} bestStreak={bestOffensiveStreak} prizeClaimed={prizeClaimed} registerToday={registerOffensiveDay} claimPrize={claimOffensivePrize} go={go} />}
+        {view === "comunidade_ideia" && communityMember && <CommunitySentinelPanel kind="idea" notify={notify}/>}
+        {view === "comunidade_bug" && communityMember && <CommunitySentinelPanel kind="bug" notify={notify}/>}
+      </main>
+
+      {authMode && <VerifiedAuthModal mode={authMode} setMode={setAuthMode} profile={profile} setProfile={setProfile} setUserRole={setUserRole} setSignedIn={setSignedIn} setEmailVerified={setEmailVerified} setActivePlan={setActivePlan} setAuthSource={setAuthSource} setCommunityMember={setCommunityMember} notify={notify} />}
+      {toast && <div className="toast"><span>✓</span>{toast}</div>}
+    </div>
+  );
+}
+
+function ThemeModeSwitch({colorMode,changeColorMode}:{colorMode:"day"|"night";changeColorMode:(mode:"day"|"night")=>void}){
+  return <div className="theme-mode-switch" role="group" aria-label="Escolher aparência da plataforma"><button className={colorMode==="day"?"active":""} aria-pressed={colorMode==="day"} onClick={()=>changeColorMode("day")}><span>☀</span> Modo dia</button><button className={colorMode==="night"?"active":""} aria-pressed={colorMode==="night"} onClick={()=>changeColorMode("night")}><span>◐</span> Modo noite</button></div>;
+}
+
+function EmailVerificationGate({profile,setSignedIn,colorMode,changeColorMode}:{profile:{name:string;role:string;email:string;goal:string};setSignedIn:(value:boolean)=>void;colorMode:"day"|"night";changeColorMode:(mode:"day"|"night")=>void}) {
+  function verify(){
+    localStorage.setItem("vulcanlab-signup-draft",JSON.stringify(profile));
+    window.location.assign("/api/auth/google/start?mode=login&return_to=%2F%3Flogin%3D1");
+  }
+  return <main className="verification-gate"><div className="standalone-theme-switch"><ThemeModeSwitch colorMode={colorMode} changeColorMode={changeColorMode}/></div><section><div className="auth-brand"><span className="brand-mark">V</span><div><strong>VulcanAcademy</strong><small>CONTA PENDENTE</small></div></div><span className="mail-shield">✉</span><p className="eyebrow">VERIFICAÇÃO OBRIGATÓRIA</p><h1>Confirme seu e-mail para ativar a conta</h1><p>Sua conta permanece inativa até a identidade do e-mail ser confirmada. Após a validação, você receberá automaticamente o plano Gratuito e acesso somente aos cursos gratuitos.</p><div className="pending-email"><small>E-MAIL INFORMADO</small><strong>{profile.email}</strong><span>● PENDENTE</span></div><button className="primary-button" onClick={verify}>Confirmar e-mail e ativar conta →</button><button className="verification-logout" onClick={()=>setSignedIn(false)}>Voltar para a página inicial</button><footer><span>✓ Identidade verificada pelo provedor de acesso</span><span>✓ Nenhuma senha armazenada pela VulcanAcademy</span></footer></section></main>;
+}
+
+function Landing({onLogin,onSignup,colorMode,changeColorMode}:{onLogin:()=>void;onSignup:()=>void;colorMode:"day"|"night";changeColorMode:(mode:"day"|"night")=>void}) {
+  const [menuOpen,setMenuOpen]=useState(false);
+  const [scrolled,setScrolled]=useState(false);
+  const [activeSection,setActiveSection]=useState("");
+  const regularCourses=courses.filter(course=>!course.premium);
+  const premiumCourses=courses.filter(course=>course.premium);
+  const landingLinks=[["#sobre","A academia"],["#cursos","Cursos"],["#comunidade","Comunidade"],["#planos","Planos"]] as const;
+  useEffect(()=>{
+    document.documentElement.classList.add("is-public-landing");
+    document.body.classList.add("is-public-landing");
+    return()=>{
+      document.documentElement.classList.remove("is-public-landing");
+      document.body.classList.remove("is-public-landing");
+    };
+  },[]);
+  useEffect(()=>{
+    function onScroll(){setScrolled(window.scrollY>16)}
+    onScroll();
+    window.addEventListener("scroll",onScroll,{passive:true});
+    const observer=new IntersectionObserver(entries=>{
+      const visible=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
+      if(visible?.target.id)setActiveSection("#"+visible.target.id);
+    },{rootMargin:"-35% 0px -50% 0px",threshold:[0.15,0.4]});
+    landingLinks.forEach(([href])=>{const node=document.querySelector(href);if(node)observer.observe(node)});
+    return()=>{window.removeEventListener("scroll",onScroll);observer.disconnect()};
+  },[]);
+  useEffect(()=>{
+    if(!menuOpen)return;
+    function onKey(event:KeyboardEvent){if(event.key==="Escape")setMenuOpen(false)}
+    if(window.matchMedia("(max-width:1100px)").matches)document.body.style.overflow="hidden";
+    window.addEventListener("keydown",onKey);
+    return()=>{document.body.style.overflow="";window.removeEventListener("keydown",onKey)};
+  },[menuOpen]);
+  function goSection(href:string){setMenuOpen(false);document.querySelector(href)?.scrollIntoView({behavior:"smooth",block:"start"})}
+  return <div className="landing-page ht-landing">
+    <div className="ht-bg" aria-hidden="true"><i className="ht-grid"/><i className="ht-scan"/><i className="ht-orb a"/><i className="ht-orb b"/></div>
+    <a className="skip-link" href="#cursos">Ir para os cursos</a>
+    {menuOpen&&<button type="button" className="sidebar-backdrop is-open" aria-label="Fechar menu" onClick={()=>setMenuOpen(false)}/>}
+    <header className={`landing-nav ${scrolled?"is-scrolled":""}`}>
+      <button className="landing-brand" onClick={()=>{setMenuOpen(false);window.scrollTo({top:0,behavior:"smooth"})}}><span className="brand-mark">V</span><span>Vulcan<strong>Academy</strong><sup className="brand-beta">Beta</sup></span></button>
+      <nav className="landing-nav-links" aria-label="Seções">{landingLinks.map(([href,label])=><a key={href} href={href} className={activeSection===href?"is-active":""} onClick={event=>{event.preventDefault();goSection(href)}}>{label}</a>)}</nav>
+      <div className="landing-nav-actions">
+        <ThemeModeSwitch colorMode={colorMode} changeColorMode={changeColorMode}/>
+        <button className="landing-login" onClick={onLogin}>Entrar</button>
+        <button className="landing-signup" onClick={onSignup}>Criar conta</button>
+        <button type="button" className="menu-toggle landing-menu-toggle" aria-label={menuOpen?"Fechar menu":"Abrir menu"} aria-expanded={menuOpen} aria-controls="landing-drawer" onClick={()=>setMenuOpen(open=>!open)}><NavIcon name={menuOpen?"close":"menu"}/></button>
+      </div>
+    </header>
+    <aside id="landing-drawer" className={`landing-drawer ${menuOpen?"is-open":""}`} aria-label="Menu da academia">
+      <nav>{landingLinks.map(([href,label],index)=><a key={href} href={href} className={activeSection===href?"is-active":""} style={{"--i":index} as React.CSSProperties} onClick={event=>{event.preventDefault();goSection(href)}}>{label}</a>)}</nav>
+      <div className="landing-drawer-actions"><button className="landing-login" onClick={()=>{setMenuOpen(false);onLogin()}}>Entrar</button><button className="landing-signup" onClick={()=>{setMenuOpen(false);onSignup()}}>Criar conta</button></div>
+    </aside>
+    <div className="landing-main" role="main">
+      <section className="landing-hero">
+        <div className="landing-hero-copy">
+          <span className="landing-kicker">Cibersegurança na prática</span>
+          <h1>Treine ofensiva.<br/>Defenda com <em>método.</em></h1>
+          <p>Laboratórios Kali isolados, trilhas de AppSec e certificações — para quem estuda, ensina e constrói segurança em público.</p>
+          <div className="landing-hero-actions"><button type="button" onClick={onSignup}>Começar agora <span>→</span></button><a href="#cursos" onClick={event=>{event.preventDefault();goSection("#cursos")}}>Ver cursos</a></div>
+          <ol className="landing-path" aria-label="Como começar">
+            <li><b>01</b>Conta</li>
+            <li><b>02</b>Curso</li>
+            <li><b>03</b>Kali lab</li>
+            <li><b>04</b>Certificado</li>
+          </ol>
+          <div className="landing-proof"><span><b>10</b> formações</span><span><b>nmap+</b> no terminal</span><span><b>/28</b> isolado</span></div>
+        </div>
+        <div className="landing-terminal ht-console">
+          <div className="terminal-top"><i/><i/><i/><span>kali@vulcan-lab: ~</span><b className="ht-live">LIVE</b></div>
+          <div className="terminal-body">
+            <small>RANGE 10.20.0.0/28 · SEM ROTA DEFAULT</small>
+            <h2>web.lab.local</h2>
+            <div className="terminal-code">
+              <span className="term-line" style={{"--i":0} as React.CSSProperties}><span>$</span> nmap -sV -sC -p 80,443 web.lab.local</span>
+              <b className="term-line" style={{"--i":1} as React.CSSProperties}>80/tcp  open  http    nginx 1.24 (lab)</b>
+              <b className="term-line" style={{"--i":2} as React.CSSProperties}>443/tcp open  ssl/http nginx 1.24</b>
+              <b className="term-line" style={{"--i":3} as React.CSSProperties}>|_http-title: Vulcan Lab — portal OWASP</b>
+            </div>
+            <div className="terminal-score"><span>XP DA MISSÃO</span><strong>+350</strong></div>
+          </div>
+          <div className="terminal-float"><span>⌘</span><div><b>Kali 2024.4</b><small>Nmap · Nikto · sqlmap · ffuf</small></div></div>
+        </div>
+      </section>
+      <section className="landing-about" id="sobre">
+        <div><p className="eyebrow">A academia</p><h2>Formação que combina teoria, Kali e defesa.</h2></div>
+        <p>Feita para quem já vive Discord, CTF e study group. Você lê o módulo, abre o terminal Kali isolado e valida o controle — sem apontar ferramenta para a internet.</p>
+        <div className="about-features">{[{n:"01",t:"Conceito primeiro",d:"Ameaça, impacto e o controle certo — sem teatro de hacker."},{n:"02",t:"Kali no sandbox",d:"Nmap, Nikto, sqlmap, ffuf e Nuclei só em *.lab.local."},{n:"03",t:"Prova na comunidade",d:"XP, certificado e o mesmo vocabulário de quem opera no dia a dia."}].map((item,index)=><article key={item.n} style={{"--i":index} as React.CSSProperties}><span>{item.n}</span><h3>{item.t}</h3><p>{item.d}</p></article>)}</div>
+      </section>
+      <section className="landing-courses" id="cursos">
+        <div className="landing-section-head">
+          <div><p className="eyebrow">Catálogo</p><h2>Escolha sua primeira trilha</h2><p>Conheça o conteúdo antes de criar sua matrícula. Você começa sempre com o painel vazio.</p></div>
+          <button type="button" onClick={onSignup}>Criar conta para matricular →</button>
+        </div>
+        <div className="landing-course-grid">{regularCourses.map((course,index)=><article className={course.tone} key={course.id} style={{"--i":index} as React.CSSProperties}><div><span className="course-icon">{course.icon}</span><small>{course.code}</small></div><span className="landing-level">{course.level}</span><h3>{course.title}</h3><p>{course.description}</p><footer><span>{course.modules.length} módulos · {course.hours}h</span><b>Plano {plans.find(plan=>plan.id===course.access)?.name}</b></footer><button type="button" onClick={onSignup}>Ver curso e matricular →</button></article>)}</div>
+      </section>
+      <section className="landing-ai">
+        <div><span className="landing-kicker">Especializações</span><h2>Proteja a próxima geração de sistemas com IA.</h2><p>Red Team para IA, segurança de LLMs e defesa de agentes autônomos. Cursos avançados, projetos aplicados e certificado premium.</p><button type="button" onClick={onSignup}>Conhecer cursos de IA →</button></div>
+        <div>{premiumCourses.map((course,index)=><article key={course.id} style={{"--i":index} as React.CSSProperties}><span>{course.icon}</span><div><small>{course.code}</small><strong>{course.title}</strong></div><b>R$ 500,00</b></article>)}</div>
+      </section>
+      <section className="community-section" id="comunidade">
+        <div>
+          <span className="landing-kicker">Comunidade</span>
+          <h2>Uma plataforma construída para a comunidade.</h2>
+          <p>Aprenda, pratique e compartilhe conhecimento com responsabilidade. A VulcanAcademy conecta estudantes, profissionais e organizações em torno de uma cultura de segurança mais forte.</p>
+          <div className="community-actions"><button type="button" onClick={onSignup}>Participar da comunidade →</button><a href="https://sentinelacibernetica.com.br" target="_blank" rel="noreferrer">Conhecer a Sentinela Cibernética ↗</a></div>
+        </div>
+        <aside><small>REFERÊNCIA DA COMUNIDADE</small><strong>sentinelacibernetica.com.br</strong><p>Conteúdo, conscientização e colaboração para fortalecer o ecossistema brasileiro de cibersegurança.</p><span>Educação • Segurança • Comunidade</span></aside>
+      </section>
+      <section className="landing-plans" id="planos">
+        <div className="landing-section-head"><div><p className="eyebrow">Planos</p><h2>Comece no seu nível. Evolua sem limites.</h2></div></div>
+        <div className="landing-plan-grid">{plans.map((plan,index)=><article className={plan.id==="medio"?"featured":""} key={plan.id} style={{"--i":index} as React.CSSProperties}>{plan.id==="medio"&&<span>MAIS ESCOLHIDO</span>}<small>PLANO</small><h3>{plan.name}</h3><p>{plan.description}</p><div><b>R$ {plan.price.toLocaleString("pt-BR",{minimumFractionDigits:2})}</b><span>/mês</span></div><ul>{plan.features.slice(0,3).map(feature=><li key={feature}>✓ {feature}</li>)}</ul><button type="button" onClick={onSignup}>Escolher {plan.name}</button></article>)}</div>
+      </section>
+      <section className="landing-cta">
+        <span className="brand-mark">V</span>
+        <p className="eyebrow">Comece quando quiser</p>
+        <h2>Crie a conta. Escolha a trilha.<br/>Abra o laboratório.</h2>
+        <p>Nenhuma matrícula automática. Você decide quando e por onde começar.</p>
+        <button type="button" onClick={onSignup}>Criar minha conta gratuita →</button>
+      </section>
+    </div>
+    <footer className="landing-footer">
+      <div className="landing-brand"><span className="brand-mark">V</span><span>Vulcan<strong>Academy</strong><sup className="brand-beta">Beta</sup></span></div>
+      <p>Educação prática em cibersegurança, construída para a comunidade.</p>
+      <nav className="landing-footer-nav">{landingLinks.map(([href,label])=><a key={href} href={href} onClick={event=>{event.preventDefault();goSection(href)}}>{label}</a>)}</nav>
+      <span>© {new Date().getFullYear()} VulcanAcademy</span>
+    </footer>
+    <div className="landing-mobile-bar" role="navigation" aria-label="Acesso rápido">
+      <button type="button" className="landing-login" onClick={onLogin}>Entrar</button>
+      <button type="button" className="landing-signup" onClick={onSignup}>Criar conta</button>
+    </div>
+  </div>;
+}
+
+function Dashboard({ profile, completed, enrolledCourses, progress, score, openModule, openCourse, go }: { profile: { name: string }; completed: string[]; enrolledCourses:string[]; progress: number; score: number; openModule: (id: string) => void; openCourse: (id: string) => void; go: (v: View) => void }) {
+  const enrolled=courses.filter(course=>enrolledCourses.includes(course.id));
+  const ongoing=enrolled.filter(course=>course.modules.some(module=>!completed.includes(module.id)));
+  const firstEnrollment=ongoing[0]||enrolled[0];
+  const completedInEnrollment=firstEnrollment?.modules.filter(module=>completed.includes(module.id)).length||0;
+  const enrollmentProgress=firstEnrollment?Math.round(completedInEnrollment/firstEnrollment.modules.length*100):0;
+  const nextModule=firstEnrollment?.modules.find(module=>!completed.includes(module.id))||firstEnrollment?.modules[0];
+  const totalModules=courses.reduce((total,course)=>total+course.modules.length,0);
+  const courseFinished=Boolean(firstEnrollment)&&enrollmentProgress===100;
+  return <div className="page dashboard">
+    <header className="student-command-header">
+      <div><p>Painel do aluno</p><h1>Olá, {profile.name.split(" ")[0]}.</h1><span>{courseFinished?"Formação concluída. Escolha seu próximo desafio.":firstEnrollment?"Sua próxima missão está pronta para continuar.":"Escolha uma formação para iniciar sua jornada."}</span></div>
+      <button className="outline-button" onClick={() => go(firstEnrollment?"matriculas":"trilha")}>{firstEnrollment?"Ver matrículas":"Explorar catálogo"}</button>
+    </header>
+
+    <section className={`student-mission ${firstEnrollment?"active":"empty"}`} aria-labelledby="student-mission-title">
+      <div className="student-mission-copy">
+        <div className="student-mission-status"><span>{courseFinished?"Formação concluída":firstEnrollment?"Em andamento":"Primeiro passo"}</span><b>{firstEnrollment?.code||"Trilha livre"}</b></div>
+        <p className="student-mission-label">{courseFinished?"Revise o que aprendeu":"Próxima missão"}</p>
+        <h2 id="student-mission-title">{nextModule?.title||"Escolha seu primeiro curso"}</h2>
+        <p>{courseFinished?`Você concluiu todos os módulos de ${firstEnrollment!.title}. Revise o conteúdo ou explore uma nova formação.`:firstEnrollment?`Continue o próximo módulo de ${firstEnrollment.title}.`:"Compare nível, duração e conteúdo. A matrícula só acontece quando você confirmar."}</p>
+        <button onClick={() => nextModule?openModule(nextModule.id):go("trilha")}>{courseFinished?"Revisar módulo":nextModule?"Continuar módulo":"Escolher uma formação"}</button>
+      </div>
+      <aside className="student-mission-progress" aria-label={firstEnrollment?`${enrollmentProgress}% do curso concluído`:"Nenhum curso iniciado"}>
+        <div><small>Progresso da formação</small><strong>{enrollmentProgress}<em>%</em></strong></div>
+        <div className="student-progress-track" aria-hidden="true"><span style={{width:`${enrollmentProgress}%`}} /></div>
+        <p>{firstEnrollment?`${completedInEnrollment} de ${firstEnrollment.modules.length} módulos concluídos`:"Seu progresso aparecerá aqui"}</p>
+      </aside>
+    </section>
+
+    <section className="student-instruments" aria-label="Resumo da sua jornada">
+      <article><span className="student-instrument-mark xp">◆</span><div><small>Experiência</small><strong>{score.toLocaleString("pt-BR")} <em>XP</em></strong><p>{score?"Pontos acumulados":"Conclua desafios para pontuar"}</p></div></article>
+      <article><span className="student-instrument-mark done">✓</span><div><small>Módulos concluídos</small><strong>{completed.length} <em>de {totalModules}</em></strong><p>{completed.length?"Sua trilha está avançando":"Seu primeiro módulo espera por você"}</p></div></article>
+      <article><span className="student-instrument-mark course">⌁</span><div><small>Formações em andamento</small><strong>{ongoing.length}</strong><p>{enrolled.length?`${enrolled.length} ${enrolled.length===1?"matrícula":"matrículas"} no total`:"Nenhuma matrícula ativa"}</p></div></article>
+    </section>
+
+    {!firstEnrollment&&<section className="student-onboarding" aria-label="Como começar"><header><span>Comece sem complicação</span><h2>Do catálogo ao certificado</h2></header><ol><li><b>01</b><div><strong>Escolha</strong><small>Compare cursos e níveis</small></div></li><li><b>02</b><div><strong>Matricule-se</strong><small>Confirme a formação desejada</small></div></li><li><b>03</b><div><strong>Avance</strong><small>Conclua módulos e ganhe XP</small></div></li></ol></section>}
+
+    <section className="student-section-heading"><div><span>Explore a academia</span><h2>Formações recomendadas</h2><p>Escolhas práticas para desenvolver sua próxima competência.</p></div><button onClick={() => go("trilha")}>Ver catálogo completo</button></section>
+    <section className="student-course-grid">
+      {courses.filter(course=>!course.premium).slice(0, 3).map(course => <article className={`student-course-card ${course.tone}`} key={course.id}>
+        <div className="course-top"><span className="course-icon">{course.icon}</span><span className="course-code">{course.code}</span></div>
+        <div className="course-body"><div className="tags"><span>{course.level}</span><span>{course.hours}h</span></div><h3>{course.title}</h3><p>{course.description}</p><div className="course-meta"><span>{course.modules.length} módulos</span><span>Certificado digital</span></div><div className="card-bottom"><span className="catalog-status">{enrolledCourses.includes(course.id)?"Matriculado":"Disponível"}</span><button onClick={() => openCourse(course.id)}>{enrolledCourses.includes(course.id)?"Abrir formação":"Conhecer curso"}</button></div></div>
+      </article>)}
+    </section>
+  </div>;
+}
+
+type CatalogCategory = "todos" | "fundamentos" | "ofensiva" | "cloud" | "devops" | "ia";
+
+const catalogCategories: { id:CatalogCategory; label:string; description:string; icon:string; courses:string[] }[] = [
+  {id:"todos",label:"Todos os cursos",description:"Explore o catálogo completo",icon:"▦",courses:courses.map(course=>course.id)},
+  {id:"fundamentos",label:"Fundamentos",description:"Comece com uma base segura",icon:"◇",courses:["owasp","secure-code","git-ops","linux-hardening"]},
+  {id:"ofensiva",label:"Segurança ofensiva",description:"APIs, pentest e exploração ética",icon:"◎",courses:["api","pentest"]},
+  {id:"cloud",label:"Cloud & DevSecOps",description:"Proteja infraestrutura e entregas",icon:"☁",courses:["cloud","devsecops","iac-ops","finops-sec"]},
+  {id:"devops",label:"DevOps & SRE",description:"Linux, redes, containers, IaC e confiabilidade",icon:"∞",courses:learningTrails[0].courseIds},
+  {id:"ia",label:"IA & Governança",description:"Políticas, riscos e segurança em IA",icon:"AI",courses:["ai-governance","ai-redteam","llm-security","agentic-defense"]},
+];
+
+function courseCerts(course:Course){
+  return {
+    digitalFree:!course.premium,
+    digitalLabel:course.premium?"Digital incluso":"Digital gratuito",
+    printed:true,
+    printedLabel:"Impresso disponível",
+  };
+}
+
+function CatalogCourseCard({course,selected,enrolled,locked,onSelect}:{course:Course;selected:boolean;enrolled:boolean;locked:boolean;onSelect:()=>void}){
+  const certs=courseCerts(course);
+  const ementa=course.modules.slice(0,4);
+  const extra=course.modules.length-ementa.length;
+  return <article className={`${course.tone} ${selected?"selected":""}`} onClick={onSelect} onKeyDown={event=>{if(event.key==="Enter"||event.key===" "){event.preventDefault();onSelect()}}} role="button" tabIndex={0} aria-label={`Ver detalhes de ${course.title}`}>
+    <header>
+      <span className="course-icon">{course.icon}</span>
+      <span className={`catalog-access ${course.premium?"premium":enrolled?"enrolled":locked?"locked":"available"}`}>{course.premium?`R$ ${course.price?.toLocaleString("pt-BR",{minimumFractionDigits:2})}`:enrolled?"✓ Matriculado":locked?`Requer plano ${plans.find(plan=>plan.id===course.access)?.name}`:"Disponível no seu plano"}</span>
+    </header>
+    <small>{course.code}</small>
+    <h3>{course.title}</h3>
+    <p>{course.description}</p>
+    <div className="catalog-certs">
+      <span className={certs.digitalFree?"digital":"included"}>{certs.digitalLabel}</span>
+      <span className="print">{certs.printedLabel}</span>
+    </div>
+    <div className="catalog-ementa">
+      <strong>Ementa</strong>
+      <ol>{ementa.map(module=><li key={module.id}>{module.short||module.title}</li>)}</ol>
+      {extra>0&&<small>+{extra} tópico{extra===1?"":"s"} na trilha completa</small>}
+    </div>
+    <div className="catalog-course-facts">
+      <span><b>{course.hours}h</b> de conteúdo</span>
+      <span><b>{course.modules.length}</b> módulos</span>
+      <span><b>{course.level}</b></span>
+    </div>
+    <footer>
+      <button type="button" onClick={event=>{event.stopPropagation();onSelect()}}>Ver ementa completa</button>
+      <strong>{enrolled?"Continuar formação →":locked?"Ver acesso →":course.premium?"Conhecer especialização →":"Conhecer curso →"}</strong>
+    </footer>
+  </article>;
+}
+
+function CourseCatalogUX({completed,enrolledCourses,enrollCourse,selectedCourse,openCourse,activePlan,go}:{completed:string[];enrolledCourses:string[];enrollCourse:(id:string)=>void;selectedCourse:string;openCourse:(id:string)=>void;activePlan:PlanId;go:(view:View)=>void}){
+  const [category,setCategory]=useState<CatalogCategory>("todos");
+  const [query,setQuery]=useState("");
+  const selected=courses.find(course=>course.id===selectedCourse)||courses[0];
+  const categoryData=catalogCategories.find(item=>item.id===category)!;
+  const haystack=(course:Course)=>`${course.title} ${course.description} ${course.code} ${course.modules.map(module=>`${module.title} ${module.short}`).join(" ")}`.toLowerCase();
+  const visible=courses.filter(course=>categoryData.courses.includes(course.id)&&haystack(course).includes(query.toLowerCase()));
+  const isEnrolled=enrolledCourses.includes(selected.id);
+  const isLocked=planRank[activePlan]<planRank[selected.access];
+  const completedCount=selected.modules.filter(module=>completed.includes(module.id)).length;
+  const regular=visible.filter(course=>!course.premium);
+  const premium=visible.filter(course=>course.premium);
+  const selectedCerts=courseCerts(selected);
+  const select=(id:string)=>{openCourse(id);window.requestAnimationFrame(()=>document.getElementById("course-decision")?.scrollIntoView({behavior:"smooth",block:"start"}))};
+  return <div className="page catalog-ux-page">
+    <header className="catalog-ux-header">
+      <div>
+        <p className="eyebrow">CATÁLOGO DE CURSOS</p>
+        <h1>Escolha sua próxima competência</h1>
+        <p>Compare ementa, carga horária e certificados. Todo curso emite o digital ao concluir; o impresso pode ser solicitado depois, com taxa de produção e envio.</p>
+      </div>
+      <button className="catalog-enrollment-shortcut" onClick={()=>go("matriculas")}><span>▣</span><div><small>MINHAS MATRÍCULAS</small><strong>{enrolledCourses.length} {enrolledCourses.length===1?"curso":"cursos"}</strong></div><b>→</b></button>
+    </header>
+    <section className="catalog-how">
+      <div><b>1</b><span><strong>Escolha uma área</strong><small>Filtre pelos seus objetivos</small></span></div><i>→</i>
+      <div><b>2</b><span><strong>Leia a ementa</strong><small>Módulos, digital e impresso</small></span></div><i>→</i>
+      <div><b>3</b><span><strong>Confirme a matrícula</strong><small>O curso aparece em sua área</small></span></div>
+    </section>
+    <div className="catalog-tools">
+      <div className="catalog-category-tabs" role="tablist" aria-label="Categorias de cursos">{catalogCategories.map(item=><button key={item.id} role="tab" aria-selected={category===item.id} className={category===item.id?"active":""} onClick={()=>setCategory(item.id)}><i>{item.icon}</i><span><strong>{item.label}</strong><small>{item.description}</small></span></button>)}</div>
+      <label className="catalog-search"><span>⌕</span><input value={query} onChange={event=>setQuery(event.target.value)} placeholder="Buscar curso, módulo ou ementa" aria-label="Buscar no catálogo"/></label>
+    </div>
+    <div className="catalog-section-title"><div><p className="eyebrow">{categoryData.label.toUpperCase()}</p><h2>{category==="todos"?"Formações para construir sua trilha":category==="devops"?"Trilha DevOps: do Git ao FinOps":categoryData.description}</h2></div><span>{visible.length} {visible.length===1?"curso encontrado":"cursos encontrados"}</span></div>
+    {category==="todos"&&<button type="button" className="catalog-trail-banner" onClick={()=>setCategory("devops")}><span>TRILHA · {learningTrails[0].courseIds.length} CURSOS</span><strong>{learningTrails[0].label}</strong><p>{learningTrails[0].description} Material didático, laboratório sintético e prova em cada formação.</p><b>Abrir trilha →</b></button>}
+    {category==="devops"&&<ol className="catalog-trail-path" aria-label="Ordem sugerida da trilha DevOps">{learningTrails[0].courseIds.map((id,index)=>{const item=courses.find(course=>course.id===id);return item?<li key={id}><b>{String(index+1).padStart(2,"0")}</b><span><strong>{item.title}</strong><small>{item.code} · {item.hours}h · {item.modules.length} módulos</small></span></li>:null})}</ol>}
+    {visible.length===0?<section className="catalog-empty"><span>⌕</span><h2>Nenhum curso encontrado</h2><p>Tente outro termo ou selecione uma categoria diferente.</p><button onClick={()=>{setQuery("");setCategory("todos")}}>Limpar filtros</button></section>:<>
+      {regular.length>0&&<section className="catalog-ux-grid">{regular.map(course=><CatalogCourseCard key={course.id} course={course} selected={selected.id===course.id} enrolled={enrolledCourses.includes(course.id)} locked={planRank[activePlan]<planRank[course.access]} onSelect={()=>select(course.id)}/>)}</section>}
+      {premium.length>0&&<><div className="catalog-premium-title"><span>ESPECIALIZAÇÕES</span><h2>Segurança avançada em Inteligência Artificial</h2><p>Compra individual, acesso permanente, certificado digital incluso e opção de impresso.</p></div><section className="catalog-ux-grid premium">{premium.map(course=><CatalogCourseCard key={course.id} course={course} selected={selected.id===course.id} enrolled={enrolledCourses.includes(course.id)} locked={false} onSelect={()=>select(course.id)}/>)}</section></>}
+    </>}
+    <section className="catalog-decision" id="course-decision">
+      <div className="catalog-decision-main">
+        <div><span className={`decision-icon ${selected.tone}`}>{selected.icon}</span><div><p className="eyebrow">CURSO SELECIONADO · {selected.code}</p><h2>{selected.title}</h2></div></div>
+        <p>{selected.description}</p>
+        <div className="decision-facts">
+          <span><small>NÍVEL</small><strong>{selected.level}</strong></span>
+          <span><small>DURAÇÃO</small><strong>{selected.hours} horas</strong></span>
+          <span><small>CONTEÚDO</small><strong>{selected.modules.length} módulos</strong></span>
+          <span><small>ACESSO</small><strong>{selected.premium?`R$ ${selected.price?.toLocaleString("pt-BR",{minimumFractionDigits:2})}`:`Plano ${plans.find(plan=>plan.id===selected.access)?.name}`}</strong></span>
+        </div>
+        <div className="decision-certs">
+          <article className={selectedCerts.digitalFree?"digital":"included"}><b>✓</b><div><strong>Certificado digital {selectedCerts.digitalFree?"gratuito":"incluso"}</strong><small>Emitido ao concluir todos os módulos, sem taxa extra.</small></div></article>
+          <article className="print"><b>▣</b><div><strong>Certificado impresso</strong><small>Disponível após a conclusão, com taxa de produção e envio.</small></div></article>
+        </div>
+        <div className="decision-modules">
+          <strong>Ementa completa</strong>
+          <div>{selected.modules.map((module,index)=><span key={module.id}><b>{String(index+1).padStart(2,"0")}</b>{module.title}</span>)}</div>
+        </div>
+      </div>
+      <aside>
+        <span className={isEnrolled?"enrolled":isLocked?"locked":"available"}>{isEnrolled?"✓ MATRÍCULA ATIVA":isLocked?"UPGRADE NECESSÁRIO":"PRONTO PARA COMEÇAR"}</span>
+        <h3>{selected.premium?`R$ ${selected.price?.toLocaleString("pt-BR",{minimumFractionDigits:2})}`:`Plano ${plans.find(plan=>plan.id===selected.access)?.name}`}</h3>
+        <p>{isEnrolled?`${completedCount} de ${selected.modules.length} módulos concluídos`:isLocked?`Seu plano atual é ${plans.find(plan=>plan.id===activePlan)?.name}. Veja as opções para liberar este curso.`:"A confirmação adiciona o curso à área Minhas matrículas."}</p>
+        <ul className="decision-cert-list">
+          <li>{selectedCerts.digitalFree?"Digital gratuito ao concluir":"Digital incluso na especialização"}</li>
+          <li>Impresso sob demanda após o certificado digital</li>
+        </ul>
+        <button className="primary-button" onClick={()=>isEnrolled?go("matriculas"):enrollCourse(selected.id)}>{isEnrolled?"Abrir minha matrícula":isLocked||selected.premium?"Ver opções de acesso":"Confirmar matrícula gratuita"} →</button>
+        <small>Sem matrícula automática. Você mantém o controle da sua trilha.</small>
+      </aside>
+    </section>
+  </div>;
+}
+
+function Trail({ completed, enrolledCourses, enrollCourse, openModule, current, selectedCourse, openCourse, activePlan, go }: { completed: string[]; enrolledCourses:string[]; enrollCourse:(id:string)=>void; openModule: (id:string)=>void; current: Module; selectedCourse: string; openCourse: (id:string)=>void; activePlan: PlanId; go:(view:View)=>void }) {
+  const [expandedModule,setExpandedModule]=useState<string|null>(null);
+  const course = courses.find(item => item.id === selectedCourse) || courses[0];
+  const isEnrolled=enrolledCourses.includes(course.id);
+  const done = course.modules.filter(module => completed.includes(module.id)).length;
+  const percent = Math.round(done / course.modules.length * 100);
+  return <div className="page inner-page course-page"><div className="page-title catalog-title"><div><p className="eyebrow">CATÁLOGO DE FORMAÇÃO</p><h1>Encontre o curso certo para você</h1><p>Compare nível, conteúdo e plano de acesso. A matrícula só acontece quando você confirmar.</p></div><button className="outline-button" onClick={()=>go("matriculas")}>Minhas matrículas ({enrolledCourses.length})</button></div>
+    <div className="catalog-filters"><button className="active">Todos</button><button>Ofensiva</button><button>Defensiva</button><button>Cloud</button><button>Desenvolvimento seguro</button></div>
+    <div className="course-grid catalog">{courses.filter(item=>!item.premium).map(item => { const locked=planRank[activePlan] < planRank[item.access]; const enrolled=enrolledCourses.includes(item.id); return <button key={item.id} className={`course-card ${item.tone} ${course.id===item.id?"selected":""} ${locked?"locked-course":""}`} onClick={()=>openCourse(item.id)}><div className="course-top"><span className="course-icon">{item.icon}</span><span className={`access-label ${enrolled?"enrolled":""}`}>{enrolled?"✓ MATRICULADO":locked?`PLANO ${plans.find(plan=>plan.id===item.access)?.name?.toUpperCase()}`:"DISPONÍVEL"}</span></div><div className="course-body"><div className="tags"><span>{item.level}</span><span>{item.hours}h</span></div><h3>{item.title}</h3><p>{item.description}</p><div className="course-meta"><span>{item.modules.length} módulos</span><span>Certificado incluso</span></div><strong className="catalog-card-action">Ver detalhes do curso →</strong></div></button>})}</div>
+    <div className="premium-heading"><div><p className="eyebrow">ESPECIALIZAÇÕES PREMIUM</p><h2>Segurança avançada em Inteligência Artificial</h2><p>Formações independentes com projetos aplicados, laboratórios e certificado premium.</p></div><button className="outline-button" onClick={()=>go("planos")}>Ver condições</button></div>
+    <div className="course-grid catalog premium-grid">{courses.filter(item=>item.premium).map(item => <button key={item.id} className={`course-card premium ${item.tone}`} onClick={()=>openCourse(item.id)}><div className="course-top"><span className="course-icon">{item.icon}</span><span className="premium-price">R$ {item.price?.toLocaleString("pt-BR",{minimumFractionDigits:2})}</span></div><div className="course-body"><div className="tags"><span>{item.level}</span><span>{item.hours}h</span></div><h3>{item.title}</h3><p>{item.description}</p><div className="course-meta"><span>{item.modules.length} módulos</span><span>Certificado premium</span></div><strong className="premium-action">Conhecer especialização →</strong></div></button>)}</div>
+    <section className="selected-course"><div className="selected-course-head"><div><p className="eyebrow">DETALHES DO CURSO · {course.code}</p><h2>{course.title}</h2><p>{course.description}</p></div><div className="course-enroll-box"><span>{course.premium?`R$ ${course.price?.toLocaleString("pt-BR",{minimumFractionDigits:2})}`:`Plano ${plans.find(plan=>plan.id===course.access)?.name}`}</span><button className="primary-button" onClick={()=>isEnrolled?go("matriculas"):enrollCourse(course.id)}>{isEnrolled?"Abrir minha matrícula":course.premium?"Solicitar matrícula":"Matricular-se agora"}</button><small>{isEnrolled?"Curso adicionado à sua área de estudos":"Você só inicia após confirmar"}</small></div></div>
+      <div className="trail-summary"><div><span>STATUS</span><strong>{isEnrolled?"Matriculado":"Não matriculado"}</strong></div><div><span>CARGA HORÁRIA</span><strong>{course.hours} horas</strong></div><div><span>CONTEÚDO</span><strong>{course.modules.length} módulos</strong></div><div><span>CERTIFICAÇÃO</span><strong>{isEnrolled&&done===course.modules.length?"Liberada":"Após conclusão"}</strong></div></div>
+      <div className="module-list-heading"><div><h3>Conteúdo do curso</h3><p>Veja tudo o que você aprenderá antes de se matricular.</p></div><span>{course.modules.length} módulos</span></div>
+      <div className="trail-list module-accordions">{course.modules.map((m, i) => { const moduleDone=completed.includes(m.id); const active=isEnrolled&&current.id===m.id&&!moduleDone; const expanded=expandedModule===m.id; const topics=moduleStudyPack(m.id)?.chapters.map(chapter=>chapter.title)??[`Fundamentos e contexto de ${m.title}`,`Como identificar riscos e comportamentos vulneráveis`,`Correções, boas práticas e validação segura`]; return <article className={`module-accordion ${expanded?"expanded":""}`} key={m.id}><button className={`trail-item ${moduleDone?"done":""} ${active?"current":""} ${!isEnrolled?"preview-module":""}`} onClick={()=>setExpandedModule(expanded?null:m.id)} aria-expanded={expanded}><span className={`trail-number ${m.tone}`}>{moduleDone?"✓":i+1}</span><span className="trail-main"><small>{m.id} · {course.code}</small><strong>{m.title}</strong><em>{m.lessons} aulas · laboratório prático · {m.difficulty}</em></span><span className="trail-xp">+{m.xp} XP</span><span className="module-chevron">⌄</span></button>{expanded&&<div className="module-preview-content"><div><p className="eyebrow">O QUE VOCÊ VAI APRENDER</p><h4>{m.title}</h4><p>Este módulo combina explicação objetiva, demonstração controlada e uma atividade prática para consolidar o aprendizado.</p><ul>{topics.map(topic=><li key={topic}><span>✓</span>{topic}</li>)}</ul></div><aside><span>{m.lessons} aulas</span><span>{m.difficulty}</span><span>+{m.xp} XP</span><button className="primary-button" onClick={()=>isEnrolled?openModule(m.id):enrollCourse(course.id)}>{isEnrolled?(moduleDone?"Revisar módulo":"Iniciar módulo"):"Matricular-se para acessar"} →</button><small>{isEnrolled?"Laboratório seguro incluído":"A prévia é gratuita. A prática exige matrícula."}</small></aside></div>}</article>})}</div>
+    </section>
+  </div>;
+}
+
+function Enrollments({ completed, enrolledCourses, openCourse, openModule, go }: { completed:string[]; enrolledCourses:string[]; openCourse:(id:string)=>void; openModule:(id:string)=>void; go:(view:View)=>void }) {
+  const enrolled=enrolledCourses.map(id=>courses.find(course=>course.id===id)).filter((course):course is Course=>Boolean(course));
+  return <div className="page inner-page enrollments-page"><div className="page-title catalog-title"><div><p className="eyebrow">ÁREA DO ALUNO</p><h1>Minhas matrículas</h1><p>Acompanhe somente os cursos que você escolheu iniciar.</p></div><button className="outline-button" onClick={()=>go("trilha")}>Explorar catálogo</button></div>{enrolled.length===0?<section className="empty-enrollments"><span>▣</span><h2>Você ainda não possui matrículas</h2><p>Explore o catálogo, veja os detalhes de cada formação e matricule-se quando encontrar o curso ideal.</p><button className="primary-button" onClick={()=>go("trilha")}>Encontrar meu primeiro curso →</button><div><small>COMO FUNCIONA</small><strong>Escolha um curso</strong><i>→</i><strong>Confirme a matrícula</strong><i>→</i><strong>Comece a aprender</strong></div></section>:<div className="enrollment-list">{enrolled.map(course=>{const done=course.modules.filter(module=>completed.includes(module.id)).length;const percent=Math.round(done/course.modules.length*100);const next=course.modules.find(module=>!completed.includes(module.id))||course.modules[0];return <article key={course.id}><div className={`enrollment-visual ${course.tone}`}><span className="course-icon">{course.icon}</span><small>{course.code}</small></div><div className="enrollment-info"><div><span className="access-label enrolled">✓ MATRICULADO</span><small>{course.hours}h · {course.modules.length} módulos</small></div><h2>{course.title}</h2><p>{course.description}</p><div className="enrollment-progress"><span><b>{percent}%</b> concluído</span><i><em style={{width:`${percent}%`}}/></i><small>{done} de {course.modules.length} módulos</small></div><div className="enrollment-actions"><button className="primary-button" onClick={()=>openModule(next.id)}>{done?"Continuar curso":"Começar curso"} →</button><button className="outline-button" onClick={()=>openCourse(course.id)}>Ver conteúdo</button></div></div></article>})}</div>}</div>;
+}
+
+const courseLearningGuides: Record<string,{focus:string;practice:string;concepts:string[];glossary:[string,string][];videoId:string;videoTitle:string;videoSource:string;videoPageUrl:string;readingUrl:string}> = {
+  owasp:{focus:"segurança de aplicações web e os riscos mais críticos do OWASP Top 10",practice:"analisar uma aplicação fictícia, localizar o controle ausente e validar a correção",concepts:["superfície de ataque","confiança entre cliente e servidor","defesa em profundidade"],glossary:[["Vulnerabilidade","Fraqueza que pode comprometer confidencialidade, integridade ou disponibilidade."],["Exploit","Forma de demonstrar o impacto de uma falha em ambiente autorizado."],["Mitigação","Controle que reduz a probabilidade ou o impacto de um risco."]],videoId:"n8nI_IsH7rM",videoTitle:"OWASP Top 10: falhas críticas em aplicações web",videoSource:"HackStation · YouTube público",videoPageUrl:"https://www.youtube.com/watch?v=n8nI_IsH7rM",readingUrl:"https://owasp.org/Top10/"},
+  api:{focus:"proteção de APIs REST e GraphQL em cada objeto, função e fluxo de negócio",practice:"revisar uma API de treinamento, seus endpoints, tokens, limites e decisões de autorização",concepts:["autorização por objeto","identidade e tokens","inventário e limitação de recursos"],glossary:[["Endpoint","Endereço que expõe uma operação ou recurso da API."],["BOLA","Falha de autorização em nível de objeto."],["Rate limit","Controle da quantidade de requisições em um período."]],videoId:"Qyw8QHgW_ys",videoTitle:"OWASP API Top 10 e API Gateway",videoSource:"Canal dotNET · YouTube público",videoPageUrl:"https://www.youtube.com/watch?v=Qyw8QHgW_ys",readingUrl:"https://owasp.org/API-Security/"},
+  pentest:{focus:"processo profissional de teste de invasão web com autorização e evidências",practice:"executar uma avaliação controlada do escopo ao relatório executivo",concepts:["regras de engajamento","cadeia de evidências","severidade e impacto"],glossary:[["Escopo","Sistemas, horários e técnicas expressamente autorizados."],["Evidência","Registro objetivo e reproduzível de uma constatação."],["Severidade","Priorização baseada em probabilidade e impacto."]],videoId:"CAfcNNurIUw",videoTitle:"Pentest web na prática: escopo, evidências e relatório",videoSource:"Astarte Cybersecurity · YouTube público",videoPageUrl:"https://www.youtube.com/watch?v=CAfcNNurIUw",readingUrl:"https://owasp.org/www-project-web-security-testing-guide/"},
+  cloud:{focus:"segurança em nuvem com responsabilidade compartilhada, IAM e observabilidade",practice:"avaliar uma arquitetura fictícia de nuvem e reduzir permissões, exposição e segredos",concepts:["responsabilidade compartilhada","identidade de workload","segmentação e telemetria"],glossary:[["IAM","Políticas e identidades usadas para controlar acesso."],["Workload","Aplicação ou serviço executado na infraestrutura."],["Postura","Estado dos controles e configurações de segurança."]],videoId:"v3zKyBSHDSM",videoTitle:"Melhores práticas para segurança na nuvem",videoSource:"AWS Developers LATAM · YouTube público",videoPageUrl:"https://www.youtube.com/watch?v=v3zKyBSHDSM",readingUrl:"https://owasp.org/www-project-eks-goat/"},
+  "secure-code":{focus:"desenvolvimento seguro desde requisitos até revisão e testes",practice:"comparar uma implementação vulnerável com uma versão que aplica controles no servidor",concepts:["limites de confiança","validação positiva","padrões seguros por padrão"],glossary:[["Secure by default","Configuração inicial que privilegia a opção mais segura."],["Validação positiva","Aceitação apenas de formatos e valores esperados."],["Code review","Revisão sistemática do código e de seus controles."]],videoId:"3l8GwLv2f3E",videoTitle:"Dez princípios de secure by design no código",videoSource:"IBM Technology · YouTube público",videoPageUrl:"https://www.youtube.com/watch?v=3l8GwLv2f3E",readingUrl:"https://owasp.org/www-project-developer-guide/"},
+  devsecops:{focus:"integração contínua de segurança no ciclo de desenvolvimento e entrega",practice:"desenhar um pipeline com verificações, critérios de bloqueio e rastreabilidade",concepts:["shift left e shift right","cadeia de suprimentos","políticas como código"],glossary:[["SAST","Análise do código sem executar a aplicação."],["DAST","Teste da aplicação em execução."],["SBOM","Inventário dos componentes de software."]],videoId:"nrhxNNH5lt0",videoTitle:"O que é DevSecOps e como entra no pipeline",videoSource:"TechWorld with Nana · YouTube público",videoPageUrl:"https://www.youtube.com/watch?v=nrhxNNH5lt0",readingUrl:"https://owasp.org/www-project-devsecops-guideline/"},
+  "ai-governance":{focus:"princípios, papéis, controles e ciclo de revisão para o uso responsável de IA",practice:"montar um inventário de sistemas, uma política e critérios de aprovação em um cenário corporativo fictício",concepts:["accountability","fairness e transparência","revisão contínua"],glossary:[["Governança de IA","Conjunto de papéis, políticas e controles sobre o uso de sistemas de IA."],["Princípio","Diretriz que orienta decisões de risco, ética e conformidade."],["Exceção","Uso autorizado fora da política padrão, com prazo e responsável."]],videoId:"poMZXS6iQeU",videoTitle:"IA responsável: princípios de governança",videoSource:"Microsoft ExpertZone · YouTube público",videoPageUrl:"https://www.youtube.com/watch?v=poMZXS6iQeU",readingUrl:"https://www.microsoft.com/ai/responsible-ai"},
+  "ai-redteam":{focus:"avaliação adversarial responsável de aplicações com inteligência artificial",practice:"modelar e testar entradas maliciosas em um agente fictício, sem dados ou sistemas reais",concepts:["prompt injection","limites de ferramentas","avaliação adversarial"],glossary:[["Jailbreak","Tentativa de contornar as restrições do modelo."],["Guardrail","Controle que limita entradas, saídas ou ações."],["Red team de IA","Avaliação estruturada de comportamentos adversariais."]],videoId:"zFRn_RMSPI4",videoTitle:"Como a Microsoft conduz red team de IA",videoSource:"Microsoft Developer · YouTube público",videoPageUrl:"https://www.youtube.com/watch?v=zFRn_RMSPI4",readingUrl:"https://learn.microsoft.com/security/ai-red-team/"},
+  "llm-security":{focus:"arquiteturas seguras para LLMs, RAG, dados e contexto",practice:"revisar um pipeline RAG fictício e aplicar isolamento, filtragem e menor privilégio",concepts:["fronteira de contexto","proveniência de dados","guardrails em camadas"],glossary:[["RAG","Geração apoiada por recuperação de conteúdo externo."],["Contexto","Informações fornecidas ao modelo durante uma interação."],["Grounding","Vinculação da resposta a fontes autorizadas."]],videoId:"gUNXZMcd2jU",videoTitle:"Top 10 de riscos em aplicações com LLM",videoSource:"IBM Technology · YouTube público",videoPageUrl:"https://www.youtube.com/watch?v=gUNXZMcd2jU",readingUrl:"https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/"},
+  "agentic-defense":{focus:"identidade, memória, permissões e supervisão de agentes autônomos",practice:"definir limites para um agente fictício e validar cada ação sensível antes da execução",concepts:["delegação controlada","confirmação humana","memória não confiável"],glossary:[["Agente","Sistema que planeja e utiliza ferramentas para alcançar objetivos."],["Tool call","Solicitação de uma ação a um serviço ou ferramenta."],["Human in the loop","Etapa de aprovação humana antes de decisões sensíveis."]],videoId:"qoajxoBYghE",videoTitle:"Top 10 de riscos em aplicações agênticas",videoSource:"OWASP GenAI Security Project · YouTube público",videoPageUrl:"https://www.youtube.com/watch?v=qoajxoBYghE",readingUrl:"https://genai.owasp.org/"},
+};
+
+function ModuleLearningMaterial({course,module,lessonStep}:{course:Course;module:Module;lessonStep:number}) {
+  const guide=extraLearningGuides[course.id]||courseLearningGuides[course.id];
+  const pack=moduleStudyPack(module.id);
+  const chapters=pack?.chapters??studyChapters(course.id,module.title,module.id)??[
+    {title:`Fundamentos de ${module.title}`,text:`Este capítulo apresenta ${module.title} dentro de ${guide?.focus??course.title}. Comece identificando ativos, atores, entradas e decisões de confiança. O objetivo não é memorizar ferramentas, mas entender por que o controle existe e como verificar sua efetividade.`},
+    {title:"Como reconhecer o risco",text:"Observe comportamentos inesperados, diferenças de autorização, mensagens de erro, registros e fluxos que aceitam dados sem validação suficiente. Em cada hipótese, registre pré-condição, ação, resultado esperado e resultado observado."},
+    {title:"Como construir a defesa",text:"Aplique o controle no servidor, use menor privilégio, falhe de modo seguro e produza telemetria útil. A correção só está completa quando um novo teste confirma o bloqueio e não cria regressões no fluxo legítimo."},
+  ];
+  const activeChapter=chapters[Math.max(0,Math.min(lessonStep-1,2))];
+  const checklist=pack?.checklist[lessonStep-1]??(lessonStep===1?["Defina o ativo e o impacto de negócio","Mapeie entradas e limites de confiança","Diferencie causa, evidência e consequência"]:lessonStep===2?["Use somente o ambiente isolado do curso","Registre passos mínimos e reproduzíveis","Não acesse dados de terceiros nem amplie o escopo"]:["Corrija a causa no servidor","Adicione testes positivos e negativos","Monitore tentativas e documente o risco residual"]);
+  const concepts=pack?.concepts??guide?.concepts??[module.title];
+  const glossary=pack?.glossary??guide?.glossary??[];
+  return <>
+    {lessonStep===1&&guide&&<section className="lesson-video-block"><div className="lesson-video-frame"><iframe src={`https://www.youtube-nocookie.com/embed/${guide.videoId}`} title={`${guide.videoTitle} — material complementar de ${course.title}`} loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen/></div><div className="lesson-video-info"><div className="validated-video-badges"><span>✓ FONTE VALIDADA</span><span>TÉCNICO</span></div><p className="eyebrow">VIDEOAULA COMPLEMENTAR</p><h2>{guide.videoTitle}</h2><p>Assista à introdução e conecte o vídeo ao tema <strong>{module.title}</strong>.</p><ul><li>Qual ativo precisa ser protegido?</li><li>Onde está a principal decisão de confiança?</li><li>Como comprovar que a mitigação funciona?</li></ul><div className="video-source"><span>{guide.videoSource}</span><a href={guide.videoPageUrl} target="_blank" rel="noreferrer">Ver plataforma ↗</a></div></div></section>}
+    <section className="didactic-material"><header><div><p className="eyebrow">MATERIAL DIDÁTICO · CAPÍTULO {lessonStep}</p><h2>{activeChapter.title}</h2></div><button onClick={()=>window.print()}>Salvar material em PDF</button></header><p className="material-lead">{activeChapter.text}</p><div className="material-grid"><article><span>01</span><h3>Conceitos-chave</h3><ul>{concepts.map(concept=><li key={concept}>{concept}</li>)}</ul></article><article><span>02</span><h3>Aplicação no módulo</h3><p>{pack?pack.practice:`Você vai ${guide?.practice??`estudar ${module.title}`}, com foco específico em ${module.title}.`}</p></article><article><span>03</span><h3>Pergunta de reflexão</h3><p>{pack?.reflection??"Que evidência diferenciaria um comportamento esperado de uma falha real neste cenário?"}</p></article></div><div className="study-checklist"><div><h3>Checklist de aprendizagem</h3><p>Revise cada item antes de avançar.</p></div><ul>{checklist.map(item=><li key={item}><span>✓</span>{item}</li>)}</ul></div><div className="module-glossary"><div><h3>Glossário do módulo</h3><p>Termos essenciais para revisar antes do quiz.</p></div>{glossary.map(([term,meaning])=><article key={term}><strong>{term}</strong><p>{meaning}</p></article>)}</div><footer>{guide?<a href={guide.readingUrl} target="_blank" rel="noreferrer">Leitura complementar oficial ↗</a>:null}{course.id==="owasp"?<a href="https://videos.owasp.org/" target="_blank" rel="noreferrer">Biblioteca de vídeos OWASP ↗</a>:null}</footer></section>
+  </>;
+}
+
+function ModuleLesson({ current, selectedCourse, completed, completeModule, openModule, quizPassed, onQuizPass, studiedSteps, onRecordStep, go }: { current:Module; selectedCourse:string; completed:string[]; completeModule:(id:string)=>void; openModule:(id:string)=>void; quizPassed:boolean; onQuizPass:(courseId:string)=>void; studiedSteps:Record<string,number[]>; onRecordStep:(moduleId:string,step:number)=>void; go:(view:View)=>void }) {
+  const [lessonStep,setLessonStep]=useState(1);
+  const [courseArea,setCourseArea]=useState<"conteudo"|"evolucao"|"prova">("conteudo");
+  const [lessonTheme,setLessonTheme]=useState<"dark"|"light">("dark");
+  const course=courses.find(item=>item.id===selectedCourse)||courses.find(item=>item.modules.some(module=>module.id===current.id))||courses[0];
+  const moduleIndex=course.modules.findIndex(module=>module.id===current.id);
+  const isDone=completed.includes(current.id);
+  const previousModule=course.modules[moduleIndex-1];
+  const nextModule=course.modules[moduleIndex+1];
+  const completedModules=completed.filter(id=>course.modules.some(module=>module.id===id)).length;
+  const coursePercent=Math.round(completedModules/course.modules.length*100);
+  const currentSteps=studiedSteps[current.id]||[];
+  useEffect(()=>{setLessonStep(1);setCourseArea("conteudo")},[current.id]);
+  useEffect(()=>{const savedTheme=localStorage.getItem("vulcanlab-lesson-theme");if(savedTheme==="light"||savedTheme==="dark")setLessonTheme(savedTheme)},[]);
+  function toggleLessonTheme(){const next=lessonTheme==="dark"?"light":"dark";setLessonTheme(next);localStorage.setItem("vulcanlab-lesson-theme",next)}
+  function recordStep(step:number){if(!(studiedSteps[current.id]||[]).includes(step)) onRecordStep(current.id,step)}
+  function changeStep(step:number){recordStep(lessonStep);setLessonStep(step);window.scrollTo({top:0,behavior:"smooth"})}
+  function finishModule(){recordStep(lessonStep);completeModule(current.id)}
+  const ops=learningTrails[0].courseIds.includes(course.id);
+  const hasLab=courseLabs.some(lab=>lab.courseId===course.id);
+  const objectives=ops?[
+    `Explicar o controle mínimo de ${current.title} em ambiente isolado`,
+    "Reconhecer o desvio no laboratório sintético e registrar evidência",
+    "Aplicar a correção operacional e validar o caso negativo",
+  ]:[
+    `Reconhecer os principais riscos relacionados a ${current.title}`,
+    "Analisar um cenário vulnerável em ambiente controlado",
+    "Aplicar correções e validar a mitigação com segurança",
+  ];
+  const lead=ops?(lessonStep===1?"Aprenda o conceito operacional, o controle mínimo e como verificar no laboratório isolado.":lessonStep===2?"Observe o desvio no cenário sintético e registre evidência reproduzível — sem sair do ambiente do curso.":"Aplique o controle no host, no cluster ou na declaração de infraestrutura e confirme o fluxo legítimo e o caso negativo."):(lessonStep===1?"Aprenda a identificar, compreender e corrigir este tipo de risco com exemplos seguros e aplicáveis ao desenvolvimento de software.":lessonStep===2?"Observe como a falha aparece em uma aplicação fictícia e aprenda a reconhecer evidências sem atingir sistemas reais.":"Aplique defesa em profundidade e valide cada controle com um roteiro de testes autorizado.");
+  const articleTitle=lessonStep===1?"Por que este tema importa?":lessonStep===2?"Cenário de análise controlada":ops?"Checklist de operação":"Checklist de correção";
+  const articleText=ops?(lessonStep===1?"Operação segura nasce quando o controle é explícito, o dono existe e a evidência é reproduzível. Neste módulo: entenda o conceito, reconheça o desvio no laboratório e confirme a correção sem sair do sandbox.":lessonStep===2?`O laboratório de ${course.title} apresenta um desvio relacionado a ${current.title}. Compare o esperado com o observado, registre comando e saída, e não amplie o escopo.`:"Aplique o controle na configuração ou na declaração, teste o fluxo legítimo e o caso negativo, e documente o risco residual com um alerta de regressão."):(lessonStep===1?"Falhas de segurança surgem quando controles técnicos e decisões de negócio não são avaliados em conjunto. Neste módulo, você seguirá um método simples: entender o risco, observar o comportamento vulnerável e confirmar que a correção realmente bloqueia o ataque.":lessonStep===2?`Uma aplicação de treinamento apresenta um comportamento relacionado a ${current.title}. Sua tarefa é identificar a entrada, o controle ausente e o impacto possível, registrando apenas evidências do ambiente isolado.`:"Implemente validação no servidor, menor privilégio, tratamento seguro de erros e monitoramento. Depois, repita o teste para confirmar que o comportamento vulnerável deixou de ocorrer.");
+  return <div className={`lesson-page ${lessonTheme}`}>
+    <header className="lesson-header"><button className="back-chip" onClick={()=>go("trilha")} aria-label="Voltar ao conteúdo do curso">←</button><div><small>{course.code} · MÓDULO {moduleIndex+1} DE {course.modules.length}</small><strong>{current.title}</strong></div><button className="lesson-theme-toggle" onClick={toggleLessonTheme} aria-label={`Ativar tema ${lessonTheme==="dark"?"claro":"escuro"}`}>{lessonTheme==="dark"?"☀ Tema claro":"◐ Tema escuro"}</button><span className={isDone?"lesson-status done":"lesson-status"}>{isDone?"✓ CONCLUÍDO":"EM ANDAMENTO"}</span></header>
+    <nav className="course-area-tabs" aria-label="Áreas do curso"><button className={courseArea==="conteudo"?"active":""} onClick={()=>setCourseArea("conteudo")}><i>01</i><span><strong>Conteúdo</strong><small>Aulas e materiais</small></span></button><button className={courseArea==="evolucao"?"active":""} onClick={()=>setCourseArea("evolucao")}><i>02</i><span><strong>Evolução</strong><small>{coursePercent}% do curso</small></span></button><button className={courseArea==="prova"?"active":""} onClick={()=>setCourseArea("prova")}><i>03</i><span><strong>Prova</strong><small>{quizPassed?"Aprovado":"10 questões"}</small></span></button></nav>
+    {courseArea==="conteudo"&&<div className="lesson-layout"><aside className="lesson-sidebar"><p>MÓDULOS DO CURSO</p>{course.modules.map((module,index)=><button key={module.id} className={module.id===current.id?"active":""} onClick={()=>openModule(module.id)}><i>{completed.includes(module.id)?"✓":index+1}</i><span>{module.title}<small>{completed.includes(module.id)?"Concluído":module.id===current.id?`${currentSteps.length}/3 etapas estudadas`:`${module.lessons} aulas · ${module.xp} XP`}</small></span></button>)}<div className="lesson-course-progress"><small>PROGRESSO NO CURSO</small><strong>{completedModules} de {course.modules.length} módulos</strong><i><em style={{width:`${coursePercent}%`}}/></i><button onClick={()=>setCourseArea("evolucao")}>Ver evolução detalhada →</button></div></aside>
+      <main className="lesson-content"><div className="lesson-pagination-head"><div><span>PÁGINA {lessonStep} DE 3</span><strong>{lessonStep===1?"Conceitos essenciais":lessonStep===2?"Cenário vulnerável":"Correção e validação"}</strong></div><div className="page-dots" aria-label={`Página ${lessonStep} de 3`}>{[1,2,3].map(step=><button key={step} className={`${lessonStep===step?"active":""} ${currentSteps.includes(step)||isDone?"studied":""}`} onClick={()=>changeStep(step)} aria-label={`Abrir página ${step}`}>{currentSteps.includes(step)||isDone?"✓":step}</button>)}</div></div><nav className="lesson-tabs" aria-label="Páginas do módulo"><button className={lessonStep===1?"active":""} onClick={()=>changeStep(1)}><span>1</span>Entender</button><button className={lessonStep===2?"active":""} onClick={()=>changeStep(2)}><span>2</span>Analisar</button><button className={lessonStep===3?"active":""} onClick={()=>changeStep(3)}><span>3</span>Corrigir</button></nav><div className="lesson-copy"><p className="eyebrow">AULA {lessonStep} · {lessonStep===1?"FUNDAMENTOS":lessonStep===2?"DEMONSTRAÇÃO SEGURA":"PRÁTICA GUIADA"}</p><h1>{current.title}</h1><p>{lead}</p></div>{lessonStep===1&&<section className="learning-card"><div><span className={`trail-number ${current.tone}`}>{moduleIndex+1}</span><div><small>OBJETIVOS DE APRENDIZAGEM</small><h2>Ao final deste módulo, você será capaz de:</h2></div></div><ul>{objectives.map(objective=><li key={objective}><span>✓</span>{objective}</li>)}</ul></section>}<section className="lesson-article"><h2>{articleTitle}</h2><p>{articleText}</p><div className="lesson-callout"><strong>{lessonStep===2?"Regras do exercício":"Ambiente seguro"}</strong><p>Todos os exemplos são simulações educacionais. Execute os testes somente nos laboratórios da VulcanAcademy ou em sistemas para os quais você possua autorização explícita.</p></div><h2>Fluxo de análise</h2><div className="analysis-steps">{(ops?[["Identificar","Situar ativo, dono e controle."],["Medir","Comparar esperado e observado."],["Controlar","Aplicar a correção operacional."],["Validar","Confirmar o caso negativo."]]:[["Identificar","Reconheça a superfície de risco."],["Testar","Reproduza em ambiente controlado."],["Corrigir","Aplique defesa em profundidade."],["Validar","Confirme que o risco foi removido."]]).map(([label,hint],index)=><span key={label}><b>{String(index+1).padStart(2,"0")}</b><strong>{label}</strong><small>{hint}</small></span>)}</div></section><div className="lesson-material-shell"><ModuleLearningMaterial course={course} module={current} lessonStep={lessonStep}/></div><footer className="lesson-actions"><button className="outline-button" onClick={()=>lessonStep>1?changeStep(lessonStep-1):previousModule?openModule(previousModule.id):go("trilha")}>← {lessonStep>1?"Página anterior":previousModule?"Módulo anterior":"Voltar ao curso"}</button>{hasLab&&<button className="outline-button lab-launch" onClick={()=>go("laboratorio")}>Abrir laboratório</button>}{lessonStep<3?<button className="primary-button" onClick={()=>changeStep(lessonStep+1)}>Marcar estudado e avançar →</button>:nextModule?<button className="primary-button" onClick={()=>{finishModule();openModule(nextModule.id)}}>Concluir módulo e avançar →</button>:<button className="primary-button" onClick={()=>{finishModule();setCourseArea("evolucao")}}>{isDone?"Ver evolução do curso →":"Concluir último módulo"}</button>}</footer></main>
+    </div>}
+    {courseArea==="evolucao"&&<section className="course-progress-page"><header><div><p className="eyebrow">SUA EVOLUÇÃO</p><h1>{course.title}</h1><p>Acompanhe o que já foi concluído e o que falta para liberar o certificado.</p></div><div className="progress-ring" style={{background:`conic-gradient(#7b55e7 ${coursePercent}%,#2a2e39 0)`}}><span><strong>{coursePercent}%</strong><small>concluído</small></span></div></header><div className="progress-summary"><article><span>✓</span><div><strong>{completedModules}/{course.modules.length}</strong><small>módulos concluídos</small></div></article><article><span>◆</span><div><strong>{completed.filter(id=>course.modules.some(module=>module.id===id)).reduce((sum,id)=>sum+(course.modules.find(module=>module.id===id)?.xp||0),0)} XP</strong><small>conquistados no curso</small></div></article><article><span>▣</span><div><strong>{quizPassed?"Aprovado":"Pendente"}</strong><small>prova final</small></div></article></div><div className="progress-module-list"><div className="progress-list-head"><h2>Progresso por módulo</h2><span>{completedModules} concluídos</span></div>{course.modules.map((module,index)=>{const done=completed.includes(module.id);const steps=studiedSteps[module.id]?.length||0;return <article key={module.id} className={done?"done":module.id===current.id?"current":""}><i>{done?"✓":index+1}</i><div><strong>{module.title}</strong><small>{done?"Módulo concluído":steps?`${steps} de 3 etapas estudadas`:"Ainda não iniciado"}</small></div><span>{done?`+${module.xp} XP`:`${Math.round((done?3:steps)/3*100)}%`}</span><button onClick={()=>openModule(module.id)}>{done?"Revisar":"Continuar"} →</button></article>})}</div><footer className="certificate-requirements"><div><p className="eyebrow">CERTIFICADO</p><h2>Requisitos de conclusão</h2></div><ul><li className={completedModules===course.modules.length?"done":""}><span>{completedModules===course.modules.length?"✓":"○"}</span>Concluir todos os módulos</li><li className={quizPassed?"done":""}><span>{quizPassed?"✓":"○"}</span>Obter pelo menos 9/10 na prova</li></ul><button className="primary-button" onClick={()=>completedModules===course.modules.length?setCourseArea("prova"):openModule(course.modules.find(module=>!completed.includes(module.id))?.id||course.modules[0].id)}>{completedModules===course.modules.length?"Fazer prova final":"Continuar estudos"} →</button></footer></section>}
+    {courseArea==="prova"&&<div className="quiz-area"><div className="quiz-intro"><div><p className="eyebrow">AVALIAÇÃO FINAL</p><h1>Prova de {course.title}</h1><p>Responda às 10 questões em uma área dedicada, sem misturar a avaliação com o material de estudo.</p></div><aside><span>85%</span><strong>Taxa de aprovação</strong><small>Na prática, são necessários 9 acertos em 10.</small></aside></div><CourseQuiz course={course} passed={quizPassed} onPass={()=>onQuizPass(course.id)} /></div>}
+  </div>;
+}
+
+function CourseQuiz({course,passed,onPass}:{course:Course;passed:boolean;onPass:()=>void}) {
+  const [answers,setAnswers]=useState<Record<number,number>>({});
+  const [result,setResult]=useState<{correct:number;approved:boolean}|null>(null);
+  const [message,setMessage]=useState("");
+  const questions=useMemo(()=>courseQuizQuestions(course.id),[course.id]);
+  useEffect(()=>{setAnswers({});setResult(null);setMessage("")},[course.id]);
+  function submitQuiz(){
+    if(Object.keys(answers).length<10){setMessage("Responda às 10 questões antes de enviar.");return}
+    const correct=questions.reduce((total,item,index)=>total+(answers[index]===item.correct?1:0),0);
+    const approved=correct>=9;
+    setResult({correct,approved});
+    setMessage(approved?"Aprovado! O quiz final deste curso foi concluído.":"Você precisa de pelo menos 9 acertos. Revise o conteúdo e tente novamente.");
+    if(approved)onPass();
+  }
+  return <section className="course-quiz" id="course-quiz"><header><div><p className="eyebrow">AVALIAÇÃO FINAL · {course.code}</p><h2>Quiz do curso</h2><p>10 questões · aprovação com 85% de acertos · mínimo de 9 respostas corretas</p></div><span className={passed||result?.approved?"approved":""}>{passed||result?.approved?"✓ APROVADO":"NOTA MÍNIMA 9/10"}</span></header><div className="quiz-questions">{questions.map((item,index)=><article key={item.question}><div><b>{String(index+1).padStart(2,"0")}</b><h3>{item.question}</h3></div><div className="quiz-options">{item.options.map((option,optionIndex)=><button key={option} className={answers[index]===optionIndex?"selected":""} onClick={()=>{setAnswers(currentAnswers=>({...currentAnswers,[index]:optionIndex}));setResult(null);setMessage("")}} aria-pressed={answers[index]===optionIndex}><i>{String.fromCharCode(65+optionIndex)}</i>{option}</button>)}</div></article>)}</div><footer><div><strong>{Object.keys(answers).length}/10</strong><span>questões respondidas</span>{message&&<p className={result?.approved?"quiz-success":"quiz-warning"}>{message}</p>}</div><button className="primary-button" onClick={submitQuiz}>{passed?"Refazer quiz":"Enviar respostas"} →</button></footer>{result&&<div className={`quiz-result ${result.approved?"approved":"failed"}`}><strong>{result.correct}/10</strong><span>{result.correct*10}% de acertos</span></div>}</section>;
+}
+
+function Lab({selectedCourse,enrolledCourses,completeLab,notify}:{selectedCourse:string;enrolledCourses:string[];completeLab:(moduleId:string,xp:number)=>void;notify:(message:string)=>void}) {
+  const initial=courseLabs.find(lab=>lab.courseId===selectedCourse&&enrolledCourses.includes(lab.courseId))||null;
+  const [activeLabId,setActiveLabId]=useState<string|null>(initial?.id||null);
+  const [step,setStep]=useState(1);
+  const [terminalHistory,setTerminalHistory]=useState<{command:string;output:string}[]>([]);
+  const [selectedCommand,setSelectedCommand]=useState(0);
+  const [checks,setChecks]=useState([false,false,false]);
+  const activeLab=courseLabs.find(lab=>lab.id===activeLabId)||null;
+  function openLab(lab:LabDefinition){if(!enrolledCourses.includes(lab.courseId)){notify("Matricule-se neste curso para liberar o laboratório.");return}setActiveLabId(lab.id);setStep(1);setTerminalHistory([]);setChecks([false,false,false]);window.scrollTo({top:0,behavior:"smooth"})}
+  function runCommand(){if(!activeLab)return;const item=activeLab.terminalCommands[selectedCommand];setTerminalHistory(history=>[...history,{command:item.command,output:item.output}]);setChecks(current=>current.map((value,index)=>index===selectedCommand?true:value));if(selectedCommand<activeLab.terminalCommands.length-1)setSelectedCommand(selectedCommand+1)}
+  if(!activeLab)return <div className="lab-hub page inner-page"><div className="page-title catalog-title"><div><p className="eyebrow">AMBIENTES PRÁTICOS</p><h1>Laboratórios por curso</h1><p>Cada formação possui um cenário isolado com terminal, telas de sistemas e retornos totalmente simulados.</p></div><span className="safe-tag">● SIMULAÇÕES SEGURAS</span></div><div className="lab-catalog">{courseLabs.map(lab=>{const course=courses.find(item=>item.id===lab.courseId)!;const unlocked=enrolledCourses.includes(lab.courseId);return <article key={lab.id} className={!unlocked?"locked":""}><header><span className={`course-icon ${course.tone}`}>{course.icon}</span><div><small>{lab.id} · {course.code}</small><h2>{lab.title}</h2></div><b>{unlocked?"LIBERADO":"BLOQUEADO"}</b></header><p>{lab.summary}</p><dl><div><dt>Ambiente</dt><dd>{lab.environment}</dd></div><div><dt>Infra</dt><dd>{lab.provider}</dd></div><div><dt>Duração</dt><dd>{lab.duration} min</dd></div></dl><footer><span>◆ +{lab.xp} XP</span><button className={unlocked?"primary-button":"outline-button"} onClick={()=>openLab(lab)}>{unlocked?"Iniciar laboratório":"Requer matrícula"} →</button></footer></article>})}</div></div>;
+  const activeCourse=courses.find(course=>course.id===activeLab.courseId)!;
+  const learningContext=labLearningContexts[activeLab.courseId]||labLearningContexts.owasp;
+  const targetModule=activeCourse.modules[0];
+  return <div className="lab-v2"><header className="lab-v2-header"><button className="back-chip" onClick={()=>setActiveLabId(null)}>←</button><div><small>{activeLab.id} · {activeCourse.code}</small><strong>{activeLab.title}</strong></div><span>◷ {activeLab.duration} min</span><span>◆ +{activeLab.xp} XP</span><b>● AMBIENTE ISOLADO</b></header><nav className="lab-v2-steps">{["Cenário","Terminal","Sistema","Validação"].map((label,index)=><button key={label} className={step===index+1?"active":step>index+1?"done":""} onClick={()=>setStep(index+1)}><i>{step>index+1?"✓":index+1}</i><span>{label}<small>{index===0?"Objetivo e regras":index===1?"Comandos simulados":index===2?"Estado dos serviços":"Checklist final"}</small></span></button>)}</nav><main className="lab-v2-content">{step===1&&<section className="lab-scenario"><div><p className="eyebrow">CENÁRIO DO LABORATÓRIO</p><h1>{activeLab.title}</h1><p>{activeLab.summary}</p><article><span>🎯</span><div><small>OBJETIVO</small><strong>{activeLab.objective}</strong></div></article><article><span>⚑</span><div><small>REGRAS DE USO</small><strong>Todos os ativos, dados e retornos são fictícios. Nenhum comando é executado fora desta página.</strong></div></article></div><aside><div className="lab-machine-card"><span>KALI LINUX 2024.4</span><strong>{activeLab.environment}</strong><small>{activeLab.provider}</small><dl><div><dt>CPU</dt><dd>2 vCPU</dd></div><div><dt>Memória</dt><dd>4 GB</dd></div><div><dt>Rede</dt><dd>Isolada</dd></div><div><dt>TTL</dt><dd>60 min</dd></div></dl><b>● PRONTO PARA USO</b></div></aside></section>}{step===2&&<section className="terminal-workspace"><div className="terminal-guide"><p className="eyebrow">TERMINAL SIMULADO</p><h1>Execute o roteiro do laboratório</h1><p>Escolha um comando educacional e observe o retorno preparado para este cenário.</p><div className="command-picker">{activeLab.terminalCommands.map((item,index)=><button key={item.command} className={selectedCommand===index?"active":""} onClick={()=>setSelectedCommand(index)}><i>{checks[index]?"✓":index+1}</i><code>{item.command}</code></button>)}</div><button className="primary-button" onClick={runCommand}>Executar comando simulado →</button></div><div className="fake-terminal"><header><i/><i/><i/><span>vulcan@{activeLab.courseId}-sandbox:~</span><b>SIMULAÇÃO</b></header><div><p>VulcanAcademy Terminal 2.4 · ambiente sem acesso externo</p>{terminalHistory.map((item,index)=><section key={`${item.command}-${index}`}><code><span>$</span> {item.command}</code><pre>{item.output}</pre></section>)}{terminalHistory.length===0&&<em>Selecione um comando e clique em executar.</em>}<i className="terminal-cursor"/></div></div></section>}{step===3&&<section className="system-simulation"><div className="system-window"><header><div><i/><i/><i/></div><span>https://console.vulcan.local/{activeLab.courseId}</span><b>Conta de treinamento</b></header><aside><strong>VULCAN CLOUD</strong>{["Visão geral","Recursos","Identidade","Logs","Políticas"].map((item,index)=><span className={index===0?"active":""} key={item}>{item}</span>)}</aside><main><div><p className="eyebrow">AMBIENTE DO LABORATÓRIO</p><h2>{activeLab.title}</h2><p>Estado atual dos recursos após a simulação.</p></div><section>{activeLab.systemPanels.map(panel=><article className={panel.status} key={panel.label}><span>{panel.status==="ok"?"✓":panel.status==="warn"?"!":"i"}</span><small>{panel.label}</small><strong>{panel.value}</strong></article>)}</section><div className="system-log"><header><strong>Eventos recentes</strong><span>Atualizado agora</span></header>{terminalHistory.length?terminalHistory.slice(-3).map((item,index)=><p key={`${item.command}-${index}`}><i>●</i><span>{new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</span><code>{item.command}</code><b>registrado</b></p>):<p><i>●</i><span>--:--</span><code>Aguardando comandos do terminal</code><b>idle</b></p>}</div></main></div></section>}{step===4&&<section className="lab-validation"><header><p className="eyebrow">VALIDAÇÃO FINAL</p><h1>Conclua o laboratório</h1><p>Execute os três comandos simulados e confirme o aprendizado antes de receber o XP.</p></header><div>{activeLab.terminalCommands.map((item,index)=><article className={checks[index]?"done":""} key={item.command}><i>{checks[index]?"✓":"○"}</i><div><strong>{item.command}</strong><small>{checks[index]?"Executado e registrado":"Volte ao terminal para executar"}</small></div></article>)}</div><aside><span>◆</span><div><small>RECOMPENSA</small><strong>+{activeLab.xp} XP</strong><p>O primeiro módulo de {activeCourse.title} será marcado como concluído.</p></div><button className="primary-button" disabled={!checks.every(Boolean)} onClick={()=>completeLab(targetModule.id,activeLab.xp)}>Concluir laboratório →</button></aside></section>}<footer className="lab-v2-actions"><button className="outline-button" onClick={()=>step>1?setStep(step-1):setActiveLabId(null)}>← {step>1?"Etapa anterior":"Todos os laboratórios"}</button>{step<4&&<button className="primary-button" onClick={()=>setStep(step+1)}>Próxima etapa →</button>}</footer></main></div>;
+}
+
+type LabExercise = { title:string; vulnerable:string; secure:string; events:LabTimelineEvent[]; tests:string[] };
+
+const labExercises:Record<string,LabExercise>={
+  owasp:{title:"Corrigir autorização no servidor",vulnerable:`app.get('/orders/:id', async (req, res) => {\n  const order = await db.orders.find(req.params.id)\n  return res.json(order)\n})`,secure:`app.get('/orders/:id', requireAuth, async (req, res) => {\n  const order = await db.orders.findOne({\n    id: req.params.id, ownerId: req.user.id\n  })\n  if (!order) return res.sendStatus(404)\n  return res.json(order)\n})`,events:[{time:"00:00",source:"gateway",message:"Sessão de treinamento autenticada",severity:"info"},{time:"00:04",source:"api",message:"Acesso solicitado ao objeto 104",severity:"warn"},{time:"00:07",source:"policy",message:"Proprietário divergente detectado",severity:"critical"},{time:"00:10",source:"control",message:"Policy check bloqueou a resposta",severity:"ok"}],tests:["Usuário acessa o próprio pedido","Outro usuário recebe 404","Recurso inexistente não revela detalhes"]},
+  api:{title:"Aplicar BOLA e limite de consumo",vulnerable:`router.get('/accounts/:id', authenticate, showAccount)\n// o identificador recebido é usado sem validar o proprietário`,secure:`router.get('/accounts/:id', authenticate, async (req, res) => {\n  const account = await repo.findAuthorized(\n    req.params.id, req.user.tenantId\n  )\n  return account ? res.json(account) : res.sendStatus(404)\n})`,events:[{time:"00:00",source:"client",message:"Token válido recebido pelo gateway",severity:"info"},{time:"00:03",source:"api",message:"Sequência de IDs observada",severity:"warn"},{time:"00:06",source:"authz",message:"Tenant incompatível com o objeto",severity:"critical"},{time:"00:09",source:"gateway",message:"Resposta bloqueada e evento registrado",severity:"ok"}],tests:["Objeto do mesmo tenant é retornado","Objeto de outro tenant é bloqueado","Burst excedente recebe HTTP 429"]},
+  cloud:{title:"Reduzir privilégio e exposição",vulnerable:`resource "training_bucket" {\n  public_access = true\n}\nrole = "editor"`,secure:`resource "training_bucket" {\n  public_access = false\n  audit_logging = true\n}\nrole = "training_reader"`,events:[{time:"00:00",source:"cspm",message:"Varredura de postura iniciada",severity:"info"},{time:"00:05",source:"storage",message:"Acesso público identificado",severity:"critical"},{time:"00:08",source:"iam",message:"Papel editor acima do necessário",severity:"warn"},{time:"00:12",source:"policy",message:"Storage privado e papel mínimo aplicados",severity:"ok"}],tests:["Storage rejeita acesso anônimo","Conta mantém apenas leitura necessária","Auditoria registra alteração de política"]},
+  devsecops:{title:"Criar gates de segurança no pipeline",vulnerable:`steps:\n  - run: build\n  - run: deploy # promoção sem gates`,secure:`steps:\n  - run: sast --fail-on critical\n  - run: sca --generate-sbom\n  - run: secrets scan\n  - run: deploy --require-policy-pass`,events:[{time:"00:00",source:"runner",message:"Pipeline educacional iniciado",severity:"info"},{time:"00:04",source:"secrets",message:"Segredo de demonstração detectado",severity:"critical"},{time:"00:07",source:"policy",message:"Promoção para deploy interrompida",severity:"warn"},{time:"00:11",source:"runner",message:"Novo commit aprovado em todos os gates",severity:"ok"}],tests:["Achado crítico bloqueia promoção","SBOM é gerado como artefato","Deploy só inicia após policy pass"]},
+};
+
+function EnhancedLab({selectedCourse,enrolledCourses,completeLab,notify}:{selectedCourse:string;enrolledCourses:string[];completeLab:(moduleId:string,xp:number)=>void;notify:(message:string)=>void}) {
+  const initialLab=courseLabs.find(lab=>lab.courseId===selectedCourse&&enrolledCourses.includes(lab.courseId))||null;
+  const [activeLabId,setActiveLabId]=useState<string|null>(initialLab?.id||null);
+  const [step,setStep]=useState(1);
+  const [selectedCommand,setSelectedCommand]=useState(0);
+  const [terminalHistory,setTerminalHistory]=useState<{command:string;output:string;commandIndex:number}[]>([]);
+  const [checks,setChecks]=useState([false,false,false]);
+  const [eventCount,setEventCount]=useState(0);
+  const [simulationRunning,setSimulationRunning]=useState(false);
+  const [selectedFix,setSelectedFix]=useState<"vulnerable"|"secure">("vulnerable");
+  const [testResult,setTestResult]=useState<"idle"|"failed"|"passed">("idle");
+  const [codeFile,setCodeFile]=useState<"vulnerable"|"secure"|"tests"|"policy">("vulnerable");
+  const [consoleTab,setConsoleTab]=useState<"app"|"gateway"|"siem">("app");
+  const [consoleRuns,setConsoleRuns]=useState<string[]>([]);
+  const [labTheme,setLabTheme]=useState<LabTheme|"todos">("todos");
+  const activeLab=courseLabs.find(lab=>lab.id===activeLabId)||null;
+  const visibleLabs=labTheme==="todos"?courseLabs:courseLabs.filter(lab=>lab.theme===labTheme);
+
+  function openLab(lab:LabDefinition){
+    if(!enrolledCourses.includes(lab.courseId)){notify("Matricule-se neste curso para liberar o laboratório.");return}
+    setActiveLabId(lab.id);setStep(1);setSelectedCommand(0);setTerminalHistory([]);setChecks([false,false,false]);setEventCount(0);setSimulationRunning(false);setSelectedFix("vulnerable");setTestResult("idle");setCodeFile("vulnerable");setConsoleTab("app");setConsoleRuns([]);window.scrollTo({top:0,behavior:"smooth"});
+  }
+
+  function runCommand(){
+    if(!activeLab)return;
+    const item=activeLab.terminalCommands[selectedCommand];
+    setTerminalHistory(history=>[...history,{...item,commandIndex:selectedCommand}]);
+    setChecks(current=>current.map((value,index)=>index===selectedCommand?true:value));
+    if(selectedCommand<activeLab.terminalCommands.length-1)setSelectedCommand(selectedCommand+1);
+  }
+
+  if(!activeLab)return <div className="lab-hub page inner-page">
+    <div className="page-title catalog-title"><div><p className="eyebrow">KALI LINUX · SANDBOX</p><h1>Laboratórios por temática</h1><p>Cada cenário usa trechos reais de Nmap, Gobuster, Nikto, sqlmap, ffuf, Nuclei e tshark — só contra hosts *.lab.local.</p></div><span className="safe-tag">● {courseLabs.length} SIMULAÇÕES KALI</span></div>
+    <section className="lab-theme-summary">{labThemeDefinitions.map(theme=><article key={theme.id}><span>{theme.icon}</span><div><strong>{theme.label}</strong><small>{theme.description}</small></div><b>{themedLabs.filter(lab=>lab.theme===theme.id).length} labs</b></article>)}</section>
+    <nav className="lab-theme-tabs" aria-label="Filtrar laboratórios por temática"><button className={labTheme==="todos"?"active":""} onClick={()=>setLabTheme("todos")}>Todos <b>{courseLabs.length}</b></button>{labThemeDefinitions.map(theme=><button key={theme.id} className={labTheme===theme.id?"active":""} onClick={()=>setLabTheme(theme.id)}>{theme.icon} {theme.label}<b>{themedLabs.filter(lab=>lab.theme===theme.id).length}</b></button>)}</nav>
+    <div className="lab-result-heading"><div><p className="eyebrow">{labTheme==="todos"?"CATÁLOGO COMPLETO":labThemeDefinitions.find(theme=>theme.id===labTheme)?.label.toUpperCase()}</p><h2>{visibleLabs.length} laboratórios disponíveis</h2></div><span>Cada cenário inclui eventos, código, terminais e testes</span></div>
+    <div className="lab-catalog">{visibleLabs.map(lab=>{const course=courses.find(item=>item.id===lab.courseId)!;const unlocked=enrolledCourses.includes(lab.courseId);const theme=labThemeDefinitions.find(item=>item.id===lab.theme);return <article key={lab.id} className={!unlocked?"locked":""}><header><span className={`course-icon ${course.tone}`}>{course.icon}</span><div><small>{lab.id} · {course.code}</small><h2>{lab.title}</h2></div><b>{unlocked?"LIBERADO":"BLOQUEADO"}</b></header>{theme&&<span className="lab-theme-badge">{theme.icon} {theme.label}</span>}<p>{lab.summary}</p><dl><div><dt>Ambiente</dt><dd>{lab.environment}</dd></div><div><dt>Infra</dt><dd>{lab.provider}</dd></div><div><dt>Duração</dt><dd>{lab.duration} min</dd></div></dl><footer><span>◆ +{lab.xp} XP</span><button className={unlocked?"primary-button":"outline-button"} onClick={()=>openLab(lab)}>{unlocked?"Iniciar laboratório":"Requer matrícula"} →</button></footer></article>})}</div>
+  </div>;
+
+  const activeCourse=courses.find(course=>course.id===activeLab.courseId)!;
+  const learningContext=labLearningContexts[activeLab.courseId]||labLearningContexts.owasp;
+  const targetModule=activeCourse.modules[0];
+  const previewCommand=activeLab.terminalCommands[selectedCommand];
+  const previewGuide=learningContext.commandGuides[selectedCommand]||{action:"Trecho Kali Linux executado só contra o host de laboratório.",interpretation:"Leia a saída simulada. Nenhum pacote deixa 10.20.0.0/28."};
+  const exercise=labExercises[activeLab.courseId]||{title:"Aplicar o controle defensivo",vulnerable:`function authorize(context) {\n  return true // controle ausente no cenário de treinamento\n}`,secure:`function authorize(context) {\n  return context.authenticated\n    && context.scope.includes('training:read')\n    && context.resourceOwner === context.userId\n}`,events:[{time:"00:00",source:"sensor",message:"Cenário de treinamento iniciado",severity:"info" as const},{time:"00:04",source:"application",message:"Comportamento fora da política observado",severity:"warn" as const},{time:"00:07",source:"detector",message:"Regra de segurança correlacionou o evento",severity:"critical" as const},{time:"00:10",source:"control",message:"Controle defensivo bloqueou a ação",severity:"ok" as const}],tests:["Fluxo legítimo permanece disponível","Ação fora da política é bloqueada","Evento contém contexto para investigação"]};
+  const timelineEvents=createLabTimeline(activeLab);
+  const testCode=`describe('controles de segurança', () => {\n${exercise.tests.map(test=>`  test('${test}', async () => expect(control()).toBeSafe())`).join("\n")}\n})`;
+  const policyCode=`{\n  "environment": "training",\n  "default": "deny",\n  "requireAuthentication": true,\n  "enforceOwnership": true,\n  "audit": ["denied", "critical"]\n}`;
+  const codeContent=codeFile==="vulnerable"?exercise.vulnerable:codeFile==="secure"?exercise.secure:codeFile==="tests"?testCode:policyCode;
+  const simulatedConsoles={app:{label:"Aplicação",command:"tail -f /var/log/nginx/lab.access.log",lines:["10.20.0.8 - - [lab] \"GET /search?q=1' \" 200",`WARN ${learningContext.vulnerability}`,"INFO resposta sanitizada · host=web.lab.local"]},gateway:{label:"Gateway / WAF",command:"nmap -sV -p 8080,8443 api.lab.local",lines:["8080/tcp open  http  Express (lab)","8443/tcp open  ssl/http Kong (lab)","403 BOLA replay bloqueado após policy"]},siem:{label:"SIEM",command:"tshark -r /opt/lab/pcaps/case.pcap -Y http -T fields -e ip.src -e http.request.uri",lines:["10.20.0.8  /search?q=1","10.20.0.8  /orders/104","correlacionado: LAB-AUTHZ-04 · sandbox"]}};
+  const activeConsole=simulatedConsoles[consoleTab];
+
+  function runEventSimulation(){
+    if(simulationRunning)return;
+    setSimulationRunning(true);setEventCount(1);setTestResult("idle");
+    timelineEvents.slice(1).forEach((_,index)=>window.setTimeout(()=>setEventCount(index+2),520*(index+1)));
+    window.setTimeout(()=>setSimulationRunning(false),520*timelineEvents.length+350);
+  }
+
+  function runExerciseTests(){setTestResult(selectedFix==="secure"?"passed":"failed")}
+  function runSimulatedConsole(){setConsoleRuns(current=>[...current,`$ ${activeConsole.command}`,...activeConsole.lines])}
+
+  return <div className="lab-v2">
+    <header className="lab-v2-header"><button className="back-chip" onClick={()=>setActiveLabId(null)}>←</button><div><small>{activeLab.id} · {activeCourse.code}</small><strong>{activeLab.title}</strong></div><span>◷ {activeLab.duration} min</span><span>◆ +{activeLab.xp} XP</span><b>● AMBIENTE ISOLADO</b></header>
+    <nav className="lab-v2-steps">{["Cenário","Terminal","Eventos e testes","Sistema","Validação"].map((label,index)=><button key={label} className={step===index+1?"active":step>index+1?"done":""} onClick={()=>setStep(index+1)}><i>{step>index+1?"✓":index+1}</i><span>{label}<small>{index===0?"Aplicação e risco":index===1?"Ação e retorno":index===2?"Simulação e código":index===3?"Estado dos serviços":"Checklist final"}</small></span></button>)}</nav>
+    <main className="lab-v2-content">
+      {step===1&&<section className="lab-scenario enhanced-scenario"><div><p className="eyebrow">CONTEXTO DA APLICAÇÃO</p><h1>{activeLab.title}</h1><p>{activeLab.summary}</p><section className="application-context"><div><small>COMO A APLICAÇÃO FUNCIONA</small><strong>{learningContext.application}</strong><p>{learningContext.flow}</p></div><div><small>ATIVOS PROTEGIDOS</small><ul>{learningContext.assets.map(asset=><li key={asset}>✓ {asset}</li>)}</ul></div><div className="risk-context"><small>VULNERABILIDADE EM ESTUDO</small><strong>{learningContext.vulnerability}</strong><p>{learningContext.impact}</p></div></section><article><span>🎯</span><div><small>OBJETIVO DA ATIVIDADE</small><strong>{activeLab.objective}</strong></div></article><article><span>⚑</span><div><small>O QUE SERÁ EXECUTADO</small><strong>Três trechos de Kali Linux (Nmap, enumeração, inspeção) contra hosts *.lab.local. Nada sai da rede 10.20.0.0/28.</strong></div></article></div><aside><div className="lab-machine-card"><span>KALI LINUX 2024.4</span><strong>{activeLab.environment}</strong><small>{activeLab.provider}</small><dl><div><dt>CPU</dt><dd>2 vCPU</dd></div><div><dt>Memória</dt><dd>4 GB</dd></div><div><dt>Rede</dt><dd>Isolada</dd></div><div><dt>TTL</dt><dd>60 min</dd></div></dl><b>● PRONTO PARA USO</b></div><div className="flow-mini"><small>FLUXO DA SIMULAÇÃO</small><span>Aplicação fictícia</span><i>↓</i><span>Comando educacional</span><i>↓</i><span>Retorno preparado</span><i>↓</i><span>Explicação técnica</span></div></aside></section>}
+
+      {step===2&&<section className="terminal-workspace explained-terminal"><div className="terminal-guide"><p className="eyebrow">TERMINAL KALI · SIMULADO</p><h1>Execute e entenda</h1><p>Selecione o trecho. A saída já está preparada no sandbox — o mesmo formato que você veria no Kali.</p><div className="command-picker">{activeLab.terminalCommands.map((item,index)=><button key={item.command} className={selectedCommand===index?"active":""} onClick={()=>setSelectedCommand(index)}><i>{checks[index]?"✓":index+1}</i><code>{item.command}</code></button>)}</div><button className="primary-button" onClick={runCommand}>Executar comando simulado →</button></div><div className="fake-terminal"><header><i/><i/><i/><span>kali@vulcan-lab:~</span><b>KALI · ISOLADO</b></header><div><p>Kali GNU/Linux Rolling · 10.20.0.0/28 · sem rota default</p>{terminalHistory.map((item,index)=><section key={`${item.command}-${index}`}><code><span>$</span> {item.command}</code><pre>{item.output}</pre></section>)}{terminalHistory.length===0&&<em>O terminal aguarda um comando. Leia a prévia didática abaixo antes de executar.</em>}<i className="terminal-cursor"/></div></div><section className="command-preview"><header><span>COMANDO SELECIONADO</span><b>PRÉVIA DIDÁTICA</b></header><code>$ {previewCommand.command}</code><div><article><small>O QUE SERÁ EXECUTADO</small><p>{previewGuide.action}</p></article><article className="vulnerability-box"><small>VULNERABILIDADE RELACIONADA</small><p>{learningContext.vulnerability}</p></article><article><small>COMO LER O RETORNO</small><p>{previewGuide.interpretation}</p></article></div></section><section className="command-explanation-board"><header><div><p className="eyebrow">QUADRO DE EXECUÇÕES</p><h2>Histórico explicado</h2><p>Cada comando executado permanece acompanhado de contexto, objetivo e interpretação.</p></div><span>● NENHUMA AÇÃO REAL</span></header>{terminalHistory.length===0?<div className="empty-command-board"><span>⌘</span><p>Execute o primeiro comando para criar o quadro de análise.</p></div>:terminalHistory.map((historyItem,historyIndex)=>{const guide=learningContext.commandGuides[historyItem.commandIndex]||previewGuide;return <article key={`${historyItem.command}-guide-${historyIndex}`}><div className="command-title"><i>{historyItem.commandIndex+1}</i><div><small>COMANDO EXECUTADO</small><code>$ {historyItem.command}</code></div><b>✓ REGISTRADO</b></div><div className="command-learning-grid"><section><small>CONTEXTO DA APLICAÇÃO</small><p>{learningContext.application}</p></section><section><small>O QUE FOI EXECUTADO</small><p>{guide.action}</p></section><section className="vulnerability-box"><small>VULNERABILIDADE</small><p>{learningContext.vulnerability}</p></section><section><small>INTERPRETAÇÃO DO RETORNO</small><p>{guide.interpretation}</p><pre>{historyItem.output}</pre></section></div></article>})}</section></section>}
+
+      {step===3&&<section className="lab-exercise-studio"><header><div><p className="eyebrow">SIMULAÇÃO ORIENTADA A EVENTOS</p><h1>Observe, corrija e valide</h1><p>Reproduza um incidente sintético, acompanhe os consoles, compare arquivos e execute testes de segurança sem sair do navegador.</p></div><div className={simulationRunning?"simulation-indicator running":"simulation-indicator"}><i/> {simulationRunning?"SIMULAÇÃO EM EXECUÇÃO":eventCount===timelineEvents.length?"CENÁRIO CONCLUÍDO":"PRONTO PARA INICIAR"}</div></header><div className="event-simulation-grid"><section className="event-stream"><div className="exercise-title"><div><small>LINHA DO TEMPO · {activeLab.title.toUpperCase()}</small><h2>{timelineEvents.length} eventos correlacionados</h2></div><button className="primary-button" onClick={runEventSimulation} disabled={simulationRunning}>{eventCount?"Executar novamente":"Iniciar simulação"} →</button></div><div className="event-stage"><div className="event-network"><span className="event-node client">Origem</span><i className={eventCount>=1?"active":""}/><span className="event-node gateway">Sensor</span><i className={eventCount>=2?"active":""}/><span className="event-node service">Análise</span><i className={eventCount>=3?"active":""}/><span className="event-node control">Controle</span></div></div><div className="event-feed">{timelineEvents.map((event,index)=><article key={`${event.time}-${event.source}`} className={`${event.severity} ${eventCount>index?"visible":""}`}><span>{event.time}</span><i>●</i><div><small>{event.source.toUpperCase()}</small><strong>{event.message}</strong></div><b>{event.severity==="critical"?"CRÍTICO":event.severity==="warn"?"ATENÇÃO":event.severity==="ok"?"RESOLVIDO":"INFO"}</b></article>)}</div></section><section className="exercise-brief"><small>MISSÃO PRÁTICA</small><h2>{exercise.title}</h2><p>Escolha uma implementação e rode a suíte de testes. O objetivo é bloquear o comportamento de risco sem interromper o fluxo legítimo.</p><ul><li>✓ Linha do tempo específica deste laboratório</li><li>✓ Dados e identidades são sintéticos</li><li>✓ Resultado reproduzível e explicado</li></ul><div className={`exercise-score ${testResult}`}><span>{testResult==="passed"?"100%":testResult==="failed"?"33%":"—"}</span><small>{testResult==="passed"?"CONTROLES APROVADOS":testResult==="failed"?"TESTES FALHARAM":"AGUARDANDO TESTE"}</small></div></section></div><section className="multi-terminal-simulator"><header><div><p className="eyebrow">CENTRAL DE TERMINAIS</p><h2>Aplicação, gateway e SIEM</h2></div><nav>{(["app","gateway","siem"] as const).map(tab=><button key={tab} className={consoleTab===tab?"active":""} onClick={()=>{setConsoleTab(tab);setConsoleRuns([])}}>{simulatedConsoles[tab].label}</button>)}</nav></header><div className="simulated-terminal"><header><i/><i/><i/><span>kali@vulcan-lab:{consoleTab}</span><b>SEM ROTA DEFAULT</b></header><div><p>Terminal educacional · saídas sintéticas</p>{consoleRuns.length===0?<em>Pronto para executar: {activeConsole.command}</em>:consoleRuns.map((line,index)=><code key={`${line}-${index}`} className={line.startsWith("$")?"command":"output"}>{line}</code>)}<span className="terminal-cursor"/></div><footer><code>$ {activeConsole.command}</code><button className="primary-button" onClick={runSimulatedConsole}>Executar no terminal →</button></footer></div></section><section className="code-challenge"><header><div><p className="eyebrow">DESAFIO DE CÓDIGO</p><h2>Explore os arquivos da correção</h2></div><div className="code-file-tabs" role="tablist" aria-label="Arquivos do exercício"><button className={codeFile==="vulnerable"?"active danger":""} onClick={()=>{setCodeFile("vulnerable");setSelectedFix("vulnerable");setTestResult("idle")}}>app.before</button><button className={codeFile==="secure"?"active safe":""} onClick={()=>{setCodeFile("secure");setSelectedFix("secure");setTestResult("idle")}}>app.secure</button><button className={codeFile==="tests"?"active":""} onClick={()=>setCodeFile("tests")}>security.spec</button><button className={codeFile==="policy"?"active":""} onClick={()=>setCodeFile("policy")}>policy.json</button></div></header><div className="code-editor"><div className="code-gutter">{codeContent.split("\n").map((_,index)=><span key={index}>{index+1}</span>)}</div><pre><code>{codeContent}</code></pre></div><div className="test-runner"><header><div><small>SUÍTE AUTOMATIZADA</small><strong>security.spec.ts</strong></div><button className="primary-button" onClick={runExerciseTests}>Executar testes →</button></header>{exercise.tests.map((test,index)=><div key={test} className={testResult==="passed"?"passed":testResult==="failed"&&index>0?"failed":""}><i>{testResult==="passed"?"✓":testResult==="failed"&&index>0?"×":"○"}</i><span>{test}</span><b>{testResult==="passed"?`${24+index*7} ms`:testResult==="failed"&&index>0?"falhou":"aguardando"}</b></div>)}{testResult!=="idle"&&<footer className={testResult}>{testResult==="passed"?"✓ Implementação segura: todos os controles foram validados.":"× A implementação ainda permite o comportamento de risco. Compare com a versão protegida."}</footer>}</div></section></section>}
+
+      {step===4&&<section className="system-simulation"><div className="system-context-banner"><div><small>O QUE ESTA TELA REPRESENTA</small><strong>Console administrativo da aplicação fictícia</strong><p>Os cards traduzem o resultado dos comandos em estados de controles. Eles não representam recursos reais nos provedores configurados.</p></div><div><small>RISCO OBSERVADO</small><strong>{learningContext.vulnerability}</strong></div></div><div className="system-window"><header><div><i/><i/><i/></div><span>https://console.vulcan.local/{activeLab.courseId}</span><b>Conta de treinamento</b></header><aside><strong>VULCAN CLOUD</strong>{["Visão geral","Recursos","Identidade","Logs","Políticas"].map((item,index)=><span className={index===0?"active":""} key={item}>{item}</span>)}</aside><main><div><p className="eyebrow">AMBIENTE DO LABORATÓRIO</p><h2>{activeLab.title}</h2><p>Estado simulado dos recursos depois das verificações executadas.</p></div><section>{activeLab.systemPanels.map(panel=><article className={panel.status} key={panel.label}><span>{panel.status==="ok"?"✓":panel.status==="warn"?"!":"i"}</span><small>{panel.label}</small><strong>{panel.value}</strong></article>)}</section><div className="system-log"><header><strong>Eventos recentes</strong><span>Atualizado agora</span></header>{terminalHistory.length?terminalHistory.slice(-3).map((item,index)=><p key={`${item.command}-${index}`}><i>●</i><span>{new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})}</span><code>{item.command}</code><b>simulado</b></p>):<p><i>●</i><span>--:--</span><code>Aguardando comandos do terminal</code><b>idle</b></p>}</div></main></div></section>}
+
+      {step===5&&<section className="lab-validation"><header><p className="eyebrow">VALIDAÇÃO FINAL</p><h1>Conclua o laboratório</h1><p>Execute os três comandos e aprove a suíte de testes antes de receber o XP.</p></header><div>{activeLab.terminalCommands.map((item,index)=><article className={checks[index]?"done":""} key={item.command}><i>{checks[index]?"✓":"○"}</i><div><strong>{item.command}</strong><small>{checks[index]?learningContext.commandGuides[index].interpretation:"Volte ao terminal para executar e interpretar"}</small></div></article>)}<article className={testResult==="passed"?"done":""}><i>{testResult==="passed"?"✓":"○"}</i><div><strong>security.spec.ts</strong><small>{testResult==="passed"?"Suíte defensiva aprovada":"Volte a Eventos e testes e valide a implementação protegida"}</small></div></article></div><aside><span>◆</span><div><small>RECOMPENSA</small><strong>+{activeLab.xp} XP</strong><p>O primeiro módulo de {activeCourse.title} será marcado como concluído.</p></div><button className="primary-button" disabled={!checks.every(Boolean)||testResult!=="passed"} onClick={()=>completeLab(targetModule.id,activeLab.xp)}>Concluir laboratório →</button></aside></section>}
+      <footer className="lab-v2-actions"><button className="outline-button" onClick={()=>step>1?setStep(step-1):setActiveLabId(null)}>← {step>1?"Etapa anterior":"Todos os laboratórios"}</button>{step<5&&<button className="primary-button" onClick={()=>setStep(step+1)}>Próxima etapa →</button>}</footer>
+    </main>
+  </div>;
+}
+
+type PatchNoteData = {
+  generatedAt:string;
+  repository:string;
+  highlights:{version:string;date:string;title:string;summary:string;items:string[]}[];
+  commits:{hash:string;shortHash:string;date:string;message:string;areas:string[];filesChanged:number}[];
+};
+
+function PatchNotes(){
+  const [data,setData]=useState<PatchNoteData|null>(null);
+  const [failed,setFailed]=useState(false);
+  useEffect(()=>{void fetch("/patch-notes.json").then(response=>{if(!response.ok)throw new Error("patch notes unavailable");return response.json() as Promise<PatchNoteData>}).then(setData).catch(()=>setFailed(true))},[]);
+  if(failed)return <div className="page inner-page patch-notes-page"><div className="page-title"><p className="eyebrow">Evolução da plataforma</p><h1>Patch notes</h1><p>O histórico não pôde ser carregado agora. Atualize a página para tentar novamente.</p></div></div>;
+  if(!data)return <div className="page inner-page patch-notes-page"><div className="page-title"><p className="eyebrow">Evolução da plataforma</p><h1>Patch notes</h1><p>Carregando as atualizações recentes...</p></div><div className="patch-notes-loading"><i/><i/><i/></div></div>;
+  const date=(value:string)=>new Intl.DateTimeFormat("pt-BR",{day:"2-digit",month:"long",year:"numeric"}).format(new Date(value));
+  return <div className="page inner-page patch-notes-page"><header className="patch-notes-hero"><div className="page-title"><p className="eyebrow">Evolução da plataforma</p><h1>Patch notes</h1><p>Acompanhe melhorias, correções e novos recursos publicados na VulcanAcademy.</p></div><aside><span>Última atualização</span><strong>{date(data.generatedAt)}</strong><small>{data.commits.length} commits recentes no histórico</small></aside></header><div className="patch-notes-layout"><main>{data.highlights.map((release,index)=><article className="release-note" key={`${release.version}-${release.title}`}><header><div><span>{index===0?"Versão atual":"Versão anterior"}</span><h2>{release.title}</h2><p>{release.summary}</p></div><time dateTime={release.date}>{date(release.date)}</time></header><ul>{release.items.map(item=><li key={item}><i>✓</i><span>{item}</span></li>)}</ul><footer>{release.version}</footer></article>)}</main><aside className="commit-history"><header><div><p className="eyebrow">Histórico recente</p><h2>Commits</h2></div><a href={data.repository} target="_blank" rel="noreferrer">Ver repositório ↗</a></header><div>{data.commits.map(commit=><article key={commit.hash}><span className="commit-line"/><div><time dateTime={commit.date}>{date(commit.date)}</time><h3>{commit.message}</h3><p>{commit.areas.join(" · ")} · {commit.filesChanged} {commit.filesChanged===1?"arquivo":"arquivos"}</p><a href={`${data.repository}/commit/${commit.hash}`} target="_blank" rel="noreferrer">{commit.shortHash}</a></div></article>)}</div></aside></div></div>;
+}
+
+function Ranking({ score, profile }: { score:number; profile:{name:string;photoUrl?:string} }) {
+  const initials=(name:string)=>name.split(" ").map(part=>part[0]).join("").slice(0,2).toUpperCase();
+  const [people,setPeople]=useState<{id:string;n:string;xp:number;c:string;photoUrl:string}[]>([{id:"me",n:profile.name,xp:score,c:initials(profile.name),photoUrl:profile.photoUrl||""}]);
+  useEffect(()=>{
+    void (async()=>{
+      try{
+        const response=await fetch("/api/ranking");
+        const data=await response.json() as {people?:{userId:string;name:string;xp:number;photoUrl?:string}[]};
+        const rows=(data.people||[]).map(person=>({id:person.userId,n:person.name,xp:Number(person.xp)||0,c:initials(person.name),photoUrl:person.photoUrl||""}));
+        if(!rows.some(row=>row.n===profile.name)) rows.push({id:"me",n:profile.name,xp:score,c:initials(profile.name),photoUrl:profile.photoUrl||""});
+        setPeople(rows.sort((a,b)=>b.xp-a.xp));
+      }catch{
+        setPeople([{id:"me",n:profile.name,xp:score,c:initials(profile.name),photoUrl:profile.photoUrl||""}]);
+      }
+    })();
+  },[profile.name,profile.photoUrl,score]);
+  const currentIndex=Math.max(0,people.findIndex(person=>person.n===profile.name));
+  const nextPerson=currentIndex>0?people[currentIndex-1]:null;
+  const xpToNext=nextPerson?Math.max(0,nextPerson.xp-score):0;
+  const avatar=(p:{n:string;c:string;photoUrl:string},size:"big"|"sm")=><span className={`avatar ${size} ranking-avatar`}>{p.c}{p.photoUrl&&<img src={p.photoUrl} alt={`Foto de ${p.n}`} loading="lazy" onError={event=>event.currentTarget.remove()}/>}</span>;
+  return <div className="page inner-page ranking-page"><div className="ranking-heading"><div className="page-title"><p className="eyebrow">Comunidade VulcanAcademy</p><h1>Ranking da comunidade</h1><p>Conclua módulos e laboratórios para somar XP. Sua posição é atualizada com o progresso registrado na academia.</p></div><aside className="ranking-summary"><span>Sua posição</span><strong>#{currentIndex+1}</strong><p>{nextPerson?`${xpToNext.toLocaleString("pt-BR")} XP para alcançar ${nextPerson.n}`:"Você está no topo da comunidade"}</p><div><i style={{width:`${nextPerson?Math.min(100,Math.round(score/Math.max(nextPerson.xp,1)*100)):100}%`}}/></div></aside></div><section className="ranking-podium" aria-label="Três primeiras posições"><header><div><p className="eyebrow">Destaques</p><h2>Top 3 da temporada</h2></div><span>Atualizado com o XP da comunidade</span></header><div className="podium">{people.slice(0,3).map((p,i)=><article className={`podium-item p${i+1} ${p.n===profile.name?"you":""}`} key={p.id}><span className="podium-place">{i+1}</span>{avatar(p,"big")}<div><strong>{p.n}</strong><small>{p.n===profile.name?"Você":"Membro da comunidade"}</small></div><b>{p.xp.toLocaleString("pt-BR")} <small>XP</small></b></article>)}</div></section><section className="ranking-board"><header><div><p className="eyebrow">Classificação completa</p><h2>Comunidade</h2></div><span>{people.length} {people.length===1?"participante":"participantes"}</span></header><div className="leaderboard"><div className="leaderboard-head"><span>Posição</span><span>Participante</span><span>Experiência</span></div>{people.map((p,i)=><article className={p.n===profile.name?"you":""} key={p.id}><span className="rank-position">{i+1}</span>{avatar(p,"sm")}<strong>{p.n}{p.n===profile.name&&<small>Você</small>}</strong><em>{p.xp.toLocaleString("pt-BR")} <small>XP</small></em></article>)}</div></section></div>;
+}
+
+function LegacyAdminPanel({userRole,notify}:{userRole:UserRole;notify:(message:string)=>void}) {
+  const [tab,setTab]=useState<"visao"|"alunos"|"cursos"|"permissoes">("visao");
+  const [query,setQuery]=useState("");
+  const [students,setStudents]=useState([
+    {id:1,name:"Marina Costa",email:"marina@exemplo.com",role:"aluno" as UserRole,plan:"Avançado",courses:3,progress:72,status:"Ativo"},
+    {id:2,name:"João Vieira",email:"joao@exemplo.com",role:"aluno" as UserRole,plan:"Médio",courses:2,progress:46,status:"Ativo"},
+    {id:3,name:"Beatriz Lima",email:"beatriz@exemplo.com",role:"professor" as UserRole,plan:"Equipe",courses:4,progress:100,status:"Ativo"},
+    {id:4,name:"Lucas Martins",email:"lucas@exemplo.com",role:"aluno" as UserRole,plan:"Básico",courses:1,progress:18,status:"Ativo"},
+    {id:5,name:"Ana Ribeiro",email:"ana@exemplo.com",role:"professor" as UserRole,plan:"Equipe",courses:3,progress:100,status:"Ativo"},
+    {id:6,name:"Diego Santos",email:"diego@exemplo.com",role:"aluno" as UserRole,plan:"Médio",courses:0,progress:0,status:"Pendente"},
+  ]);
+  const filtered=students.filter(student=>`${student.name} ${student.email}`.toLowerCase().includes(query.toLowerCase()));
+  const enrollments=students.reduce((sum,student)=>sum+student.courses,0);
+  const roleName=userRole==="admin"?"Administrador":"Professor";
+  function changeRole(id:number,role:UserRole){setStudents(students.map(student=>student.id===id?{...student,role,plan:role==="aluno"?"Básico":"Equipe"}:student));notify("Permissão atualizada com sucesso.");}
+  return <div className="admin-page"><header className="admin-header"><div><p className="eyebrow">CENTRAL DE GESTÃO</p><h1>Painel administrativo</h1><p>Visão de alunos, cursos, matrículas e permissões da VulcanAcademy.</p></div><div className={`admin-role-card ${userRole}`}><span>ACESSO ATUAL</span><strong>{roleName}</strong><small>{userRole==="admin"?"Controle completo da plataforma":"Gestão acadêmica de cursos e alunos"}</small></div></header><nav className="admin-tabs"><button className={tab==="visao"?"active":""} onClick={()=>setTab("visao")}>Visão geral</button><button className={tab==="alunos"?"active":""} onClick={()=>setTab("alunos")}>Alunos</button><button className={tab==="cursos"?"active":""} onClick={()=>setTab("cursos")}>Cursos</button>{userRole==="admin"&&<button className={tab==="permissoes"?"active":""} onClick={()=>setTab("permissoes")}>Permissões</button>}</nav>
+    {tab==="visao"&&<><section className="admin-stats"><article><span>ALUNOS ATIVOS</span><strong>{students.filter(student=>student.role==="aluno"&&student.status==="Ativo").length}</strong><small>+12% neste mês</small></article><article><span>CURSOS PUBLICADOS</span><strong>{courses.length}</strong><small>{courses.reduce((sum,course)=>sum+course.modules.length,0)} módulos disponíveis</small></article><article><span>MATRÍCULAS ATIVAS</span><strong>{enrollments}</strong><small>Em todos os planos</small></article><article><span>EQUIPE ACADÊMICA</span><strong>{students.filter(student=>student.role!=="aluno").length}</strong><small>Professores e admins</small></article></section><section className="admin-overview-grid"><div className="admin-panel-card"><div className="admin-card-head"><div><p className="eyebrow">ATIVIDADE RECENTE</p><h2>Novas matrículas</h2></div><button onClick={()=>setTab("alunos")}>Ver alunos →</button></div>{students.filter(student=>student.courses>0).slice(0,4).map(student=><div className="recent-student" key={student.id}><span className="avatar sm">{student.name.split(" ").map(item=>item[0]).join("").slice(0,2)}</span><div><strong>{student.name}</strong><small>{student.courses} {student.courses===1?"curso":"cursos"} · Plano {student.plan}</small></div><b>{student.progress}%</b></div>)}</div><div className="admin-panel-card"><div className="admin-card-head"><div><p className="eyebrow">CURSOS</p><h2>Maior engajamento</h2></div><button onClick={()=>setTab("cursos")}>Gerenciar →</button></div>{courses.slice(0,4).map((course,index)=><div className="course-performance" key={course.id}><span className={`course-icon ${course.tone}`}>{course.icon}</span><div><strong>{course.title}</strong><small>{[84,67,52,41][index]} alunos ativos</small></div><i><em style={{width:`${[92,78,64,51][index]}%`}}/></i></div>)}</div></section></>}
+    {tab==="alunos"&&<section className="admin-section"><div className="admin-section-head"><div><p className="eyebrow">GESTÃO DE ALUNOS</p><h2>Alunos e equipe acadêmica</h2><p>Acompanhe matrículas, progresso e situação de acesso.</p></div><div><input aria-label="Buscar aluno" placeholder="Buscar por nome ou e-mail" value={query} onChange={event=>setQuery(event.target.value)}/><button className="primary-button" onClick={()=>notify("Convite de novo aluno preparado.")}>+ Convidar aluno</button></div></div><div className="admin-table"><div className="admin-table-row table-head"><span>Usuário</span><span>Permissão</span><span>Plano</span><span>Cursos</span><span>Progresso</span><span>Status</span><span>Ações</span></div>{filtered.map(student=><div className="admin-table-row" key={student.id}><span className="student-cell"><b className="avatar sm">{student.name.split(" ").map(item=>item[0]).join("").slice(0,2)}</b><span><strong>{student.name}</strong><small>{student.email}</small></span></span><span><b className={`role-badge ${student.role}`}>{student.role==="admin"?"Admin":student.role==="professor"?"Professor":"Aluno"}</b></span><span>{student.plan}</span><span>{student.courses}</span><span className="table-progress"><i><em style={{width:`${student.progress}%`}}/></i><small>{student.progress}%</small></span><span><b className={`status-badge ${student.status.toLowerCase()}`}>{student.status}</b></span><span><button onClick={()=>notify(`Perfil de ${student.name} aberto para edição.`)}>Gerenciar</button></span></div>)}</div></section>}
+    {tab==="cursos"&&<section className="admin-section"><div className="admin-section-head"><div><p className="eyebrow">GESTÃO DE CONTEÚDO</p><h2>Cursos da academia</h2><p>Edite módulos, professores responsáveis e publicação.</p></div><button className="primary-button" onClick={()=>notify("Editor de novo curso aberto.")}>+ Criar curso</button></div><div className="admin-course-list">{courses.map((course,index)=><article key={course.id}><div className={`admin-course-icon ${course.tone}`}>{course.icon}</div><div className="admin-course-info"><div><span className="course-code">{course.code}</span><b className="status-badge ativo">Publicado</b></div><h3>{course.title}</h3><p>{course.level} · {course.modules.length} módulos · {course.hours} horas</p></div><div className="admin-course-owner"><small>RESPONSÁVEL</small><strong>{index%2?"Ana Ribeiro":"Beatriz Lima"}</strong></div><div className="admin-course-students"><small>ALUNOS</small><strong>{84-index*6}</strong></div><div className="admin-course-actions"><button onClick={()=>notify(`Conteúdo de ${course.title} aberto.`)}>Gerenciar conteúdo</button><button onClick={()=>notify(`Configurações de ${course.title} abertas.`)}>•••</button></div></article>)}</div></section>}
+    {tab==="permissoes"&&userRole==="admin"&&<section className="admin-section"><div className="admin-section-head"><div><p className="eyebrow">CONTROLE DE ACESSO</p><h2>Permissões da equipe</h2><p>Defina quem pode administrar ou gerenciar a operação acadêmica.</p></div></div><div className="permission-matrix"><article><span className="role-badge admin">ADMIN</span><h3>Administrador</h3><p>Acesso total à plataforma, usuários, cursos, planos e permissões.</p><ul><li>✓ Gerenciar alunos e professores</li><li>✓ Criar e editar cursos</li><li>✓ Alterar permissões</li><li>✓ Visão completa de indicadores</li></ul></article><article><span className="role-badge professor">PROFESSOR</span><h3>Professor</h3><p>Gestão acadêmica sem acesso às configurações administrativas.</p><ul><li>✓ Gerenciar alunos</li><li>✓ Criar e editar cursos</li><li>✓ Acompanhar progresso</li><li className="denied">× Não altera permissões</li></ul></article></div><div className="permission-users"><div className="admin-card-head"><div><p className="eyebrow">USUÁRIOS</p><h2>Atribuir permissão</h2></div></div>{students.map(student=><div key={student.id}><span className="student-cell"><b className="avatar sm">{student.name.split(" ").map(item=>item[0]).join("").slice(0,2)}</b><span><strong>{student.name}</strong><small>{student.email}</small></span></span><select value={student.role} onChange={event=>changeRole(student.id,event.target.value as UserRole)}><option value="aluno">Aluno</option><option value="professor">Professor</option><option value="admin">Administrador</option></select></div>)}</div></section>}
+  </div>;
+}
+
+type AdminTab = "visao" | "alunos" | "planos_usuarios" | "acessos" | "cursos" | "quizzes" | "certificacoes" | "certificate_requests" | "comunidade" | "laboratorios" | "permissoes";
+type EditorTab = "conteudo" | "quiz" | "configuracoes";
+
+const quizMetrics = [
+  { attempts: 64, approved: 55 }, { attempts: 41, approved: 34 }, { attempts: 37, approved: 30 },
+  { attempts: 29, approved: 25 }, { attempts: 52, approved: 45 }, { attempts: 33, approved: 27 },
+  { attempts: 18, approved: 14 }, { attempts: 15, approved: 12 }, { attempts: 11, approved: 9 },
+];
+
+function AdminCourseEditor({course,onBack,notify,modulePublished,setModulePublished,coursePublished,setCoursePublished,quizPublished,setQuizPublished}:{course:Course;onBack:()=>void;notify:(message:string)=>void;modulePublished:Record<string,boolean>;setModulePublished:React.Dispatch<React.SetStateAction<Record<string,boolean>>>;coursePublished:Record<string,boolean>;setCoursePublished:React.Dispatch<React.SetStateAction<Record<string,boolean>>>;quizPublished:Record<string,boolean>;setQuizPublished:React.Dispatch<React.SetStateAction<Record<string,boolean>>>}) {
+  const [editorTab,setEditorTab]=useState<EditorTab>("conteudo");
+  const [editingModule,setEditingModule]=useState<string|null>(null);
+  const [title,setTitle]=useState(course.title);
+  const [description,setDescription]=useState(course.description);
+  const publishedModules=course.modules.filter(module=>modulePublished[module.id]).length;
+  const metric=quizMetrics[courses.findIndex(item=>item.id===course.id)]||{attempts:0,approved:0};
+  const approvalRate=metric.attempts?Math.round(metric.approved/metric.attempts*100):0;
+  const questionTitles=courseQuizQuestions(course.id).map(item=>item.question);
+  return <div className="admin-editor-backdrop"><section className="admin-editor" role="dialog" aria-modal="true" aria-label={`Gerenciar ${course.title}`}>
+    <header className="admin-editor-head"><button className="admin-back-button" onClick={onBack}>← Voltar aos cursos</button><div><span className="course-code">{course.code}</span><h2>{course.title}</h2><p>Gerencie módulos, quiz final e publicação do curso.</p></div><button className={coursePublished[course.id]?"publish-toggle active":"publish-toggle"} onClick={()=>setCoursePublished(current=>({...current,[course.id]:!current[course.id]}))}>{coursePublished[course.id]?"● Curso publicado":"○ Curso em rascunho"}</button></header>
+    <div className="admin-editor-summary"><article><small>MÓDULOS PUBLICADOS</small><strong>{publishedModules}/{course.modules.length}</strong><span>{course.modules.reduce((total,module)=>total+module.lessons,0)} aulas no total</span></article><article><small>QUIZ FINAL</small><strong>10 questões</strong><span>Aprovação mínima: 9 acertos</span></article><article><small>DESEMPENHO</small><strong>{approvalRate}%</strong><span>{metric.approved} aprovados em {metric.attempts} tentativas</span></article></div>
+    <nav className="admin-editor-tabs"><button className={editorTab==="conteudo"?"active":""} onClick={()=>setEditorTab("conteudo")}>Conteúdo</button><button className={editorTab==="quiz"?"active":""} onClick={()=>setEditorTab("quiz")}>Quiz e resultados</button><button className={editorTab==="configuracoes"?"active":""} onClick={()=>setEditorTab("configuracoes")}>Configurações</button></nav>
+    {editorTab==="conteudo"&&<div className="admin-module-manager"><div className="admin-manager-title"><div><h3>Módulos do curso</h3><p>Organize o conteúdo e defina o que já está disponível aos alunos.</p></div><button className="primary-button" onClick={()=>notify("Novo módulo preparado para edição.")}>+ Novo módulo</button></div>{course.modules.map((module,index)=><article key={module.id} className={editingModule===module.id?"editing":""}><span className="module-order">{String(index+1).padStart(2,"0")}</span><div className="module-admin-info"><small>{module.id} · {module.difficulty}</small><h4>{module.title}</h4><p>{module.lessons} aulas · {module.xp} XP</p>{editingModule===module.id&&<div className="module-inline-editor"><label>Título<input defaultValue={module.title}/></label><label>Quantidade de aulas<input type="number" min="1" defaultValue={module.lessons}/></label><button onClick={()=>{setEditingModule(null);notify(`Alterações do módulo ${module.id} salvas.`)}}>Salvar alterações</button></div>}</div><button className={modulePublished[module.id]?"status-switch active":"status-switch"} onClick={()=>setModulePublished(current=>({...current,[module.id]:!current[module.id]}))}><i/>{modulePublished[module.id]?"Publicado":"Rascunho"}</button><button className="module-edit-button" onClick={()=>setEditingModule(editingModule===module.id?null:module.id)}>{editingModule===module.id?"Cancelar":"Editar"}</button></article>)}</div>}
+    {editorTab==="quiz"&&<div className="admin-quiz-editor"><div className="admin-manager-title"><div><h3>Quiz final do curso</h3><p>10 questões · mínimo de 9 acertos (85% exigidos, arredondado para 9/10).</p></div><button className={quizPublished[course.id]?"publish-toggle active":"publish-toggle"} onClick={()=>setQuizPublished(current=>({...current,[course.id]:!current[course.id]}))}>{quizPublished[course.id]?"Quiz publicado":"Quiz em rascunho"}</button></div><div className="quiz-editor-grid"><div className="quiz-question-admin-list">{questionTitles.map((question,index)=><button key={question} onClick={()=>notify(`Questão ${index+1} aberta no editor.`)}><span>{index+1}</span><div><strong>{question}</strong><small>Múltipla escolha · 4 alternativas</small></div><b>Editar →</b></button>)}</div><aside className="quiz-result-card"><small>STATUS DOS QUIZZES</small><strong>{approvalRate}%</strong><p>taxa de aprovação</p><dl><div><dt>Tentativas</dt><dd>{metric.attempts}</dd></div><div><dt>Aprovados</dt><dd>{metric.approved}</dd></div><div><dt>Em revisão</dt><dd>{Math.max(2,Math.round(metric.attempts*.08))}</dd></div><div><dt>Nota mínima</dt><dd>9/10</dd></div></dl><button onClick={()=>notify(`Relatório de ${course.title} preparado.`)}>Exportar resultados</button></aside></div></div>}
+    {editorTab==="configuracoes"&&<form className="admin-course-settings" onSubmit={event=>{event.preventDefault();notify("Configurações do curso salvas com sucesso.")}}><h3>Informações do curso</h3><label>Título<input value={title} onChange={event=>setTitle(event.target.value)}/></label><label>Descrição<textarea value={description} onChange={event=>setDescription(event.target.value)} rows={4}/></label><div><label>Nível<input defaultValue={course.level}/></label><label>Carga horária<input type="number" defaultValue={course.hours}/></label></div><button className="primary-button">Salvar configurações</button></form>}
+  </section></div>;
+}
+
+const infraTemplates: Record<string,string> = {
+  aws:`# Prompt IaC · AWS Sandbox\nCrie uma VPC sem rota pública, sub-rede privada e uma instância efêmera de treinamento.\nAplique TTL de 60 minutos, tags course_id/lab_id/student_id, IAM mínimo e logs de auditoria.\nNão crie credenciais permanentes nem permita tráfego de entrada da internet.`,
+  gcp:`# Prompt IaC · GCP Sandbox\nCrie um projeto temporário com VPC isolada e VM sem IP público.\nUse service account exclusiva, firewall deny-by-default, orçamento limitado e destruição automática em 60 minutos.\nCarregue somente dados sintéticos e envie logs para o projeto administrativo.`,
+  digitalocean:`# Prompt IaC · DigitalOcean Sandbox\nCrie uma VPC privada, Droplet efêmero sem entrada pública e firewall restrito ao controlador do laboratório.\nUse snapshot educacional imutável, tags de curso e rotina automática de destruição após 60 minutos.`,
+  local:`# Prompt IaC · Servidor local\nGere um Docker Compose com rede internal:true, serviços sem privileged e portas vinculadas apenas a 127.0.0.1.\nUse volumes temporários, dados sintéticos, limites de CPU/memória, healthchecks e comando de limpeza ao encerrar a aula.`,
+};
+
+function AdminLabManager({notify}:{notify:(message:string)=>void}) {
+  const [provider,setProvider]=useState("local");
+  const [labStatus,setLabStatus]=useState<Record<string,boolean>>(()=>Object.fromEntries(courseLabs.map(lab=>[lab.id,true])));
+  const [selectedLab,setSelectedLab]=useState(courseLabs[0].id);
+  const lab=courseLabs.find(item=>item.id===selectedLab)||courseLabs[0];
+  const providerNames:Record<string,string>={aws:"AWS",gcp:"Google Cloud",digitalocean:"DigitalOcean",local:"Servidor local"};
+  const selectedProviderName=providerNames[provider];
+  function copyPrompt(){void navigator.clipboard?.writeText(infraTemplates[provider]);notify("Prompt de infraestrutura copiado.")}
+  return <section className="admin-labs"><div className="admin-section-head"><div><p className="eyebrow">ORQUESTRAÇÃO DE AMBIENTES</p><h2>Gerenciar laboratórios</h2><p>Defina o provedor, o perfil da máquina e o modelo de infraestrutura isolada para cada curso.</p></div><button className="primary-button" onClick={()=>notify("Novo laboratório criado como rascunho.")}>+ Criar laboratório</button></div><div className="lab-admin-summary"><article><span>LABORATÓRIOS</span><strong>{courseLabs.length}</strong><small>{Object.values(labStatus).filter(Boolean).length} publicados</small></article><article><span>PROVEDORES</span><strong>4</strong><small>AWS, GCP, DigitalOcean e local</small></article><article><span>MÁQUINAS ATIVAS</span><strong>0</strong><small>Ambientes criados sob demanda</small></article><article><span>TTL PADRÃO</span><strong>60 min</strong><small>Destruição automática</small></article></div><div className="provider-setup"><header><div><p className="eyebrow">SETUP DE PROVEDOR</p><h3>Integrações de infraestrutura</h3></div><span>Credenciais armazenadas em cofre externo</span></header><div>{[{id:"aws",name:"AWS",icon:"AWS",detail:"VPC + EC2 privado"},{id:"gcp",name:"Google Cloud",icon:"GCP",detail:"Projeto + Compute Engine"},{id:"digitalocean",name:"DigitalOcean",icon:"DO",detail:"VPC + Droplet"},{id:"local",name:"Servidor local",icon:"⌂",detail:"Docker / VM local"}].map(item=><button key={item.id} className={provider===item.id?"active":""} onClick={()=>setProvider(item.id)}><i>{item.icon}</i><span><strong>{item.name}</strong><small>{item.detail}</small></span><b>{item.id==="local"?"PRONTO":"CONFIGURAR"}</b></button>)}</div></div><div className="lab-admin-grid"><section className="lab-assignment"><header><div><p className="eyebrow">CATÁLOGO</p><h3>Laboratórios dos cursos</h3></div></header>{courseLabs.map(item=>{const course=courses.find(course=>course.id===item.courseId)!;return <button key={item.id} className={selectedLab===item.id?"active":""} onClick={()=>setSelectedLab(item.id)}><span className={`admin-course-icon ${course.tone}`}>{course.icon}</span><div><strong>{item.title}</strong><small>{item.id} · {item.provider}</small></div><i className={labStatus[item.id]?"online":"draft"}>{labStatus[item.id]?"PUBLICADO":"RASCUNHO"}</i></button>})}</section><section className="machine-setup"><header><div><p className="eyebrow">MÁQUINA DO LABORATÓRIO</p><h3>{lab.title}</h3><p>{lab.environment}</p></div><button className={labStatus[lab.id]?"status-switch active":"status-switch"} onClick={()=>setLabStatus(current=>({...current,[lab.id]:!current[lab.id]}))}><i/>{labStatus[lab.id]?"Publicado":"Rascunho"}</button></header><div className="machine-form"><label>Provedor<select value={provider} onChange={event=>setProvider(event.target.value)}><option value="aws">AWS</option><option value="gcp">Google Cloud</option><option value="digitalocean">DigitalOcean</option><option value="local">Servidor local</option></select></label><label>Imagem base<select defaultValue="ubuntu"><option value="ubuntu">Ubuntu 24.04 LTS hardened</option><option value="container">Container educacional</option><option value="windows">Windows Server Lab</option></select></label><label>CPU<select defaultValue="2"><option value="1">1 vCPU</option><option value="2">2 vCPU</option><option value="4">4 vCPU</option></select></label><label>Memória<select defaultValue="4"><option value="2">2 GB</option><option value="4">4 GB</option><option value="8">8 GB</option></select></label><label>Tempo máximo<select defaultValue="60"><option value="30">30 minutos</option><option value="60">60 minutos</option><option value="120">120 minutos</option></select></label><label>Rede<select defaultValue="isolated"><option value="isolated">Isolada, sem internet</option><option value="egress">Saída controlada</option><option value="local">Somente localhost</option></select></label></div><div className="machine-safety"><span>✓ Dados sintéticos</span><span>✓ Sem IP público</span><span>✓ Destruição automática</span><span>✓ Logs de auditoria</span></div><button className="primary-button" onClick={()=>notify(`Setup de ${lab.id} salvo para ${selectedProviderName}.`)}>Salvar setup da máquina</button></section></div><section className="iac-prompt"><header><div><p className="eyebrow">INFRASTRUCTURE AS CODE</p><h3>Prompt de provisionamento · {selectedProviderName}</h3><p>Modelo seguro para gerar o serviço efêmero do laboratório selecionado.</p></div><button onClick={copyPrompt}>Copiar prompt</button></header><pre>{infraTemplates[provider]}</pre><footer><span>Este prompt gera uma especificação para revisão; não provisiona recursos automaticamente.</span><button className="outline-button" onClick={()=>notify("Validação concluída: rede isolada, TTL e menor privilégio presentes.")}>Validar controles</button><button className="primary-button" onClick={()=>notify("Plano IaC simulado gerado para revisão administrativa.")}>Gerar plano simulado →</button></footer></section></section>;
+}
+
+type AdminAccount = {userId:string;email:string;name:string;role:string;systemRole:UserRole;plan:PlanId;status:string;planStartedAt?:string|null;planExpiresAt?:string|null;createdAt:string};
+
+function AdminAccountPlans({notify}:{notify:(message:string)=>void}) {
+  const [accounts,setAccounts]=useState<AdminAccount[]>([]);
+  const [loading,setLoading]=useState(true);
+  const [saving,setSaving]=useState<string|null>(null);
+  const [query,setQuery]=useState("");
+  useEffect(()=>{void (async()=>{try{const response=await fetch("/api/admin/accounts");const data=await response.json() as {accounts?:AdminAccount[];error?:string};if(!response.ok)throw new Error(data.error);setAccounts(data.accounts||[])}catch{notify("Não foi possível carregar as contas. Confirme seu acesso de administrador.")}finally{setLoading(false)}})()},[]);
+  async function changePlan(account:AdminAccount,plan:PlanId){setSaving(account.userId);try{const response=await fetch("/api/admin/accounts",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({userId:account.userId,plan})});const data=await response.json() as {account?:AdminAccount;error?:string};if(!response.ok||!data.account)throw new Error(data.error);setAccounts(current=>current.map(item=>item.userId===account.userId?data.account!:item));notify(`Plano de ${account.name} atualizado para ${plans.find(item=>item.id===plan)?.name}.`)}catch{notify("Não foi possível atualizar o plano deste usuário.")}finally{setSaving(null)}}
+  async function changeRole(account:AdminAccount,systemRole:UserRole){setSaving(account.userId);try{const response=await fetch("/api/admin/accounts",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({userId:account.userId,systemRole})});const data=await response.json() as {account?:AdminAccount;error?:string};if(!response.ok||!data.account)throw new Error(data.error);setAccounts(current=>current.map(item=>item.userId===account.userId?data.account!:item));notify(`Permissão de ${account.name} atualizada.`)}catch(error){notify(error instanceof Error&&error.message?error.message:"Não foi possível atualizar a permissão.")}finally{setSaving(null)}}
+  const filtered=accounts.filter(account=>`${account.name} ${account.email}`.toLowerCase().includes(query.toLowerCase()));
+  return <section className="admin-account-plans"><div className="admin-section-head"><div><p className="eyebrow">ASSINATURAS E ACESSO</p><h2>Planos dos usuários</h2><p>Altere o nível de acesso. A mudança é aplicada imediatamente à conta selecionada.</p></div><input aria-label="Buscar conta" placeholder="Buscar por nome ou e-mail" value={query} onChange={event=>setQuery(event.target.value)}/></div><div className="plan-management-summary"><article><span>CONTAS</span><strong>{accounts.length}</strong><small>cadastros verificados</small></article>{plans.map(plan=><article key={plan.id}><span>PLANO {plan.name.toUpperCase()}</span><strong>{accounts.filter(account=>account.plan===plan.id).length}</strong><small>{plan.id==="gratuito"?"acesso a cursos gratuitos":`R$ ${plan.price.toLocaleString("pt-BR",{minimumFractionDigits:2})}/mês`}</small></article>)}</div>{loading?<div className="admin-accounts-empty"><span>◌</span><p>Carregando contas verificadas...</p></div>:filtered.length===0?<div className="admin-accounts-empty"><span>◎</span><p>Nenhuma conta encontrada.</p></div>:<div className="admin-plan-table"><div className="admin-plan-row head"><span>Usuário</span><span>Permissão</span><span>Status</span><span>Plano atual</span><span>Novo plano</span></div>{filtered.map(account=><article className="admin-plan-row" key={account.userId}><span className="student-cell"><b className="avatar sm">{account.name.split(" ").map(item=>item[0]).join("").slice(0,2).toUpperCase()}</b><span><strong>{account.name}</strong><small>{account.email}</small></span></span><span><b className={`role-badge ${account.systemRole}`}>{account.systemRole==="admin"?"ADMIN":account.systemRole==="professor"?"PROFESSOR":"ALUNO"}</b></span><span><b className={`status-badge ${account.status}`}>{account.status==="active"?"Ativa":account.status}</b></span><span><strong>{plans.find(plan=>plan.id===account.plan)?.name||account.plan}</strong></span><span><select aria-label={`Alterar plano de ${account.name}`} value={account.plan} disabled={saving===account.userId} onChange={event=>void changePlan(account,event.target.value as PlanId)}>{plans.map(plan=><option key={plan.id} value={plan.id}>{plan.name}{plan.price?` · R$ ${plan.price.toLocaleString("pt-BR",{minimumFractionDigits:2})}`:" · Gratuito"}</option>)}</select>{saving===account.userId&&<small>Salvando...</small>}</span></article>)}</div>}<footer className="plan-audit-note"><span>✓ Operação protegida</span><p>Somente administradores autenticados podem alterar planos. Cada mudança é persistida na conta do usuário.</p></footer></section>;
+}
+
+type PrintedRequest={id:string;certificateId:string;courseId:string;studentName:string;email:string;phone:string;deliveryAddress:string;amountCents:number;status:string;createdAt:string;paidAt:string|null};
+
+function AdminPrintedCertificateRequests({notify}:{notify:(message:string)=>void}){
+  const [requests,setRequests]=useState<PrintedRequest[]>([]);const [fee,setFee]=useState("189,90");const [loading,setLoading]=useState(true);const [saving,setSaving]=useState(false);
+  async function load(){setLoading(true);try{const response=await fetch("/api/admin/printed-certificates");const data=await response.json() as {feeCents?:number;requests?:PrintedRequest[];error?:string};if(!response.ok)throw new Error(data.error);setFee(((data.feeCents||18990)/100).toFixed(2).replace(".",","));setRequests(data.requests||[])}catch(error){notify(error instanceof Error?error.message:"Não foi possível carregar as solicitações.")}finally{setLoading(false)}}
+  useEffect(()=>{void load()},[]);
+  async function saveFee(){const feeCents=Math.round(Number(fee.replace(".","").replace(",","."))*100);if(!Number.isInteger(feeCents)||feeCents<100){notify("Informe uma taxa válida.");return}setSaving(true);try{const response=await fetch("/api/admin/printed-certificates",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({feeCents})});if(!response.ok)throw new Error();notify("Taxa do certificado impresso atualizada.")}catch{notify("Não foi possível salvar a taxa.")}finally{setSaving(false)}}
+  async function changeStatus(id:string,status:string){try{const response=await fetch("/api/admin/printed-certificates",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({requestId:id,status})});if(!response.ok)throw new Error();setRequests(current=>current.map(item=>item.id===id?{...item,status}:item));notify("Status da solicitação atualizado.")}catch{notify("Não foi possível atualizar o status.")}}
+  const statusLabels:Record<string,string>={paid:"Pago",preparing:"Em produção",shipped:"Enviado",delivered:"Entregue",cancelled:"Cancelado"};
+  return <section className="admin-print-page"><div className="admin-section-head"><div><p className="eyebrow">PRODUÇÃO E ENVIO</p><h2>Solicitações de certificado impresso</h2><p>Acompanhe pagamentos, endereço de entrega e andamento de cada pedido.</p></div><button className="outline-button" onClick={()=>void load()}>Atualizar lista</button></div><div className="admin-print-settings"><div><p className="eyebrow">CONFIGURAÇÃO</p><h3>Taxa de produção e envio</h3><p>O novo valor será aplicado aos próximos checkouts do Stripe.</p></div><label>Valor em reais (R$)<input inputMode="decimal" value={fee} onChange={event=>setFee(event.target.value)}/></label><button className="primary-button" disabled={saving} onClick={()=>void saveFee()}>{saving?"Salvando...":"Salvar taxa"}</button></div><div className="admin-print-requests">{loading?<p>Carregando solicitações...</p>:requests.length===0?<div className="admin-accounts-empty"><span>▣</span><p>Nenhuma solicitação paga até o momento.</p></div>:requests.map(item=><article className="print-request-row" key={item.id}><span><strong>{item.studentName}</strong><small>{item.email} · {item.phone}</small></span><span><strong>{courses.find(course=>course.id===item.courseId)?.title||item.courseId}</strong><small>{item.certificateId}</small></span><span className="request-address"><strong>Entrega</strong><small>{item.deliveryAddress}</small></span><span><strong>{(item.amountCents/100).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</strong><small>{new Date(item.createdAt).toLocaleDateString("pt-BR")}</small></span><select aria-label={`Status de ${item.studentName}`} value={item.status} onChange={event=>void changeStatus(item.id,event.target.value)}>{Object.entries(statusLabels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></article>)}</div></section>;
+}
+
+type CommunityItem={id:string;userId:string;name:string;email:string;kind:"idea"|"bug"|string;title:string;message:string;status:string;adminNote:string;createdAt:string;updatedAt:string|null};
+type CommunityMember={userId:string;name:string;email:string;communityMember:boolean;createdAt:string};
+const communityStatusLabels:Record<string,string>={open:"Aberta",in_progress:"Em andamento",done:"Concluída",archived:"Arquivada"};
+
+function AdminCommunitySentinel({notify}:{notify:(message:string)=>void}){
+  const [items,setItems]=useState<CommunityItem[]>([]);
+  const [members,setMembers]=useState<CommunityMember[]>([]);
+  const [counts,setCounts]=useState({total:0,ideas:0,bugs:0,open:0,members:0});
+  const [loading,setLoading]=useState(true);
+  const [kind,setKind]=useState<"all"|"idea"|"bug">("all");
+  const [status,setStatus]=useState<"all"|"open"|"in_progress"|"done"|"archived">("all");
+  const [query,setQuery]=useState("");
+  const [section,setSection]=useState<"mensagens"|"membros">("mensagens");
+  const [saving,setSaving]=useState<string|null>(null);
+  const [notes,setNotes]=useState<Record<string,string>>({});
+
+  async function load(){
+    setLoading(true);
+    try{
+      const params=new URLSearchParams();
+      if(kind!=="all")params.set("kind",kind);
+      if(status!=="all")params.set("status",status);
+      const response=await fetch(`/api/community/admin?${params.toString()}`);
+      const data=await response.json() as {items?:CommunityItem[];members?:CommunityMember[];counts?:typeof counts;error?:string};
+      if(!response.ok)throw new Error(data.error||"Não foi possível carregar a comunidade.");
+      setItems(data.items||[]);
+      setMembers(data.members||[]);
+      setCounts(data.counts||{total:0,ideas:0,bugs:0,open:0,members:0});
+      setNotes(Object.fromEntries((data.items||[]).map(item=>[item.id,item.adminNote||""])));
+    }catch(error){notify(error instanceof Error?error.message:"Não foi possível carregar a Comunidade Sentinela.")}finally{setLoading(false)}
+  }
+  useEffect(()=>{void load()},[kind,status]);
+
+  async function changeStatus(id:string,next:string){
+    setSaving(id);
+    try{
+      const response=await fetch("/api/community/admin",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({id,status:next})});
+      const data=await response.json() as {error?:string};
+      if(!response.ok)throw new Error(data.error);
+      const previous=items.find(item=>item.id===id);
+      setItems(current=>current.map(item=>item.id===id?{...item,status:next}:item));
+      if(previous)setCounts(current=>({...current,open:current.open+(next==="open"?1:0)-(previous.status==="open"?1:0)}));
+      notify("Status da sessão atualizado.");
+    }catch(error){notify(error instanceof Error?error.message:"Não foi possível atualizar o status.")}finally{setSaving(null)}
+  }
+  async function saveNote(id:string){
+    setSaving(id);
+    try{
+      const response=await fetch("/api/community/admin",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({id,adminNote:notes[id]||""})});
+      const data=await response.json() as {error?:string};
+      if(!response.ok)throw new Error(data.error);
+      setItems(current=>current.map(item=>item.id===id?{...item,adminNote:notes[id]||""}:item));
+      notify("Anotação salva.");
+    }catch(error){notify(error instanceof Error?error.message:"Não foi possível salvar a anotação.")}finally{setSaving(null)}
+  }
+  async function removeItem(id:string){
+    if(!window.confirm("Excluir esta sessão da comunidade?"))return;
+    setSaving(id);
+    try{
+      const response=await fetch("/api/community/admin",{method:"DELETE",headers:{"content-type":"application/json"},body:JSON.stringify({id})});
+      const data=await response.json() as {error?:string};
+      if(!response.ok)throw new Error(data.error);
+      const removed=items.find(item=>item.id===id);
+      setItems(current=>current.filter(item=>item.id!==id));
+      if(removed)setCounts(current=>({...current,total:current.total-1,ideas:current.ideas-(removed.kind==="idea"?1:0),bugs:current.bugs-(removed.kind==="bug"?1:0),open:current.open-(removed.status==="open"?1:0)}));
+      notify("Sessão excluída.");
+    }catch(error){notify(error instanceof Error?error.message:"Não foi possível excluir.")}finally{setSaving(null)}
+  }
+  async function toggleMember(member:CommunityMember){
+    setSaving(member.userId);
+    try{
+      const response=await fetch("/api/community/admin",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({userId:member.userId,communityMember:!member.communityMember})});
+      const data=await response.json() as {error?:string};
+      if(!response.ok)throw new Error(data.error);
+      setMembers(current=>current.map(item=>item.userId===member.userId?{...item,communityMember:!member.communityMember}:item));
+      setCounts(current=>({...current,members:current.members+(member.communityMember?-1:1)}));
+      notify(member.communityMember?`Acesso da comunidade removido de ${member.name}.`:`${member.name} agora vê o menu Comunidade Sentinela.`);
+    }catch(error){notify(error instanceof Error?error.message:"Não foi possível atualizar o membro.")}finally{setSaving(null)}
+  }
+
+  const filteredItems=items.filter(item=>`${item.name} ${item.email} ${item.title} ${item.message}`.toLowerCase().includes(query.toLowerCase()));
+  const filteredMembers=members.filter(item=>`${item.name} ${item.email}`.toLowerCase().includes(query.toLowerCase()));
+
+  return <section className="admin-community-page">
+    <div className="admin-section-head"><div><p className="eyebrow">COMUNIDADE SENTINELA</p><h2>Sessões da comunidade</h2><p>Veja sugestões e bugs enviados pelos membros e gerencie o acesso ao menu.</p></div><button className="outline-button" onClick={()=>void load()}>Atualizar</button></div>
+    <div className="plan-management-summary community-admin-summary">
+      <article><span>SESSÕES</span><strong>{counts.total}</strong><small>envios recebidos</small></article>
+      <article><span>IDEIAS</span><strong>{counts.ideas}</strong><small>sugestões</small></article>
+      <article><span>BUGS</span><strong>{counts.bugs}</strong><small>reports</small></article>
+      <article><span>ABERTAS</span><strong>{counts.open}</strong><small>aguardando ação</small></article>
+      <article><span>MEMBROS</span><strong>{counts.members}</strong><small>com menu liberado</small></article>
+    </div>
+    <div className="community-admin-toolbar">
+      <div className="community-admin-tabs" role="tablist">
+        <button className={section==="mensagens"?"active":""} onClick={()=>setSection("mensagens")}>Mensagens</button>
+        <button className={section==="membros"?"active":""} onClick={()=>setSection("membros")}>Membros</button>
+      </div>
+      {section==="mensagens"&&<div className="community-admin-filters">
+        <button className={kind==="all"?"active":""} onClick={()=>setKind("all")}>Todas</button>
+        <button className={kind==="idea"?"active":""} onClick={()=>setKind("idea")}>Ideias</button>
+        <button className={kind==="bug"?"active":""} onClick={()=>setKind("bug")}>Bugs</button>
+        <select aria-label="Filtrar por status" value={status} onChange={event=>setStatus(event.target.value as typeof status)}>
+          <option value="all">Todos os status</option>
+          {Object.entries(communityStatusLabels).map(([value,label])=><option key={value} value={value}>{label}</option>)}
+        </select>
+      </div>}
+      <input aria-label="Buscar na comunidade" placeholder={section==="mensagens"?"Buscar por título, texto ou aluno":"Buscar membro"} value={query} onChange={event=>setQuery(event.target.value)}/>
+    </div>
+    {loading?<div className="admin-accounts-empty"><span>◌</span><p>Carregando sessões da comunidade...</p></div>
+    :section==="membros"?<div className="admin-plan-table">{filteredMembers.length===0?<div className="admin-accounts-empty"><span>◎</span><p>Nenhum membro encontrado.</p></div>:filteredMembers.map(member=><article className="admin-plan-row community-member-row" key={member.userId}><span className="student-cell"><b className="avatar sm">{member.name.split(" ").map(item=>item[0]).join("").slice(0,2).toUpperCase()}</b><span><strong>{member.name}</strong><small>{member.email}</small></span></span><span><b className={`status-badge ${member.communityMember?"ativo":"pendente"}`}>{member.communityMember?"Menu liberado":"Sem acesso"}</b></span><span><button className={member.communityMember?"outline-button":"primary-button"} disabled={saving===member.userId} onClick={()=>void toggleMember(member)}>{member.communityMember?"Revogar menu":"Liberar menu"}</button></span></article>)}</div>
+    :filteredItems.length===0?<div className="admin-accounts-empty"><span>▣</span><p>Nenhuma sessão encontrada neste filtro.</p></div>
+    :<div className="community-admin-list">{filteredItems.map(item=><article className={`community-admin-card ${item.kind}`} key={item.id}>
+      <header>
+        <b className={`community-kind-badge ${item.kind}`}>{item.kind==="bug"?"Bug":"Ideia"}</b>
+        <strong>{item.title}</strong>
+        <select aria-label={`Status de ${item.title}`} value={item.status} disabled={saving===item.id} onChange={event=>void changeStatus(item.id,event.target.value)}>
+          {Object.entries(communityStatusLabels).map(([value,label])=><option key={value} value={value}>{label}</option>)}
+        </select>
+      </header>
+      <p>{item.message}</p>
+      <div className="community-admin-meta"><span>{item.name}</span><span>{item.email}</span><span>{new Date(item.createdAt).toLocaleString("pt-BR")}</span><span>{item.id}</span></div>
+      <label>Anotação interna<textarea value={notes[item.id]??""} onChange={event=>setNotes(current=>({...current,[item.id]:event.target.value}))} rows={3} placeholder="Próximo passo, responsável ou resposta prevista."/></label>
+      <footer>
+        <button className="outline-button" disabled={saving===item.id} onClick={()=>void saveNote(item.id)}>Salvar anotação</button>
+        <button className="logout-link" disabled={saving===item.id} onClick={()=>void removeItem(item.id)}>Excluir</button>
+      </footer>
+    </article>)}</div>}
+  </section>;
+}
+
+type ManagedCode={id:string;code:string;active:number|boolean;maxUses:number|null;usesCount:number;expiresAt:string|null;createdAt:string;discountPercent?:number};
+function AdminAccessManagement({notify}:{notify:(message:string)=>void}){
+  const [accessCodes,setAccessCodes]=useState<ManagedCode[]>([]),[coupons,setCoupons]=useState<ManagedCode[]>([]),[accounts,setAccounts]=useState<AdminAccount[]>([]),[loading,setLoading]=useState(true),[saving,setSaving]=useState<string|null>(null),[couponFilter,setCouponFilter]=useState<"todos"|"ativos"|"inativos">("todos");
+  async function load(){setLoading(true);try{const [accessResponse,accountsResponse]=await Promise.all([fetch("/api/admin/access-management"),fetch("/api/admin/accounts")]);const access=await accessResponse.json() as {accessCodes?:ManagedCode[];coupons?:ManagedCode[];error?:string};const accountData=await accountsResponse.json() as {accounts?:AdminAccount[];error?:string};if(!accessResponse.ok||!accountsResponse.ok)throw new Error(access.error||accountData.error);setAccessCodes(access.accessCodes||[]);setCoupons(access.coupons||[]);setAccounts(accountData.accounts||[])}catch(error){notify(error instanceof Error?error.message:"Não foi possível carregar os acessos.")}finally{setLoading(false)}}
+  useEffect(()=>{void load()},[]);
+  async function create(kind:"access"|"coupon",event:React.FormEvent<HTMLFormElement>){event.preventDefault();const form=event.currentTarget,data=new FormData(form);setSaving(kind);try{const response=await fetch("/api/admin/access-management",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({kind,code:data.get("code"),discountPercent:Number(data.get("discountPercent")||0),maxUses:Number(data.get("maxUses")||0)||null,expiresAt:data.get("expiresAt")||null})});const result=await response.json() as {error?:string};if(!response.ok)throw new Error(result.error);form.reset();await load();notify(kind==="coupon"?"Cupom criado.":"Código de acesso criado.")}catch(error){notify(error instanceof Error?error.message:"Não foi possível criar o código.")}finally{setSaving(null)}}
+  async function toggle(kind:"access"|"coupon",item:ManagedCode){setSaving(item.id);try{const response=await fetch("/api/admin/access-management",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({kind,id:item.id,active:!Boolean(item.active)})});if(!response.ok)throw new Error();await load();notify("Status atualizado.")}catch{notify("Não foi possível atualizar o status.")}finally{setSaving(null)}}
+  async function remove(kind:"access"|"coupon",item:ManagedCode){if(!window.confirm(`Excluir o ${kind==="coupon"?"cupom":"código"} ${item.code}?`))return;setSaving(item.id);try{const response=await fetch("/api/admin/access-management",{method:"DELETE",headers:{"content-type":"application/json"},body:JSON.stringify({kind,id:item.id})});if(!response.ok)throw new Error();await load();notify(kind==="coupon"?"Cupom excluído.":"Código excluído.")}catch{notify("Não foi possível excluir.")}finally{setSaving(null)}}
+  async function role(account:AdminAccount,systemRole:UserRole){setSaving(account.userId);try{const response=await fetch("/api/admin/accounts",{method:"PATCH",headers:{"content-type":"application/json"},body:JSON.stringify({userId:account.userId,systemRole})});const result=await response.json() as {account?:AdminAccount;error?:string};if(!response.ok||!result.account)throw new Error(result.error);setAccounts(current=>current.map(item=>item.userId===account.userId?result.account!:item));notify("Permissão atualizada.")}catch(error){notify(error instanceof Error&&error.message?error.message:"Não foi possível atualizar a permissão.")}finally{setSaving(null)}}
+  const list=(kind:"access"|"coupon",items:ManagedCode[])=><div className="access-code-list">{items.length===0?<p className="admin-empty-copy">{kind==="coupon"?"Nenhum cupom criado.":"Nenhum código cadastrado."}</p>:items.map(item=><article key={item.id}><div><strong>{item.code}</strong><small>{kind==="coupon"?`${item.discountPercent}% de desconto · `:""}{item.usesCount}{item.maxUses?`/${item.maxUses}`:""} usos{item.expiresAt?` · até ${new Date(item.expiresAt).toLocaleDateString("pt-BR")}`:""}</small><small>Criado em {new Date(item.createdAt).toLocaleDateString("pt-BR")}</small></div><div className="access-code-actions"><button className={item.active?"status-switch active":"status-switch"} disabled={saving===item.id} onClick={()=>void toggle(kind,item)}><i/>{item.active?"Ativo":"Inativo"}</button><button className="logout-link" disabled={saving===item.id} onClick={()=>void remove(kind,item)}>Excluir</button></div></article>)}</div>;
+  return <section className="admin-access-management"><div className="admin-section-head"><div><p className="eyebrow">ACESSOS E PERMISSÕES</p><h2>Cupons, códigos e administradores</h2><p>Controle convites de cadastro, benefícios comerciais e funções da equipe.</p></div><button className="outline-button" onClick={()=>void load()}>Atualizar</button></div>{loading?<div className="admin-accounts-empty"><span>◌</span><p>Carregando gestão de acessos...</p></div>:<><div className="access-management-grid"><section><h3>Códigos de cadastro</h3><form onSubmit={event=>void create("access",event)}><input name="code" required minLength={4} placeholder="NOVO-CODIGO"/><input name="maxUses" type="number" min="1" placeholder="Limite de usos"/><input name="expiresAt" type="date"/><button className="primary-button" disabled={saving==="access"}>Criar código</button></form>{list("access",accessCodes)}</section><section><h3>Cupons</h3><form onSubmit={event=>void create("coupon",event)}><input name="code" required minLength={4} placeholder="CUPOM20"/><input name="discountPercent" type="number" min="1" max="100" required placeholder="Desconto %"/><input name="maxUses" type="number" min="1" placeholder="Limite de usos"/><input name="expiresAt" type="date"/><button className="primary-button" disabled={saving==="coupon"}>Criar cupom</button></form><nav className="coupon-filter" aria-label="Filtrar cupons"><button className={couponFilter==="todos"?"active":""} onClick={()=>setCouponFilter("todos")}>Todos <b>{coupons.length}</b></button><button className={couponFilter==="ativos"?"active":""} onClick={()=>setCouponFilter("ativos")}>Ativos <b>{coupons.filter(item=>Boolean(item.active)).length}</b></button><button className={couponFilter==="inativos"?"active":""} onClick={()=>setCouponFilter("inativos")}>Inativos <b>{coupons.filter(item=>!Boolean(item.active)).length}</b></button></nav>{list("coupon",couponFilter==="todos"?coupons:coupons.filter(item=>couponFilter==="ativos"?Boolean(item.active):!Boolean(item.active)))}</section></div><section className="admin-role-manager"><header><div><h3>Permissões dos usuários</h3><p>Defina a função de cada conta. Alterações são aplicadas imediatamente.</p></div><span>{accounts.length} {accounts.length===1?"usuário":"usuários"}</span></header><div>{accounts.map(account=><article key={account.userId}><span className="student-cell"><b className="avatar sm">{account.name.split(" ").map(part=>part[0]).join("").slice(0,2)}</b><span><strong>{account.name}</strong><small>{account.email}</small></span></span><label><small>Função</small><select aria-label={`Função de ${account.name}`} value={account.systemRole} disabled={saving===account.userId} onChange={event=>void role(account,event.target.value as UserRole)}><option value="aluno">Aluno</option><option value="professor">Professor</option><option value="admin">Administrador</option></select></label></article>)}</div></section></>}</section>;
+}
+
+function AdminPanel({userRole,notify}:{userRole:UserRole;notify:(message:string)=>void}) {
+  const [tab,setTab]=useState<AdminTab>("visao");
+  const [selectedCourseId,setSelectedCourseId]=useState<string|null>(null);
+  const [openMenu,setOpenMenu]=useState<string|null>(null);
+  const [query,setQuery]=useState("");
+  const [coursePublished,setCoursePublished]=useState<Record<string,boolean>>(()=>Object.fromEntries(courses.map(course=>[course.id,true])));
+  const [modulePublished,setModulePublished]=useState<Record<string,boolean>>(()=>Object.fromEntries(courses.flatMap(course=>course.modules.map(module=>[module.id,true]))));
+  const [quizPublished,setQuizPublished]=useState<Record<string,boolean>>(()=>Object.fromEntries(courses.map(course=>[course.id,true])));
+  const [students]=useState([
+    {name:"Marina Costa",email:"marina@exemplo.com",plan:"Avançado",courses:3,progress:72,status:"Ativo"},
+    {name:"João Vieira",email:"joao@exemplo.com",plan:"Médio",courses:2,progress:46,status:"Ativo"},
+    {name:"Lucas Martins",email:"lucas@exemplo.com",plan:"Básico",courses:1,progress:18,status:"Ativo"},
+    {name:"Diego Santos",email:"diego@exemplo.com",plan:"Médio",courses:0,progress:0,status:"Pendente"},
+  ]);
+  const selectedCourse=courses.find(course=>course.id===selectedCourseId);
+  const filteredStudents=students.filter(student=>`${student.name} ${student.email}`.toLowerCase().includes(query.toLowerCase()));
+  const publishedCount=Object.values(coursePublished).filter(Boolean).length;
+  return <div className="admin-page">
+    <header className="admin-header"><div><p className="eyebrow">CENTRAL DE GESTÃO</p><h1>Painel administrativo</h1><p>Gerencie cursos, módulos, alunos e resultados dos quizzes.</p></div><div className={`admin-role-card ${userRole}`}><span>ACESSO ATUAL</span><strong>{userRole==="admin"?"Administrador":"Professor"}</strong><small>{userRole==="admin"?"Controle completo da plataforma":"Gestão acadêmica de cursos e alunos"}</small></div></header>
+    <nav className="admin-tabs"><button className={tab==="visao"?"active":""} onClick={()=>setTab("visao")}>Visão geral</button><button className={tab==="alunos"?"active":""} onClick={()=>setTab("alunos")}>Alunos</button>{userRole==="admin"&&<button className={tab==="planos_usuarios"?"active":""} onClick={()=>setTab("planos_usuarios")}>Planos dos usuários</button>}{userRole==="admin"&&<button className={tab==="acessos"?"active":""} onClick={()=>setTab("acessos")}>Cupons e acessos</button>}<button className={tab==="cursos"?"active":""} onClick={()=>setTab("cursos")}>Cursos</button><button className={tab==="quizzes"?"active":""} onClick={()=>setTab("quizzes")}>Quizzes</button>{userRole==="admin"&&<button className={tab==="certificacoes"?"active":""} onClick={()=>setTab("certificacoes")}>Certificações</button>}{userRole==="admin"&&<button className={tab==="certificate_requests"?"active":""} onClick={()=>setTab("certificate_requests")}>Solicitações de certificado</button>}{userRole==="admin"&&<button className={tab==="comunidade"?"active":""} onClick={()=>setTab("comunidade")}>Comunidade</button>}<button className={tab==="laboratorios"?"active":""} onClick={()=>setTab("laboratorios")}>Laboratórios</button>{userRole==="admin"&&<button className={tab==="permissoes"?"active":""} onClick={()=>setTab("permissoes")}>Permissões</button>}</nav>
+    {tab==="visao"&&<><section className="admin-stats"><article><span>ALUNOS ATIVOS</span><strong>{students.filter(student=>student.status==="Ativo").length}</strong><small>Acompanhamento acadêmico</small></article><article><span>CURSOS PUBLICADOS</span><strong>{publishedCount}</strong><small>{courses.reduce((sum,course)=>sum+course.modules.length,0)} módulos cadastrados</small></article><article><span>LABORATÓRIOS</span><strong>{courseLabs.length}</strong><small>Um ambiente por curso</small></article><article><span>TAXA DE APROVAÇÃO</span><strong>{Math.round(quizMetrics.reduce((sum,item)=>sum+item.approved,0)/quizMetrics.reduce((sum,item)=>sum+item.attempts,0)*100)}%</strong><small>Nota mínima: 9/10</small></article></section><section className="admin-panel-card admin-quick-actions"><div className="admin-card-head"><div><p className="eyebrow">AÇÕES RÁPIDAS</p><h2>Gestão acadêmica</h2></div></div><div><button onClick={()=>setTab("cursos")}><b>Gerenciar conteúdo</b><span>Editar módulos e publicação →</span></button><button onClick={()=>setTab("laboratorios")}><b>Gerenciar laboratórios</b><span>Provedores, máquinas e IaC →</span></button><button onClick={()=>setTab("quizzes")}><b>Status dos quizzes</b><span>Ver tentativas e aprovações →</span></button>{userRole==="admin"&&<button onClick={()=>setTab("certificacoes")}><b>Certificações Vulcan</b><span>Provas, nota mínima e publicação →</span></button>}{userRole==="admin"&&<button onClick={()=>setTab("comunidade")}><b>Comunidade Sentinela</b><span>Ideias, bugs e membros →</span></button>}<button onClick={()=>setTab("alunos")}><b>Alunos</b><span>Acompanhar matrículas e progresso →</span></button></div></section></>}
+    {tab==="alunos"&&<section className="admin-section"><div className="admin-section-head"><div><p className="eyebrow">GESTÃO DE ALUNOS</p><h2>Alunos da academia</h2><p>Acompanhe matrículas e progresso dos participantes.</p></div><input aria-label="Buscar aluno" placeholder="Buscar por nome ou e-mail" value={query} onChange={event=>setQuery(event.target.value)}/></div><div className="admin-table"><div className="admin-table-row table-head"><span>Aluno</span><span>Plano</span><span>Cursos</span><span>Progresso</span><span>Status</span><span>Ações</span></div>{filteredStudents.map(student=><div className="admin-table-row admin-student-row" key={student.email}><span className="student-cell"><b className="avatar sm">{student.name.split(" ").map(item=>item[0]).join("").slice(0,2)}</b><span><strong>{student.name}</strong><small>{student.email}</small></span></span><span>{student.plan}</span><span>{student.courses}</span><span className="table-progress"><i><em style={{width:`${student.progress}%`}}/></i><small>{student.progress}%</small></span><span><b className={`status-badge ${student.status.toLowerCase()}`}>{student.status}</b></span><span><button onClick={()=>notify(`Perfil de ${student.name} aberto.`)}>Gerenciar</button></span></div>)}</div></section>}
+    {tab==="cursos"&&<section className="admin-section"><div className="admin-section-head"><div><p className="eyebrow">GESTÃO DE CONTEÚDO</p><h2>Cursos da academia</h2><p>Abra um curso para editar módulos, quiz e configurações.</p></div><button className="primary-button" onClick={()=>notify("Novo curso criado como rascunho.")}>+ Criar curso</button></div><div className="admin-course-list">{courses.map((course,index)=><article key={course.id}><div className={`admin-course-icon ${course.tone}`}>{course.icon}</div><div className="admin-course-info"><div><span className="course-code">{course.code}</span><b className={`status-badge ${coursePublished[course.id]?"ativo":"pendente"}`}>{coursePublished[course.id]?"Publicado":"Rascunho"}</b></div><h3>{course.title}</h3><p>{course.level} · {course.modules.length} módulos · {course.hours} horas</p></div><div className="admin-course-owner"><small>RESPONSÁVEL</small><strong>{index%2?"Ana Ribeiro":"Beatriz Lima"}</strong></div><div className="admin-course-students"><small>ALUNOS</small><strong>{84-index*6}</strong></div><div className="admin-course-actions"><button onClick={()=>setSelectedCourseId(course.id)}>Gerenciar conteúdo</button><div className="admin-more-wrap"><button aria-label={`Mais ações para ${course.title}`} onClick={()=>setOpenMenu(openMenu===course.id?null:course.id)}>•••</button>{openMenu===course.id&&<div className="admin-more-menu"><button onClick={()=>{setSelectedCourseId(course.id);setOpenMenu(null)}}>Editar curso</button><button onClick={()=>{setTab("quizzes");setOpenMenu(null)}}>Ver status do quiz</button><button onClick={()=>{setCoursePublished(current=>({...current,[course.id]:!current[course.id]}));setOpenMenu(null)}}>{coursePublished[course.id]?"Mover para rascunho":"Publicar curso"}</button></div>}</div></div></article>)}</div></section>}
+    {tab==="quizzes"&&<section className="admin-section"><div className="admin-section-head"><div><p className="eyebrow">AVALIAÇÕES</p><h2>Status dos quizzes</h2><p>Acompanhe publicação, tentativas e desempenho por curso.</p></div></div><div className="admin-quiz-status"><div className="quiz-status-head"><span>Curso</span><span>Status</span><span>Tentativas</span><span>Aprovados</span><span>Taxa</span><span>Ação</span></div>{courses.map((course,index)=>{const metric=quizMetrics[index]||{attempts:0,approved:0};const rate=metric.attempts?Math.round(metric.approved/metric.attempts*100):0;return <article key={course.id}><span className="quiz-course-cell"><b className={`admin-course-icon ${course.tone}`}>{course.icon}</b><span><strong>{course.title}</strong><small>10 questões · mínimo 9/10</small></span></span><span><button className={quizPublished[course.id]?"status-switch active":"status-switch"} onClick={()=>setQuizPublished(current=>({...current,[course.id]:!current[course.id]}))}><i/>{quizPublished[course.id]?"Publicado":"Rascunho"}</button></span><strong>{metric.attempts}</strong><strong>{metric.approved}</strong><span className="quiz-rate"><b>{rate}%</b><i><em style={{width:`${rate}%`}}/></i></span><button className="manage-quiz-button" onClick={()=>setSelectedCourseId(course.id)}>Gerenciar quiz</button></article>})}</div></section>}
+    {tab==="planos_usuarios"&&userRole==="admin"&&<AdminAccountPlans notify={notify}/>}
+    {tab==="acessos"&&userRole==="admin"&&<AdminAccessManagement notify={notify}/>}
+    {tab==="certificacoes"&&userRole==="admin"&&<AdminCertifications notify={notify}/>}
+    {tab==="certificate_requests"&&userRole==="admin"&&<AdminPrintedCertificateRequests notify={notify}/>}
+    {tab==="comunidade"&&userRole==="admin"&&<AdminCommunitySentinel notify={notify}/>}
+    {tab==="laboratorios"&&<AdminLabManager notify={notify}/>}
+    {tab==="permissoes"&&userRole==="admin"&&<section className="admin-section"><div className="admin-section-head"><div><p className="eyebrow">CONTROLE DE ACESSO</p><h2>Permissões da equipe</h2><p>Administradores têm acesso completo; professores gerenciam cursos e alunos.</p></div></div><div className="permission-matrix"><article><span className="role-badge admin">ADMIN</span><h3>Administrador</h3><p>Acesso total à plataforma, usuários, cursos, quizzes e permissões.</p></article><article><span className="role-badge professor">PROFESSOR</span><h3>Professor</h3><p>Gestão de conteúdo, alunos e resultados acadêmicos.</p></article></div></section>}
+    {selectedCourse&&<AdminCourseEditor course={selectedCourse} onBack={()=>setSelectedCourseId(null)} notify={notify} modulePublished={modulePublished} setModulePublished={setModulePublished} coursePublished={coursePublished} setCoursePublished={setCoursePublished} quizPublished={quizPublished} setQuizPublished={setQuizPublished}/>}
+  </div>;
+}
+
+function CommunitySentinelPanel({kind,notify}:{kind:"idea"|"bug";notify:(message:string)=>void}) {
+  const [title,setTitle]=useState("");
+  const [message,setMessage]=useState("");
+  const [busy,setBusy]=useState(false);
+  const isBug=kind==="bug";
+  async function submit(event:React.FormEvent){
+    event.preventDefault();
+    setBusy(true);
+    try{
+      const response=await fetch("/api/community/feedback",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({kind,title,message})});
+      const raw=await response.text();
+      let data:{error?:string};
+      try{data=JSON.parse(raw) as {error?:string}}catch{throw new Error("Não foi possível enviar. Tente novamente.")}
+      if(!response.ok)throw new Error(data.error||"Não foi possível enviar.");
+      setTitle("");setMessage("");
+      notify(isBug?"Bug registrado. A equipe da Comunidade Sentinela vai analisar.":"Sugestão enviada. Obrigado por contribuir com a comunidade.");
+    }catch(error){notify(error instanceof Error?error.message:"Não foi possível enviar.")}finally{setBusy(false)}
+  }
+  return <div className="page inner-page community-sentinel-page">
+    <div className="page-title"><p className="eyebrow">COMUNIDADE SENTINELA</p><h1>{isBug?"Reportar bug":"Enviar sugestão/ideia"}</h1><p>{isBug?"Descreva o que aconteceu, em qual tela e o que você esperava ver. Quanto mais detalhe, mais rápido o ajuste.":"Compartilhe uma ideia para melhorar cursos, laboratórios, certificados ou a experiência da academia."}</p></div>
+    <form className="community-feedback-card" onSubmit={event=>void submit(event)}>
+      <span className="community-feedback-icon" aria-hidden="true"><NavIcon name={isBug?"bug":"bulb"}/></span>
+      <label>{isBug?"Resumo do bug":"Título da ideia"}<input value={title} onChange={event=>setTitle(event.target.value)} maxLength={160} required minLength={4} placeholder={isBug?"Ex.: foto de perfil não salva no celular":"Ex.: trilha de resposta a incidentes"}/></label>
+      <label>{isBug?"Descrição":"Detalhe sua sugestão"}<textarea value={message} onChange={event=>setMessage(event.target.value)} required minLength={12} maxLength={4000} rows={8} placeholder={isBug?"Passos para reproduzir, tela, navegador e o resultado atual.":"O que você gostaria de ver na plataforma e por quê."}/></label>
+      <button className="primary-button" disabled={busy}>{busy?"Enviando...":isBug?"Enviar report de bug":"Enviar sugestão"} →</button>
+    </form>
+  </div>;
+}
+
+function Plans({ activePlan, setActivePlan, notify }: { activePlan:PlanId; setActivePlan:(plan:PlanId)=>void; notify:(message:string)=>void; openCourse:(id:string)=>void }) {
+  const premiumCourses = courses.filter(course=>course.premium);
+  const [checkoutItem,setCheckoutItem]=useState<string|null>(null);
+  function activateFreePlan(){
+    setActivePlan("gratuito");notify("Plano Gratuito ativado.");
+  }
+  async function checkout(kind:"plan"|"course",id:string){
+    setCheckoutItem(id);
+    try{
+      const response=await fetch("/api/stripe/checkout",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({kind,id})});
+      const data=await response.json() as {checkoutUrl?:string;error?:string};
+      if(!response.ok||!data.checkoutUrl)throw new Error(data.error||"Não foi possível abrir o pagamento.");
+      window.location.assign(data.checkoutUrl);
+    }catch(error){notify(error instanceof Error?error.message:"Não foi possível abrir o pagamento.");setCheckoutItem(null)}
+  }
+  return <div className="page inner-page pricing-page">
+    <div className="page-title pricing-title"><p className="eyebrow">PLANOS DE ACESSO</p><h1>Escolha até onde quer chegar</h1><p>Comece pelos fundamentos ou libere toda a academia. Cada contratação paga libera 30 dias de acesso; depois disso, a conta retorna ao plano Gratuito.</p></div>
+    <section className="plan-community-access"><div><span>ACESSO CONTROLADO</span><h2>Novos cadastros exigem código</h2><p>Para criar uma conta gratuita, informe o código de cadastro fornecido pela VulcanAcademy. Contas existentes continuam acessando normalmente.</p></div></section>
+    <div className="pricing-grid">{plans.map((plan,index)=><article className={`pricing-card ${plan.id} ${activePlan===plan.id?"current-plan":""}`} key={plan.id}>{plan.id==="medio"&&<span className="popular-label">MAIS ESCOLHIDO</span>}<div className="pricing-name"><span>{String(index+1).padStart(2,"0")}</span><div><small>PLANO</small><h2>{plan.name}</h2></div></div><p>{plan.description}</p><div className="price"><small>R$</small><strong>{plan.price.toLocaleString("pt-BR",{minimumFractionDigits:2})}</strong><span>/mês</span></div><ul>{plan.features.map(feature=><li key={feature}>✓ {feature}</li>)}</ul><button disabled={checkoutItem!==null||activePlan===plan.id} className={plan.id==="medio"?"primary-button":"outline-button"} onClick={()=>{if(plan.id==="gratuito")activateFreePlan();else void checkout("plan",plan.id)}}>{activePlan===plan.id?"Plano atual":checkoutItem===plan.id?"Abrindo checkout...":plan.id==="gratuito"?"Ativar plano gratuito":"Assinar com Stripe"}</button></article>)}</div>
+    <p className="billing-note">Pagamento seguro processado pelo Stripe. O ciclo é validado pela plataforma por 30 dias; administradores permanecem isentos de expiração. Ambiente de teste: nenhuma cobrança real será realizada.</p>
+    <section className="ai-offer"><div className="ai-offer-head"><div><p className="eyebrow">FORMAÇÃO PREMIUM EM IA</p><h2>Especializações avançadas por R$ 500,00</h2><p>Compra individual, acesso permanente ao curso e certificado premium de conclusão.</p></div><span>R$ 500<small>,00 por curso</small></span></div><div className="ai-plan-list">{premiumCourses.map(course=><article key={course.id}><span className="course-icon">{course.icon}</span><div><small>{course.code} · {course.hours} HORAS</small><h3>{course.title}</h3><p>{course.description}</p></div><button disabled={checkoutItem!==null} className="outline-button" onClick={()=>void checkout("course",course.id)}>{checkoutItem===course.id?"Abrindo checkout...":"Comprar com Stripe"}</button></article>)}</div></section>
+  </div>;
+}
+
+function VerifiedAuthModal({mode,setMode,profile,setProfile,setUserRole,setSignedIn,setEmailVerified,setActivePlan,setAuthSource,setCommunityMember,notify}:{mode:"login"|"signup";setMode:(mode:"login"|"signup"|null)=>void;profile:StudentProfile;setProfile:(profile:StudentProfile)=>void;setUserRole:(role:UserRole)=>void;setSignedIn:(value:boolean)=>void;setEmailVerified:(value:boolean)=>void;setActivePlan:(plan:PlanId)=>void;setAuthSource:(source:"platform"|"manual"|null)=>void;setCommunityMember:(value:boolean)=>void;notify:(message:string)=>void}) {
+  const [step,setStep]=useState<"form"|"verify_email"|"mfa">("form");
+  const [challengeId,setChallengeId]=useState("");
+  const [maskedEmail,setMaskedEmail]=useState("");
+  const [busy,setBusy]=useState(false);
+  const [error,setError]=useState("");
+  const [manualAvailable,setManualAvailable]=useState<boolean|null>(null);
+  const [googleAvailable,setGoogleAvailable]=useState<boolean|null>(null);
+  const [accessCode,setAccessCode]=useState("");
+  const accessGranted=accessCode.trim().length>0;
+
+  useEffect(()=>{void fetch("/api/auth/manual/status").then(response=>response.json()).then((data:{manualAvailable?:boolean;googleAvailable?:boolean})=>{setManualAvailable(Boolean(data.manualAvailable));setGoogleAvailable(Boolean(data.googleAvailable))}).catch(()=>{setManualAvailable(false);setGoogleAvailable(false)})},[]);
+
+  function changeMode(next:"login"|"signup") { setMode(next);setStep("form");setChallengeId("");setMaskedEmail("");setError(""); }
+  function prepareFederatedSignup(event:React.MouseEvent<HTMLAnchorElement>){
+    const code=accessCode.trim().toLowerCase();
+    if(!code){event.preventDefault();setError("Informe o código de cadastro.");return}
+    localStorage.setItem("vulcanlab-signup-draft",JSON.stringify({...profile,accessCode:code}));
+  }
+  function startGoogleLogin(nextMode:"login"|"signup"){
+    const code=accessCode.trim().toLowerCase();
+    if(nextMode==="signup"&&!code){setError("Informe o código de cadastro.");return}
+    if(googleAvailable!==true){setError(googleAvailable===null?"Aguarde enquanto o Google é preparado.":"Login com Google ainda não está configurado.");return}
+    setBusy(true);setError("");
+    const params=new URLSearchParams({mode:nextMode,return_to:"/?login=1"});
+    if(nextMode==="signup")params.set("access_code",code);
+    window.location.assign(`/api/auth/google/start?${params.toString()}`);
+  }
+
+  async function send(path:string,payload:Record<string,unknown>) {
+    const response=await fetch(path,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(payload)});
+    const data=await response.json() as {error?:string;code?:string;challengeId?:string;maskedEmail?:string;mfaRequired?:boolean;verified?:boolean;account?:{email:string;name:string;role:string;systemRole:UserRole;plan:PlanId;status:string;emailVerified:boolean;communityMember?:boolean}};
+    if(!response.ok)throw new Error(data.error||"Não foi possível concluir esta etapa.");
+    return data;
+  }
+
+  function finishManualLogin(account:{email:string;name:string;role:string;systemRole:UserRole;plan:PlanId;communityMember?:boolean},message:string){
+    setProfile({...profile,name:account.name,email:account.email,role:account.role});
+    setUserRole(account.systemRole||"aluno");setActivePlan(account.plan||"gratuito");setCommunityMember(Boolean(account.communityMember));setEmailVerified(true);setSignedIn(true);setAuthSource("manual");setMode(null);notify(message);
+  }
+
+  async function createAccount(event:React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();setBusy(true);setError("");
+    const data=new FormData(event.currentTarget);
+    const code=String(data.get("accessCode")??"").trim().toLowerCase();
+    if(!code){setError("Informe o código de cadastro.");setBusy(false);return}
+    if(String(data.get("password"))!==String(data.get("confirmPassword"))){setError("As senhas informadas não são iguais.");setBusy(false);return}
+    try{
+      const result=await send("/api/auth/manual/register",{name:data.get("name"),email:data.get("email"),role:data.get("role"),password:data.get("password"),accessCode:data.get("accessCode")});
+      if(result.account){finishManualLogin(result.account,"Conta criada e acesso liberado.");return}
+      setChallengeId(result.challengeId||"");setMaskedEmail(result.maskedEmail||"");setStep("verify_email");
+    }catch(reason){setError(reason instanceof Error?reason.message:"Não foi possível criar a conta.")}finally{setBusy(false)}
+  }
+
+  async function login(event:React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();setBusy(true);setError("");
+    const data=new FormData(event.currentTarget);
+    try{
+      const result=await send("/api/auth/manual/login",{email:data.get("email"),password:data.get("password")});
+      if(result.account){finishManualLogin(result.account,"Login realizado com sucesso.");return}
+      setChallengeId(result.challengeId||"");setMaskedEmail(result.maskedEmail||"");setStep("mfa");
+    }catch(reason){setError(reason instanceof Error?reason.message:"Não foi possível entrar.")}finally{setBusy(false)}
+  }
+
+  async function confirmCode(event:React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();setBusy(true);setError("");
+    const data=new FormData(event.currentTarget);
+    try{
+      if(step==="verify_email"){
+        await send("/api/auth/manual/verify-email",{challengeId,code:data.get("code")});
+        notify("E-mail confirmado. Agora entre com seu e-mail e senha.");changeMode("login");
+      }else{
+        const result=await send("/api/auth/manual/verify-mfa",{challengeId,code:data.get("code")});
+        if(!result.account)throw new Error("Não foi possível carregar sua conta.");
+        setProfile({...profile,name:result.account.name,email:result.account.email,role:result.account.role});
+        setUserRole(result.account.systemRole||"aluno");setActivePlan(result.account.plan||"gratuito");setCommunityMember(Boolean(result.account.communityMember));setEmailVerified(true);setSignedIn(true);setAuthSource("manual");setMode(null);notify("Login confirmado com MFA por e-mail.");
+      }
+    }catch(reason){setError(reason instanceof Error?reason.message:"Código inválido.")}finally{setBusy(false)}
+  }
+
+  return <div className="auth-backdrop" role="dialog" aria-modal="true" aria-label={mode==="login"?"Entrar na VulcanAcademy":"Criar conta na VulcanAcademy"} onMouseDown={event=>{if(event.currentTarget===event.target)setMode(null)}}><div className="auth-modal manual-auth-modal"><button className="auth-close" onClick={()=>setMode(null)} aria-label="Fechar">×</button><div className="auth-brand"><span className="brand-mark">V</span><div><strong>VulcanAcademy</strong><small>ACESSO SEGURO</small></div></div>{step==="form"&&<div className="auth-tabs"><button className={mode==="login"?"active":""} onClick={()=>changeMode("login")}>Entrar</button><button className={mode==="signup"?"active":""} onClick={()=>changeMode("signup")}>Criar conta</button></div>}
+    {step==="verify_email"||step==="mfa"?<form className="auth-content auth-code-step" onSubmit={confirmCode}><span className="auth-step-icon">{step==="verify_email"?"✉":"◆"}</span><p className="eyebrow">{step==="verify_email"?"CONFIRMAÇÃO DO E-MAIL":"MFA OBRIGATÓRIO"}</p><h2>{step==="verify_email"?"Digite o código enviado":"Confirme seu login"}</h2><p>Enviamos um código de 6 dígitos para <strong>{maskedEmail}</strong>. Ele expira em 10 minutos.</p><label>Código de segurança<input className="auth-code-input" name="code" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} required autoFocus placeholder="000000"/></label>{error&&<p className="auth-error" role="alert">{error}</p>}<button className="primary-button" disabled={busy}>{busy?"Validando...":step==="verify_email"?"Confirmar e-mail":"Concluir login"} →</button><button type="button" className="auth-secondary" onClick={()=>{setStep("form");setError("")}}>Voltar</button></form>
+    :mode==="login"?<><form className="auth-content manual-login" onSubmit={login}><h2>Entre com sua conta VulcanAcademy</h2><p>Use o e-mail e a senha cadastrados para entrar diretamente.</p><label>E-mail<input name="email" type="email" autoComplete="email" required placeholder="voce@exemplo.com"/></label><label>Senha<input name="password" type="password" autoComplete="current-password" required placeholder="Sua senha"/></label>{error&&<p className="auth-error" role="alert">{error}</p>}{manualAvailable===false&&<p className="auth-pending-service">Cadastro manual temporariamente indisponível.</p>}<button className="primary-button" disabled={busy||manualAvailable!==true}>{busy?"Verificando...":manualAvailable===null?"Verificando serviço...":manualAvailable?"Entrar":"Login manual indisponível"} →</button></form><div className="auth-divider"><span>ou use uma conta já verificada</span></div><div className="federated-login-grid"><button type="button" className="google-login" onClick={()=>startGoogleLogin("login")} disabled={busy||googleAvailable!==true}><b>G</b>{googleAvailable===null?"Preparando Google...":"Google"}</button><a className="chatgpt-login" href="/signin-with-chatgpt?return_to=%2F%3Flogin%3D1">ChatGPT</a></div><small className="auth-footnote">O Google entra direto na sua conta Gmail, sem passar pelo login do ChatGPT.</small></>
+    :<><div className="auth-content federated-signup"><div className={`community-code-gate ${accessGranted?"valid":""}`}><span>ACESSO CONTROLADO</span><h2>Código de cadastro</h2><p>Novas contas somente podem ser criadas com o código fornecido pela VulcanAcademy.</p><label>Código de cadastro<input value={accessCode} onChange={event=>{setAccessCode(event.target.value);setError("")}} autoComplete="off" spellCheck={false} placeholder="Informe o código" aria-describedby="community-code-help" required/></label><small id="community-code-help">{accessGranted?"Código informado. A validação será concluída ao criar a conta.":"Informe o código para escolher uma forma de cadastro."}</small></div><h2>Escolha como criar sua conta</h2><p>A conta é gravada no banco SQL da academia. O Google autentica direto na sua conta Gmail; o ChatGPT continua opcional.</p><div className="federated-signup-grid"><button type="button" className="google-login" onClick={()=>startGoogleLogin("signup")} disabled={busy||googleAvailable!==true||!accessGranted}><b>G</b><span><strong>{googleAvailable===null?"Preparando Google...":"Criar com Google"}</strong><small>Use sua conta Gmail</small></span><i>→</i></button><a className="chatgpt-login" aria-disabled={!accessGranted} href="/signin-with-chatgpt?return_to=%2F%3Flogin%3D1%26signup%3D1" onClick={prepareFederatedSignup}><span><strong>Criar com ChatGPT</strong><small>Identidade OpenAI verificada</small></span><i>→</i></a></div></div><div className="auth-divider signup-divider"><span>ou crie com e-mail e senha</span></div><form className="auth-content verified-signup manual-signup" onSubmit={createAccount}><h2>Cadastro com e-mail</h2><p>Sua conta é criada no banco SQL da academia após a validação do código.</p><label>Nome completo<input name="name" required placeholder="Seu nome" defaultValue={profile.name} autoComplete="name"/></label><label>E-mail<input name="email" type="email" required placeholder="voce@exemplo.com" defaultValue={profile.email} autoComplete="email"/><small>Este e-mail será usado para entrar na sua conta.</small></label><label>Área de atuação<select name="role" defaultValue={profile.role}><option>Estudante de Segurança</option><option>Desenvolvimento</option><option>Infraestrutura e Cloud</option><option>Analista de Segurança</option><option>Gestão e Governança</option></select></label><div className="auth-password-grid"><label>Senha<input name="password" type="password" required minLength={10} maxLength={128} autoComplete="new-password" placeholder="Mínimo de 10 caracteres"/></label><label>Confirmar senha<input name="confirmPassword" type="password" required minLength={10} maxLength={128} autoComplete="new-password" placeholder="Repita a senha"/></label></div><label className="manual-community-code">Código de cadastro<input name="accessCode" value={accessCode} onChange={event=>{setAccessCode(event.target.value);setError("")}} autoComplete="off" spellCheck={false} placeholder="Informe o código" required/></label><div className="password-rules">Use letra maiúscula, minúscula e número.</div><div className="free-access-summary"><span>PLANO INICIAL</span><strong>Gratuito · R$ 0,00</strong><p>{accessGranted?"Código informado. Confirme o cadastro para validá-lo.":"O cadastro permanece bloqueado até o código ser informado."}</p></div>{error&&<p className="auth-error" role="alert">{error}</p>}{manualAvailable===false&&<p className="auth-pending-service">Cadastro local temporariamente indisponível.</p>}<button className="primary-button" disabled={busy||manualAvailable!==true||!accessGranted}>{busy?"Criando conta...":manualAvailable===null?"Verificando serviço...":manualAvailable?accessGranted?"Criar conta gratuita":"Informe o código de cadastro":"Cadastro indisponível"} →</button><small>A conta fica no banco SQL da academia e o acesso é liberado imediatamente.</small></form></>}
+  </div></div>;
+}
+
+function AuthModal({ mode, setMode, profile, setProfile, setSignedIn, setUserRole, notify }: { mode:"login"|"signup"; setMode:(mode:"login"|"signup"|null)=>void; profile:StudentProfile; setProfile:(profile:StudentProfile)=>void; setSignedIn:(value:boolean)=>void; setUserRole:(role:UserRole)=>void; notify:(message:string)=>void }) {
+  return <div className="auth-backdrop" role="dialog" aria-modal="true" aria-label={mode==="login"?"Entrar na VulcanAcademy":"Criar perfil na VulcanAcademy"} onMouseDown={event=>{if(event.currentTarget===event.target)setMode(null)}}><div className="auth-modal"><button className="auth-close" onClick={()=>setMode(null)} aria-label="Fechar">×</button><div className="auth-brand"><span className="brand-mark">V</span><div><strong>VulcanAcademy</strong><small>CONTA SEGURA</small></div></div><div className="auth-tabs"><button className={mode==="login"?"active":""} onClick={()=>setMode("login")}>Entrar</button><button className={mode==="signup"?"active":""} onClick={()=>setMode("signup")}>Criar conta</button></div>{mode==="login"?<div className="auth-content"><h2>Bem-vindo de volta</h2><p>Acesse suas matrículas, score, certificados e plano com uma identidade segura.</p><a className="google-login" href="/api/auth/google/start?mode=login&return_to=%2F%3Flogin%3D1"><b>G</b>Continuar com Google <span>→</span></a><div className="auth-divider"><span>ou</span></div><a className="chatgpt-login" href="/signin-with-chatgpt?return_to=%2F%3Flogin%3D1">Entrar com ChatGPT <span>→</span></a><small>O Google autentica diretamente na sua conta Gmail. A VulcanAcademy não armazena a senha do Google.</small></div>:<form className="auth-content" onSubmit={event=>{event.preventDefault();const data=new FormData(event.currentTarget);setProfile({...profile,name:String(data.get("name")),email:String(data.get("email")),role:String(data.get("role"))});setUserRole("aluno");setSignedIn(true);setMode(null);notify("Perfil VulcanAcademy criado com sucesso.")}}><h2>Crie seu perfil de aluno</h2><p>Comece com o painel vazio e escolha pessoalmente cada curso da sua jornada.</p><label>Nome completo<input name="name" required placeholder="Seu nome" defaultValue={profile.name}/></label><label>E-mail<input name="email" type="email" required placeholder="voce@exemplo.com" defaultValue={profile.email}/></label><label>Área de atuação<select name="role" defaultValue={profile.role}><option>Estudante de Segurança</option><option>Desenvolvimento</option><option>Infraestrutura e Cloud</option><option>Analista de Segurança</option><option>Gestão e Governança</option></select></label><button className="primary-button">Criar perfil gratuito</button><small>Ao continuar, você poderá escolher um plano de acesso.</small></form>}</div></div>;
+}
+
+function Certificate({ profile, completed, notify, go }: { profile:{name:string}; completed:string[]; notify:(s:string)=>void; go:(view:View)=>void }) {
+  const [issued,setIssued]=useState<Record<string,{id:string;issuedAt:string;verifyUrl:string}>>({});
+  const [issuing,setIssuing]=useState<string|null>(null);
+  const [printCourse,setPrintCourse]=useState<string|null>(null);
+  useEffect(()=>{
+    let active=true;
+    fetch("/api/certificates",{headers:{accept:"application/json"}})
+      .then(async response=>response.ok?response.json() as Promise<{certificates?:{id:string;courseId:string;issuedAt:string;verifyUrl:string}[]}>:null)
+      .then(data=>{if(!active||!data?.certificates)return;setIssued(Object.fromEntries(data.certificates.map(certificate=>[certificate.courseId,{id:certificate.id,issuedAt:certificate.issuedAt,verifyUrl:certificate.verifyUrl}])));})
+      .catch(()=>undefined);
+    const clearPrint=()=>setPrintCourse(null);
+    window.addEventListener("afterprint",clearPrint);
+    return()=>{active=false;window.removeEventListener("afterprint",clearPrint);};
+  },[]);
+  async function issueCertificate(course:Course) {
+    setPrintCourse(course.id);
+    if (issued[course.id]) { window.setTimeout(()=>window.print(),50); return; }
+    setIssuing(course.id);
+    try {
+      const response=await fetch("/api/certificates",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({studentName:profile.name,courseId:course.id,courseTitle:course.title,hours:course.hours})});
+      const data=await response.json() as {id?:string;issuedAt?:string;verifyUrl?:string;error?:string};
+      if(!response.ok||!data.id||!data.issuedAt||!data.verifyUrl) throw new Error(data.error||"Falha ao emitir");
+      setIssued(current=>({...current,[course.id]:{id:data.id!,issuedAt:data.issuedAt!,verifyUrl:data.verifyUrl!}}));
+      notify("Certificado registrado e pronto para impressão.");
+      window.setTimeout(()=>window.print(),200);
+    } catch { notify("Não foi possível registrar o certificado. Tente novamente."); }
+    finally { setIssuing(null); }
+  }
+  return <div className="page inner-page"><div className="page-title"><p className="eyebrow">CERTIFICADOS DE CONCLUSÃO</p><h1>Comprove os cursos que você terminou</h1><p>Conclua a trilha, registre o certificado do curso e compartilhe a validação pública. A prova profissional VCWS fica em um fluxo separado.</p></div><button type="button" className="cert-track-switch" onClick={()=>go("certificacoes_vulcan")}><span><small>PROVA OFICIAL</small><strong>Certificação Vulcan Certified Web Security</strong><p>40 questões, credencial verificável e selo Vulcan Defense.</p></span><b>Ir para a prova →</b></button><div className="certificate-overview"><div><strong>{courses.length}</strong><span>certificados disponíveis</span></div><div><strong>{courses.filter(course => course.modules.every(module => completed.includes(module.id))).length}</strong><span>certificados conquistados</span></div><div><strong>{courses.reduce((total, course) => total + course.hours, 0)}h</strong><span>carga horária total</span></div></div><div className="certificate-list">{courses.map(course => { const done=course.modules.filter(module=>completed.includes(module.id)).length; const percent=Math.round(done/course.modules.length*100); const credential=issued[course.id]; const unlocked=Boolean(credential)||done===course.modules.length; const linkedinProfile=credential?linkedInAddCertificationUrl({name:course.title,issuedAt:credential.issuedAt,certId:credential.id,certUrl:credential.verifyUrl}):"#"; const linkedinShare=credential?`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(credential.verifyUrl)}`:"#"; return <article className={`certificate-course ${unlocked?"unlocked":""} ${printCourse===course.id?"printing":""}`} key={course.id}><div className={`certificate-mini ${course.tone}`}><img className="certificate-brand-logo" src="/logo-vulcan-defense.png" alt="Vulcan Defense"/><small>CERTIFICADO DE CONCLUSÃO</small><h2>{course.title}</h2><p>Certificamos que <strong>{profile.name}</strong> concluiu esta formação com carga horária de {course.hours} horas.</p><div className="certificate-signatures"><span><b>Rafael Ribeiro</b><small>Diretor de Ensino</small></span><span><b>Rodrigo Carran</b><small>Diretor Geral</small></span></div><footer><span>{credential?.id||"CREDENCIAL APÓS EMISSÃO"}</span><span>VULCAN DEFENSE ACADEMY</span></footer>{!unlocked&&<i>Bloqueado</i>}</div><div className="certificate-course-info"><div className="course-top"><span className="course-icon">{course.icon}</span><span className="course-code">{course.code}</span></div><h3>{course.title}</h3><p>{course.description}</p><div className="cert-progress"><span><b>{done}/{course.modules.length}</b> módulos concluídos</span><i><em style={{width:`${percent}%`}}/></i></div><div className="certificate-actions"><button className="primary-button" disabled={!unlocked||issuing===course.id} onClick={()=>void issueCertificate(course)}>{!unlocked?"Continue o curso":issuing===course.id?"Registrando...":credential?"Imprimir certificado":"Emitir e registrar certificado"} →</button>{credential?<><a className="linkedin-button" href={linkedinProfile} target="_blank" rel="noreferrer"><b>in</b> Enviar ao LinkedIn</a><a className="linkedin-button share" href={linkedinShare} target="_blank" rel="noreferrer"><b>in</b> Compartilhar no feed</a></>:<button className="linkedin-button" disabled><b>in</b> LinkedIn após emissão</button>}</div><small>{credential?<>ID: <b>{credential.id}</b> · <a href={credential.verifyUrl} target="_blank" rel="noreferrer">Validar credencial</a></>:"O ID verificável será criado no momento da emissão."}</small></div></article>})}</div></div>;
+}
+
+function OffensivePanel({profile,days,streak,bestStreak,prizeClaimed,registerToday,claimPrize,go}:{profile:{name:string};days:string[];streak:number;bestStreak:number;prizeClaimed:boolean;registerToday:()=>void;claimPrize:()=>void;go:(view:View)=>void}) {
+  const todayKey = dateKey(new Date());
+  const marked = useMemo(()=>new Set(days),[days]);
+  const [cursor,setCursor]=useState(()=>new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const monthLabel = cursor.toLocaleDateString("pt-BR",{month:"long",year:"numeric"});
+  const cells = useMemo(()=>{
+    const start = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+    const firstWeekday = start.getDay();
+    const daysInMonth = new Date(cursor.getFullYear(), cursor.getMonth()+1, 0).getDate();
+    const previousDays = new Date(cursor.getFullYear(), cursor.getMonth(), 0).getDate();
+    return Array.from({length:42},(_,index)=>{
+      const dayNumber = index - firstWeekday + 1;
+      const outside = dayNumber < 1 || dayNumber > daysInMonth;
+      const date = outside
+        ? (dayNumber < 1 ? new Date(cursor.getFullYear(), cursor.getMonth()-1, previousDays + dayNumber) : new Date(cursor.getFullYear(), cursor.getMonth()+1, dayNumber - daysInMonth))
+        : new Date(cursor.getFullYear(), cursor.getMonth(), dayNumber);
+      const key = dateKey(date);
+      return {key, label: date.getDate(), outside, hot: marked.has(key), today: key===todayKey, future: key>todayKey};
+    });
+  },[cursor,marked,todayKey]);
+  const canClaim = streak>=15 && !prizeClaimed;
+  const nextBadge = offensiveBadges.find(badge=>bestStreak<badge.days);
+  return <div className="page inner-page offensive-panel">
+    <div className="page-title"><div><p className="eyebrow">PAINEL DO ALUNO</p><h1>Dias de ofensiva</h1><p>A sequência conta dias reais de login no banco — não módulos e não cliques manuais.</p></div><button className="outline-button" onClick={()=>go("perfil")}>Ver perfil</button></div>
+    <section className="offensive-hero">
+      <article className="offensive-streak-card">
+        <small>Sequência atual · {profile.name.split(" ")[0]}</small>
+        <h2>{streak} <em>dia{streak===1?"":"s"}</em></h2>
+        <p>{streak?`Melhor sequência: ${bestStreak} dia${bestStreak===1?"":"s"}. ${nextBadge?`Faltam ${nextBadge.days-bestStreak} para ${nextBadge.name}.`:"Você já desbloqueou o topo da ofensiva."}`:"Entre na conta em dias seguidos. Cada login em auth_sessions acende um dia."}</p>
+        <div className="offensive-streak-actions">
+          <button className="primary-button" onClick={registerToday}>Atualizar a partir do banco</button>
+          <button className="outline-button" onClick={()=>go("laboratorio")}>Abrir um laboratório</button>
+        </div>
+      </article>
+      <aside className={`offensive-prize ${canClaim?"ready":""} ${prizeClaimed?"claimed":""}`}>
+        <span>🏆</span>
+        <div>
+          <h3>{prizeClaimed?"Prêmio recolhido":streak>=15?"15 dias fechados":"Prêmio aos 15 dias"}</h3>
+          <p>{prizeClaimed?`Você já levou +${OFFENSIVE_PRIZE_XP.toLocaleString("pt-BR")} XP e a insígnia Arsenal de 15.`:streak>=15?`Recolha +${OFFENSIVE_PRIZE_XP.toLocaleString("pt-BR")} XP e a insígnia lendária.`:`Faltam ${Math.max(0,15-streak)} dia${15-streak===1?"":"s"} seguidos para liberar o prêmio.`}</p>
+        </div>
+        <button className="primary-button" disabled={!canClaim} onClick={claimPrize}>{prizeClaimed?"Já recolhido":canClaim?"Recolher prêmio":"Bloqueado"}</button>
+      </aside>
+    </section>
+    <div className="offensive-layout">
+      <section className="offensive-calendar" aria-label="Calendário de ofensiva">
+        <div className="offensive-cal-head">
+          <button type="button" aria-label="Mês anterior" onClick={()=>setCursor(current=>new Date(current.getFullYear(),current.getMonth()-1,1))}>‹</button>
+          <h3>{monthLabel}</h3>
+          <button type="button" aria-label="Próximo mês" onClick={()=>setCursor(current=>new Date(current.getFullYear(),current.getMonth()+1,1))}>›</button>
+        </div>
+        <div className="offensive-weekdays">{WEEKDAY_LABELS.map((label,index)=><span key={`${label}-${index}`}>{label}</span>)}</div>
+        <div className="offensive-grid">
+          {cells.map(cell=>(
+            <button
+              key={cell.key+cell.outside}
+              type="button"
+              className={`${cell.outside?"muted":""} ${cell.hot?"hot":""} ${cell.today?"today":""}`}
+              disabled
+              aria-label={`${cell.label}${cell.hot?" · ofensiva":""}${cell.today?" · hoje":""}`}
+            >{cell.label}</button>
+          ))}
+        </div>
+        <div className="offensive-legend"><span><i className="lg-hot"/>Dia com login</span><span><i className="lg-today"/>Hoje</span><span>Fonte: auth_sessions no banco</span></div>
+      </section>
+      <section className="offensive-badges">
+        <header><p>Insígnias</p><h3>Quanto maior a sequência, mais rara a marca.</h3></header>
+        <div className="offensive-badge-grid">
+          {offensiveBadges.map(badge=>{
+            const earned = bestStreak>=badge.days;
+            return <article key={badge.days} className={`obadge ${badge.rarity} ${earned?"earned":"locked"}`}>
+              <span className="mark" aria-hidden="true">{badge.icon}</span>
+              <div>
+                <strong>{badge.name}</strong>
+                <small>{badge.blurb}</small>
+                {earned?<small className="need">{badge.days} dias · conquistada</small>:<small className="need">{bestStreak}/{badge.days} dias</small>}
+              </div>
+            </article>;
+          })}
+        </div>
+      </section>
+    </div>
+  </div>;
+}
+
+async function cropProfilePhoto(file:File){
+  if(file.size>5*1024*1024)throw new Error("Escolha uma imagem de até 5 MB.");
+  const bitmap=await createImageBitmap(file);const size=Math.min(bitmap.width,bitmap.height);const sx=(bitmap.width-size)/2;const sy=(bitmap.height-size)/2;
+  const canvas=document.createElement("canvas");canvas.width=512;canvas.height=512;const context=canvas.getContext("2d");if(!context)throw new Error("Não foi possível processar a imagem.");
+  context.drawImage(bitmap,sx,sy,size,size,0,0,512,512);bitmap.close();
+  return await new Promise<Blob>((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error("Não foi possível preparar a foto.")),"image/webp",.86));
+}
+
+type ProfileTab = "overview"|"skills"|"badges"|"activity";
+
+type SkillNode={id:string;label:string;icon:string;x:number;y:number;tier:1|2|3;requires:string[];moduleIds:string[]};
+type SkillField={id:string;label:string;rank:string;icon:string;unlockAt:number;blurb:string;nodes:SkillNode[]};
+
+const skillFields:SkillField[]=[
+  {id:"foundational",label:"Fundamentos",rank:"Entry level",icon:"⬡",unlockAt:0,blurb:"Base ofensiva e defensiva da web. Desbloqueia as demais árvores.",nodes:[
+    {id:"core",label:"Núcleo",icon:"◆",x:500,y:72,tier:1,requires:[],moduleIds:[]},
+    {id:"git",label:"Git seguro",icon:"⎇",x:500,y:210,tier:1,requires:["core"],moduleIds:["GT01","GT02","GT04"]},
+    {id:"owasp",label:"Web OWASP",icon:"⌘",x:250,y:250,tier:1,requires:["core"],moduleIds:["A01","A02","A05"]},
+    {id:"coding",label:"Secure Coding",icon:"</>",x:750,y:250,tier:1,requires:["core"],moduleIds:["SC01","SC02","SC03"]},
+    {id:"access",label:"Acesso",icon:"⚿",x:150,y:390,tier:2,requires:["owasp"],moduleIds:["A01","A07"]},
+    {id:"inject",label:"Injeção",icon:"⚡",x:280,y:430,tier:2,requires:["owasp"],moduleIds:["A03"]},
+    {id:"config",label:"Config",icon:"⚙",x:410,y:390,tier:2,requires:["owasp"],moduleIds:["A05","A06"]},
+    {id:"validate",label:"Validação",icon:"▣",x:590,y:390,tier:2,requires:["coding"],moduleIds:["SC02","SC03"]},
+    {id:"crypto",label:"Cripto",icon:"◈",x:720,y:430,tier:2,requires:["coding"],moduleIds:["A02","SC05"]},
+    {id:"tests",label:"Testes",icon:"✓",x:850,y:390,tier:2,requires:["coding"],moduleIds:["SC07","SC08"]},
+    {id:"web-master",label:"Mestre Web",icon:"♛",x:500,y:560,tier:3,requires:["inject","crypto"],moduleIds:["A08","A10","SC06"]},
+  ]},
+  {id:"ops",label:"DevOps & operação",rank:"Trilha DevOps",icon:">_",unlockAt:0,blurb:"Git, Linux, redes e containers — o caminho operacional da academia.",nodes:[
+    {id:"ops-core",label:"Git",icon:"⎇",x:500,y:72,tier:1,requires:[],moduleIds:["GT01","GT02"]},
+    {id:"ops-linux",label:"Linux",icon:">_",x:280,y:220,tier:1,requires:["ops-core"],moduleIds:["LX01","LX02","LX06"]},
+    {id:"ops-net",label:"Redes/TLS",icon:"⌬",x:720,y:220,tier:1,requires:["ops-core"],moduleIds:["NT01","NT05","NT06"]},
+    {id:"ops-hard",label:"Hardening",icon:"🛡",x:160,y:390,tier:2,requires:["ops-linux"],moduleIds:["LX07","LX08"]},
+    {id:"ops-logs",label:"SSH e logs",icon:"📜",x:340,y:430,tier:2,requires:["ops-linux"],moduleIds:["LX04","LX05"]},
+    {id:"ops-edge",label:"Perímetro",icon:"⬡",x:660,y:430,tier:2,requires:["ops-net"],moduleIds:["NT02","NT08"]},
+    {id:"ops-docker",label:"Containers",icon:"▣",x:840,y:390,tier:2,requires:["ops-net"],moduleIds:["CK01","CK02","CK03"]},
+    {id:"ops-k8s",label:"Kubernetes",icon:"⎈",x:500,y:560,tier:3,requires:["ops-docker","ops-hard"],moduleIds:["CK04","CK07","CK08"]},
+  ]},
+  {id:"analyst",label:"Analista de Segurança",rank:"Operações",icon:"👁",unlockAt:4,blurb:"APIs, nuvem e detecção para quem protege o ambiente o dia todo.",nodes:[
+    {id:"analyst-core",label:"SOC Base",icon:"◉",x:500,y:80,tier:1,requires:[],moduleIds:["A09"]},
+    {id:"api-core",label:"APIs",icon:"{ }",x:250,y:250,tier:1,requires:["analyst-core"],moduleIds:["API01","API02","API03"]},
+    {id:"cloud-core",label:"Cloud",icon:"☁",x:750,y:250,tier:1,requires:["analyst-core"],moduleIds:["CL01","CL02","CL03"]},
+    {id:"identity",label:"Identidade",icon:"♟",x:160,y:430,tier:2,requires:["api-core"],moduleIds:["API02","API03","A07"]},
+    {id:"abuse",label:"Abuso de API",icon:"⚠",x:340,y:460,tier:2,requires:["api-core"],moduleIds:["API04","API05"]},
+    {id:"iam",label:"IAM",icon:"🔑",x:660,y:460,tier:2,requires:["cloud-core"],moduleIds:["CL02","CL05"]},
+    {id:"detect",label:"Detecção",icon:"📡",x:840,y:430,tier:2,requires:["cloud-core"],moduleIds:["CL06","CL07","A09"]},
+    {id:"ir",label:"Resposta",icon:"🛡",x:500,y:560,tier:3,requires:["detect","identity"],moduleIds:["CL07","AGA07"]},
+  ]},
+  {id:"pentester",label:"Pentester",rank:"Red Team",icon:"◎",unlockAt:8,blurb:"Do reconhecimento ao relatório, no ritmo de um teste autorizado.",nodes:[
+    {id:"pt-core",label:"Engajamento",icon:"📜",x:500,y:80,tier:1,requires:[],moduleIds:["PT01"]},
+    {id:"recon",label:"Recon",icon:"🔭",x:280,y:240,tier:1,requires:["pt-core"],moduleIds:["PT02","PT03"]},
+    {id:"map",label:"Superfície",icon:"🗺",x:720,y:240,tier:1,requires:["pt-core"],moduleIds:["PT03","PT04"]},
+    {id:"web-exploit",label:"Exploit Web",icon:"⚔",x:220,y:420,tier:2,requires:["recon"],moduleIds:["PT05","A03","A10"]},
+    {id:"post",label:"Pós-exploit",icon:"🕸",x:500,y:450,tier:2,requires:["map","recon"],moduleIds:["PT06"]},
+    {id:"severity",label:"Severidade",icon:"📊",x:780,y:420,tier:2,requires:["map"],moduleIds:["PT07"]},
+    {id:"report",label:"Relatório",icon:"✉",x:500,y:580,tier:3,requires:["web-exploit","severity"],moduleIds:["PT08"]},
+  ]},
+  {id:"engineer",label:"Engenheiro de Segurança",rank:"DevSecOps",icon:"∞",unlockAt:8,blurb:"Pipeline, segredos e política como código para entregar com controle.",nodes:[
+    {id:"eng-core",label:"Cultura",icon:"∞",x:500,y:80,tier:1,requires:[],moduleIds:["DS01"]},
+    {id:"sast",label:"SAST",icon:"🔍",x:260,y:250,tier:1,requires:["eng-core"],moduleIds:["DS02"]},
+    {id:"deps",label:"SBOM",icon:"📦",x:500,y:280,tier:1,requires:["eng-core"],moduleIds:["DS03"]},
+    {id:"dast",label:"DAST",icon:"🎯",x:740,y:250,tier:1,requires:["eng-core"],moduleIds:["DS04"]},
+    {id:"secrets",label:"Segredos",icon:"🔐",x:320,y:440,tier:2,requires:["sast"],moduleIds:["DS05","CL05"]},
+    {id:"policy",label:"Policy as Code",icon:"📐",x:680,y:440,tier:2,requires:["dast","deps"],moduleIds:["DS06"]},
+    {id:"pipeline",label:"Pipeline",icon:"🚀",x:500,y:580,tier:3,requires:["secrets","policy"],moduleIds:["DS07"]},
+  ]},
+  {id:"sre",label:"SRE & plataforma",rank:"Trilha DevOps",icon:"📡",unlockAt:6,blurb:"IaC, confiabilidade, golden path e custo consciente da trilha DevOps.",nodes:[
+    {id:"sre-core",label:"IaC",icon:"⧉",x:500,y:72,tier:1,requires:[],moduleIds:["TF01","TF02"]},
+    {id:"sre-policy",label:"Policy IaC",icon:"📐",x:260,y:230,tier:1,requires:["sre-core"],moduleIds:["TF05","TF06","TF08"]},
+    {id:"sre-slo",label:"SLO",icon:"📡",x:740,y:230,tier:1,requires:["sre-core"],moduleIds:["SR01","SR02"]},
+    {id:"sre-cost",label:"FinOps",icon:"₪",x:160,y:410,tier:2,requires:["sre-policy"],moduleIds:["FO01","FO02","FO07"]},
+    {id:"sre-gold",label:"Golden path",icon:"⬡",x:500,y:400,tier:2,requires:["sre-policy","sre-slo"],moduleIds:["PE01","PE05","PE06"]},
+    {id:"sre-obs",label:"Telemetria",icon:"📊",x:840,y:410,tier:2,requires:["sre-slo"],moduleIds:["SR03","SR04","SR06"]},
+    {id:"sre-master",label:"Plataforma",icon:"♛",x:500,y:560,tier:3,requires:["sre-gold","sre-obs","sre-cost"],moduleIds:["PE07","PE08","SR07","FO08"]},
+  ]},
+  {id:"ai",label:"Defesa de IA",rank:"Especialização",icon:"AI",unlockAt:6,blurb:"Governança, LLMs e agentes: a árvore avançada da academia.",nodes:[
+    {id:"ai-core",label:"Governança",icon:"⚖",x:500,y:80,tier:1,requires:[],moduleIds:["AIG01","AIG02","AIG03"]},
+    {id:"policy-ai",label:"Política IA",icon:"📋",x:260,y:240,tier:1,requires:["ai-core"],moduleIds:["AIG04","AIG05"]},
+    {id:"llm-arch",label:"LLM Seguro",icon:"LLM",x:740,y:240,tier:1,requires:["ai-core"],moduleIds:["LLM01","LLM02","LLM03"]},
+    {id:"rag",label:"RAG",icon:"📚",x:620,y:400,tier:2,requires:["llm-arch"],moduleIds:["LLM04","LLM05"]},
+    {id:"red-ai",label:"Red Team IA",icon:"AI",x:380,y:400,tier:2,requires:["policy-ai"],moduleIds:["AIR01","AIR02","AIR03"]},
+    {id:"agents",label:"Agentes",icon:"∞AI",x:500,y:540,tier:3,requires:["rag","red-ai"],moduleIds:["AGA01","AGA02","AGA04","AGA05"]},
+  ]},
+];
+
+function skillNodeOwned(node:SkillNode,completed:string[]){
+  return node.moduleIds.length===0||node.moduleIds.every(id=>completed.includes(id));
+}
+
+function skillNodeState(node:SkillNode,nodes:SkillNode[],completed:string[]):"locked"|"ready"|"owned"{
+  if(skillNodeOwned(node,completed))return "owned";
+  const unlocked=node.requires.every(id=>{
+    const required=nodes.find(item=>item.id===id);
+    return required?skillNodeOwned(required,completed):false;
+  });
+  return unlocked?"ready":"locked";
+}
+
+function SkillsMatrix({completed,go}:{completed:string[];go:(view:View)=>void}){
+  const [fieldId,setFieldId]=useState(skillFields[0].id);
+  const [selectedId,setSelectedId]=useState(skillFields[0].nodes[0].id);
+  const [target,setTarget]=useState<"fundamental"|"professional"|"expert">("expert");
+  const field=skillFields.find(item=>item.id===fieldId)??skillFields[0];
+  const maxTier=target==="fundamental"?1:target==="professional"?2:3;
+  const visibleNodes=field.nodes.filter(node=>node.tier<=maxTier);
+  const fieldUnlocked=completed.length>=field.unlockAt;
+  const selected=visibleNodes.find(node=>node.id===selectedId)??visibleNodes[0];
+  const ownedCount=visibleNodes.filter(node=>skillNodeOwned(node,completed)).length;
+  const selectedDone=selected?selected.moduleIds.filter(id=>completed.includes(id)).length:0;
+  const selectedState=selected?skillNodeState(selected,field.nodes,completed):"locked";
+  const selectedModules=selected?selected.moduleIds.map(id=>findModule(id)).filter(Boolean) as {course:Course;module:Module}[]:[];
+
+  function openField(id:string){
+    const next=skillFields.find(item=>item.id===id);
+    if(!next)return;
+    setFieldId(id);
+    setSelectedId(next.nodes[0].id);
+  }
+
+  return <section className="profile-feature-panel skill-matrix-panel skill-tree-panel">
+    <header>
+      <div><p className="eyebrow">SKILLS Tree</p><h2>Árvore de competências</h2><p>Campos de estudo com ramos que desbloqueiam como em um MMO: complete nós para abrir o próximo.</p></div>
+      <label>Camada<select value={target} onChange={event=>setTarget(event.target.value as typeof target)}><option value="fundamental">Iniciante</option><option value="professional">Profissional</option><option value="expert">Especialista</option></select></label>
+    </header>
+    <div className="skill-tree-layout">
+      <aside className="skill-field-rail" aria-label="Campos de estudo">
+        {skillFields.map(item=>{
+          const locked=completed.length<item.unlockAt;
+          const nodes=item.nodes.filter(node=>node.tier<=maxTier);
+          const owned=nodes.filter(node=>skillNodeOwned(node,completed)).length;
+          return <button key={item.id} type="button" className={`${fieldId===item.id?"active":""} ${locked?"locked":""}`} onClick={()=>openField(item.id)}>
+            <span>{locked?"🔒":item.icon}</span>
+            <strong>{item.label}</strong>
+            <small>{locked?`Abre com ${item.unlockAt} módulos`:`${owned}/${nodes.length} nós`}</small>
+          </button>;
+        })}
+        <p className="skill-quiz-hint">Fundamentos e DevOps abrem na hora. SRE, pentest e IA pedem módulos nas outras árvores.</p>
+      </aside>
+      <div className="skill-tree-stage">
+        <div className="skill-tree-heading">
+          <div><p className="eyebrow">{field.rank}</p><h3>{field.label}</h3><p>{field.blurb}</p></div>
+          <strong>{ownedCount}<small>/{visibleNodes.length}</small></strong>
+        </div>
+        {!fieldUnlocked?<div className="skill-tree-locked-board"><span>🔒</span><h4>Campo selado</h4><p>Conclua {field.unlockAt} módulos em outras árvores para abrir {field.label}.</p></div>:
+        <div className="skill-tree-board">
+          <svg className="skill-tree-links" viewBox="0 0 1000 640" aria-hidden="true">
+            {visibleNodes.flatMap(node=>node.requires.map(parentId=>{
+              const parent=visibleNodes.find(item=>item.id===parentId);
+              if(!parent)return null;
+              const lit=skillNodeOwned(parent,completed);
+              return <path key={`${parent.id}-${node.id}`} d={`M${parent.x} ${parent.y+28} C ${parent.x} ${(parent.y+node.y)/2}, ${node.x} ${(parent.y+node.y)/2}, ${node.x} ${node.y-28}`} className={lit?"lit":""}/>;
+            }))}
+          </svg>
+          {visibleNodes.map(node=>{
+            const state=skillNodeState(node,field.nodes,completed);
+            const done=node.moduleIds.filter(id=>completed.includes(id)).length;
+            return <button key={node.id} type="button" className={`skill-node ${state} ${selected?.id===node.id?"selected":""}`} style={{left:`${node.x/10}%`,top:`${node.y/6.4}%`}} onClick={()=>setSelectedId(node.id)} aria-pressed={selected?.id===node.id}>
+              <i>{state==="locked"?"🔒":node.icon}</i>
+              <strong>{node.label}</strong>
+              <small>{node.moduleIds.length?`${done}/${node.moduleIds.length}`:"origem"}</small>
+            </button>;
+          })}
+        </div>}
+        {selected&&fieldUnlocked&&<article className={`skill-node-detail ${selectedState}`}>
+          <div><span className="skill-icon">{selected.icon}</span><div><p className="eyebrow">{selectedState==="owned"?"DOMINADO":selectedState==="ready"?"DISPONÍVEL":"BLOQUEADO"}</p><h4>{selected.label}</h4><p>{selectedState==="locked"?"Complete o ramo anterior para acender esta linha.":selected.moduleIds.length?`${selectedDone} de ${selected.moduleIds.length} módulos deste ramo.`:"Ponto de partida desta árvore. Escolha um ramo para evoluir."}</p></div></div>
+          {selectedModules.length>0&&<ul>{selectedModules.map(item=><li key={item.module.id} className={completed.includes(item.module.id)?"done":""}><b>{completed.includes(item.module.id)?"✓":"○"}</b><span><strong>{item.module.title}</strong><small>{item.course.title} · {item.module.xp} XP</small></span></li>)}</ul>}
+          <button type="button" className="outline-button" onClick={()=>go("trilha")}>Abrir trilhas relacionadas →</button>
+        </article>}
+      </div>
+    </div>
+  </section>;
+}
+
+function ProfileBadges({completed,passedQuizzes,score,bestStreak}:{completed:string[];passedQuizzes:string[];score:number;bestStreak:number}){
+  const finishedCourses=courses.filter(course=>course.modules.every(module=>completed.includes(module.id))).length;
+  const definitions=[
+    {icon:"⚑",name:"Primeiro passo",description:"Concluiu o primeiro módulo.",earned:completed.length>=1,progress:`${Math.min(completed.length,1)}/1 módulo`},
+    {icon:"⌘",name:"Operador AppSec",description:"Concluiu 5 módulos práticos.",earned:completed.length>=5,progress:`${Math.min(completed.length,5)}/5 módulos`},
+    {icon:"✓",name:"Prova superada",description:"Aprovado em um quiz final.",earned:passedQuizzes.length>=1,progress:`${Math.min(passedQuizzes.length,1)}/1 quiz`},
+    {icon:"◆",name:"Caçador de XP",description:"Alcançou 5.000 XP reais.",earned:score>=5000,progress:`${Math.min(score,5000).toLocaleString("pt-BR")}/5.000 XP`},
+    {icon:"◉",name:"Formação completa",description:"Finalizou todos os módulos de um curso.",earned:finishedCourses>=1,progress:`${Math.min(finishedCourses,1)}/1 curso`},
+    {icon:"♨",name:"Ofensiva 7",description:"Manteve sete dias consecutivos.",earned:bestStreak>=7,progress:`${Math.min(bestStreak,7)}/7 dias`},
+    {icon:"♜",name:"Persistência 30",description:"Manteve trinta dias consecutivos.",earned:bestStreak>=30,progress:`${Math.min(bestStreak,30)}/30 dias`},
+    {icon:"◇",name:"Especialista Vulcan",description:"Aprovado em cinco quizzes finais.",earned:passedQuizzes.length>=5,progress:`${Math.min(passedQuizzes.length,5)}/5 quizzes`},
+  ];
+  const earned=definitions.filter(item=>item.earned).length;
+  return <section className="profile-feature-panel badges-panel"><header><div><p className="eyebrow">BADGES</p><h2>Conquistas verificáveis</h2><p>Cada badge é liberado automaticamente pelo seu progresso salvo.</p></div><strong>{earned}<small> de {definitions.length}</small></strong></header><div className="achievement-grid">{definitions.map(item=><article className={item.earned?"earned":"locked"} key={item.name}><span>{item.icon}</span><div><h3>{item.name}</h3><p>{item.description}</p><small>{item.earned?"Conquistado":item.progress}</small></div>{item.earned&&<i>✓</i>}</article>)}</div></section>;
+}
+
+type ActivityDay={day:string;events:number};
+
+function YearlyActivity(){
+  const [year,setYear]=useState(new Date().getFullYear());
+  const [days,setDays]=useState<ActivityDay[]>([]);
+  const [loading,setLoading]=useState(true);
+  useEffect(()=>{let active=true;setLoading(true);void fetch(`/api/me/activity?year=${year}`).then(response=>response.ok?response.json():Promise.reject()).then((payload:{days?:ActivityDay[]})=>{if(active)setDays(payload.days||[])}).catch(()=>{if(active)setDays([])}).finally(()=>{if(active)setLoading(false)});return()=>{active=false}},[year]);
+  const counts=useMemo(()=>new Map(days.map(item=>[item.day,item.events])),[days]);
+  const cells=useMemo(()=>{const first=new Date(Date.UTC(year,0,1));const start=new Date(first);start.setUTCDate(first.getUTCDate()-first.getUTCDay());return Array.from({length:371},(_,index)=>{const date=new Date(start);date.setUTCDate(start.getUTCDate()+index);const key=date.toISOString().slice(0,10);return {key,date,count:counts.get(key)||0,inYear:date.getUTCFullYear()===year}})},[year,counts]);
+  const total=days.reduce((sum,item)=>sum+item.events,0);
+  return <section className="profile-feature-panel yearly-activity-panel"><header><div><p className="eyebrow">ATIVIDADE ANUAL</p><h2>Seu ritmo de aprendizagem</h2><p>Logins, etapas estudadas, módulos concluídos e quizzes aprovados.</p></div><div className="year-control"><button aria-label="Ano anterior" onClick={()=>setYear(value=>value-1)}>‹</button><strong>{year}</strong><button aria-label="Próximo ano" disabled={year>=new Date().getFullYear()} onClick={()=>setYear(value=>value+1)}>›</button></div></header><div className="activity-total"><span><b>{total}</b> eventos no ano</span><div><i className="level-0"/>Sem atividade<i className="level-1"/>1<i className="level-2"/>2<i className="level-3"/>3+</div></div>{loading?<div className="activity-loading">Carregando atividade real...</div>:<div className="activity-calendar-wrap"><div className="activity-weekdays"><span>Seg</span><span>Qua</span><span>Sex</span></div><div className="activity-calendar" aria-label={`Calendário de atividade de ${year}`}>{cells.map(cell=><i key={cell.key} className={`${cell.inYear?"":"outside"} level-${Math.min(cell.count,3)}`} title={`${cell.date.toLocaleDateString("pt-BR",{timeZone:"UTC"})}: ${cell.count} evento${cell.count===1?"":"s"}`} aria-label={`${cell.key}: ${cell.count} eventos`}/>)}</div></div>}<footer>Atividade medida somente por ações gravadas na plataforma.</footer></section>;
+}
+
+function StudentProfileView({profile,completed,passedQuizzes,score,editing,setEditing,setProfile,saveProfile,logout,notify,streak,bestStreak,go}:{profile:StudentProfile;completed:string[];passedQuizzes:string[];score:number;editing:boolean;setEditing:(b:boolean)=>void;setProfile:(p:StudentProfile)=>void;saveProfile:()=>Promise<void>;logout:()=>Promise<void>;notify:(s:string)=>void;streak:number;bestStreak:number;go:(view:View)=>void}){
+  const [uploading,setUploading]=useState(false);const [tab,setTab]=useState<ProfileTab>("overview");const initials=profile.name.split(" ").map(part=>part[0]).join("").slice(0,2).toUpperCase();
+  async function uploadPhoto(file?:File){if(!file)return;setUploading(true);try{const blob=await cropProfilePhoto(file);if(blob.size>2*1024*1024)throw new Error("A imagem processada ultrapassou 2 MB.");const response=await fetch("/api/profile/photo",{method:"POST",headers:{"content-type":"image/webp"},body:blob});const raw=await response.text();let data:{photoUrl?:string;error?:string};try{data=JSON.parse(raw) as {photoUrl?:string;error?:string}}catch{throw new Error(response.ok?"O servidor devolveu uma resposta inválida.":`Não foi possível gravar a foto (${response.status}).`)}if(!response.ok||!data.photoUrl)throw new Error(data.error||"Falha no upload.");setProfile({...profile,photoUrl:data.photoUrl});notify("Foto de perfil atualizada.")}catch(error){notify(error instanceof Error?error.message:"Não foi possível atualizar a foto.")}finally{setUploading(false)}}
+  const deliveryReady=profile.receivePrintedCertificate&&profile.addressConfirmed;
+  const tabs:[ProfileTab,string,string][]=[["overview","Visão geral","⌂"],["skills","Skills Tree","△"],["badges","Badges","♙"],["activity","Atividade anual","⌁"]];
+  return <div className="page inner-page student-profile-page"><div className="profile-hero"><label className="profile-photo-picker" title="Alterar foto de perfil"><span className="avatar huge profile-photo">{profile.photoUrl?<img src={profile.photoUrl} alt={`Foto de ${profile.name}`}/>:initials}</span><input type="file" accept="image/jpeg,image/png,image/webp" onChange={event=>void uploadPhoto(event.target.files?.[0])}/><small>{uploading?"Enviando...":"Alterar foto"}</small></label><div><p className="eyebrow">PERFIL DO ALUNO</p><h1>{profile.name}</h1><p>{profile.role}</p></div><div className="profile-actions"><button className="outline-button" onClick={()=>setEditing(!editing)}>{editing?"Cancelar":"Editar perfil"}</button><button className="logout-button" onClick={()=>void logout()}>Sair da conta</button></div></div>
+    <nav className="profile-tabs" aria-label="Áreas do perfil">{tabs.map(([id,label,icon])=><button key={id} className={tab===id?"active":""} aria-selected={tab===id} onClick={()=>setTab(id)}><span>{icon}</span>{label}</button>)}</nav>
+    {tab==="overview"&&<><div className="photo-guidance">Foto JPG, PNG ou WebP · arquivo original de até 5 MB · corte central automático em 512 × 512 px.</div>{editing&&<form className="profile-form profile-form-expanded" onSubmit={event=>{event.preventDefault();void saveProfile()}}><label>Nome completo<input value={profile.name} onChange={event=>setProfile({...profile,name:event.target.value})}/></label><label>E-mail<input type="email" value={profile.email} readOnly/><small>O e-mail vem da conta autenticada.</small></label><label>Ocupação<input value={profile.role} onChange={event=>setProfile({...profile,role:event.target.value})}/></label><label>Objetivo profissional<input value={profile.goal} onChange={event=>setProfile({...profile,goal:event.target.value})}/></label><label>Telefone<input type="tel" value={profile.phone} placeholder="(11) 99999-9999" onChange={event=>setProfile({...profile,phone:event.target.value})}/></label><label>CEP<input value={profile.postalCode} placeholder="00000-000" onChange={event=>setProfile({...profile,postalCode:event.target.value})}/></label><label className="address-wide">Endereço<input value={profile.addressLine} placeholder="Rua, avenida ou alameda" onChange={event=>setProfile({...profile,addressLine:event.target.value,addressConfirmed:false})}/></label><label>Número<input value={profile.addressNumber} onChange={event=>setProfile({...profile,addressNumber:event.target.value,addressConfirmed:false})}/></label><label>Complemento<input value={profile.addressComplement} onChange={event=>setProfile({...profile,addressComplement:event.target.value,addressConfirmed:false})}/></label><label>Bairro<input value={profile.neighborhood} onChange={event=>setProfile({...profile,neighborhood:event.target.value,addressConfirmed:false})}/></label><label>Cidade<input value={profile.city} onChange={event=>setProfile({...profile,city:event.target.value,addressConfirmed:false})}/></label><label>Estado (UF)<input maxLength={2} value={profile.state} onChange={event=>setProfile({...profile,state:event.target.value.toUpperCase(),addressConfirmed:false})}/></label><div className="printed-preference address-wide"><label><input type="checkbox" checked={profile.receivePrintedCertificate} onChange={event=>setProfile({...profile,receivePrintedCertificate:event.target.checked,addressConfirmed:event.target.checked?profile.addressConfirmed:false})}/><span><strong>Receber certificado impresso</strong><small>Habilita pedidos físicos dos certificados já emitidos.</small></span></label>{profile.receivePrintedCertificate&&<label className="confirm-address"><input type="checkbox" checked={profile.addressConfirmed} onChange={event=>setProfile({...profile,addressConfirmed:event.target.checked})}/><span><strong>Confirmo que o endereço acima está correto</strong><small>O endereço será copiado para a solicitação após o pagamento.</small></span></label>}</div><button className="primary-button">Salvar perfil e endereço</button></form>}<section className={`print-delivery-card ${deliveryReady?"ready":"pending"}`}><div><span>{deliveryReady?"✓":"!"}</span><div><p className="eyebrow">CERTIFICADO IMPRESSO</p><h2>{deliveryReady?"Endereço confirmado para entrega":"Confirme seus dados de entrega"}</h2><p>{deliveryReady?`${profile.addressLine}, ${profile.addressNumber} · ${profile.city}/${profile.state} · CEP ${profile.postalCode}`:"Edite o perfil, informe telefone e endereço e marque a confirmação."}</p></div></div><button className="outline-button" onClick={()=>deliveryReady?go("certificado"):setEditing(true)}>{deliveryReady?"Ver certificados digitais →":"Completar endereço →"}</button></section><PrintedCertificateCheckout ready={deliveryReady} setEditing={setEditing} go={go} notify={notify}/><div className="profile-stats"><div><span>◆</span><strong>{score.toLocaleString("pt-BR")}</strong><small>XP acumulados</small></div><div><span>✓</span><strong>{completed.length}</strong><small>Módulos concluídos</small></div><div><span>♨</span><strong>{streak} {streak===1?"dia":"dias"}</strong><small>Dias de Ofensiva</small></div><div><span>♜</span><strong>{score?"Classificado":"Sem posição"}</strong><small>Posição na turma</small></div></div><div className="profile-columns"><section><p className="eyebrow">DIAS DE OFENSIVA</p><h2>Badges de consistência</h2><button className="outline-button" style={{margin:"0 0 14px"}} onClick={()=>go("ofensiva")}>Abrir calendário e prêmio →</button><div className="badges offensive">{offensiveBadges.slice(0,4).map(badge=><div className={bestStreak>=badge.days?"earned":"locked-badge"} key={badge.days}><i>{badge.icon}</i><strong>{badge.name}</strong><small>{bestStreak>=badge.days?"Conquistada":`${bestStreak} de ${badge.days} dias`}</small></div>)}</div></section><section><p className="eyebrow">OBJETIVO</p><h2>{profile.goal}</h2><p>Conclua módulos, laboratórios e provas para fortalecer sua formação.</p><div className="long-progress"><i style={{width:`${Math.min(completed.length*6,100)}%`}}/></div><small>{Math.min(completed.length*6,100)}% do objetivo atual</small></section></div></>}
+    {tab==="skills"&&<SkillsMatrix completed={completed} go={go}/>} {tab==="badges"&&<ProfileBadges completed={completed} passedQuizzes={passedQuizzes} score={score} bestStreak={bestStreak}/>} {tab==="activity"&&<YearlyActivity/>}
+  </div>;
+}
+
+function PrintedCertificateCheckout({ready,setEditing,go,notify}:{ready:boolean;setEditing:(value:boolean)=>void;go:(view:View)=>void;notify:(message:string)=>void}){
+  const [certificates,setCertificates]=useState<{id:string;courseId:string;issuedAt?:string;verifyUrl?:string}[]>([]);const [feeCents,setFeeCents]=useState(18990);const [busy,setBusy]=useState<string|null>(null);const [syncing,setSyncing]=useState(true);const [syncError,setSyncError]=useState("");const [lastSync,setLastSync]=useState<Date|null>(null);
+  const refresh=useCallback(async()=>{setSyncing(true);setSyncError("");try{const nonce=Date.now();const [certificateResponse,feeResponse]=await Promise.all([fetch(`/api/certificates?refresh=${nonce}`,{cache:"no-store",headers:{accept:"application/json"}}),fetch(`/api/printed-certificate/config?refresh=${nonce}`,{cache:"no-store",headers:{accept:"application/json"}})]);const certificateData=await certificateResponse.json() as {certificates?:{id:string;courseId:string;issuedAt?:string;verifyUrl?:string}[];error?:string};if(!certificateResponse.ok)throw new Error(certificateData.error||"Não foi possível consultar os certificados.");setCertificates(certificateData.certificates||[]);if(feeResponse.ok){const feeData=await feeResponse.json() as {feeCents?:number};if(Number.isInteger(feeData.feeCents))setFeeCents(feeData.feeCents!)}setLastSync(new Date())}catch(error){setSyncError(error instanceof Error?error.message:"Falha ao sincronizar com o banco.")}finally{setSyncing(false)}},[]);
+  useEffect(()=>{void refresh();const timer=window.setInterval(()=>void refresh(),20000);const onFocus=()=>void refresh();window.addEventListener("focus",onFocus);return()=>{window.clearInterval(timer);window.removeEventListener("focus",onFocus)}},[refresh]);
+  async function checkout(certificateId:string){if(!ready){setEditing(true);notify("Confirme seu telefone e endereço antes de solicitar o certificado.");return}setBusy(certificateId);try{const response=await fetch("/api/stripe/checkout",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({kind:"printed_certificate",id:certificateId})});const data=await response.json() as {checkoutUrl?:string;error?:string};if(!response.ok||!data.checkoutUrl)throw new Error(data.error||"Não foi possível abrir o pagamento.");window.location.assign(data.checkoutUrl)}catch(error){notify(error instanceof Error?error.message:"Não foi possível iniciar o pedido.");setBusy(null)}}
+  const eligibleCertificates=certificates;
+  return <section className="printed-checkout-card"><div><div><p className="eyebrow">SOLICITAR IMPRESSO</p><h2>Certificados de cursos concluídos</h2><p>Taxa de produção e envio: <strong>{(feeCents/100).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</strong>. O pagamento é processado pelo Stripe.</p></div><div className="certificate-sync"><span className={syncError?"error":""}>{syncing?"Sincronizando...":syncError||`Atualizado ${lastSync?.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})||"agora"}`}</span><button type="button" className="outline-button" disabled={syncing} onClick={()=>void refresh()}>{syncing?"Aguarde":"Atualizar lista"}</button></div></div>{syncError?<div className="printed-sync-error"><span>!</span><p>{syncError}</p><button type="button" onClick={()=>void refresh()}>Tentar novamente</button></div>:syncing&&!lastSync?<div className="printed-sync-loading">Consultando cursos concluídos no banco...</div>:eligibleCertificates.length?<div className="printed-certificate-options">{eligibleCertificates.map(certificate=>{const course=courses.find(item=>item.id===certificate.courseId);const linkedinUrl=certificate.verifyUrl&&certificate.issuedAt?linkedInAddCertificationUrl({name:course?.title||certificate.courseId,issuedAt:certificate.issuedAt,certId:certificate.id,certUrl:certificate.verifyUrl}):"";return <article key={certificate.id}><span className={`course-icon ${course?.tone||"violet"}`}>{course?.icon||"▣"}</span><div><strong>{course?.title||certificate.courseId}</strong><small>Curso concluído · Credencial {certificate.id}</small></div><div className="printed-cert-actions">{linkedinUrl?<a className="linkedin-button" href={linkedinUrl} target="_blank" rel="noreferrer"><b>in</b> Enviar ao LinkedIn</a>:null}<button className="primary-button print-certificate-button" disabled={busy!==null} onClick={()=>void checkout(certificate.id)}>{busy===certificate.id?"Abrindo Stripe...":`Pagar ${(feeCents/100).toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}`}</button></div></article>})}</div>:<div className="printed-empty"><span>▣</span><p>O banco não encontrou certificados digitais de cursos totalmente concluídos. Finalize todos os módulos e emita o certificado digital.</p><button className="outline-button" onClick={()=>go("certificado")}>Ver progresso dos certificados →</button></div>}</section>;
+}
+
+function Profile({ profile, completed, score, editing, setEditing, setProfile, saveProfile, logout, notify, streak, bestStreak, go }: { profile:{name:string;role:string;email:string;goal:string}; completed:string[]; score:number; editing:boolean; setEditing:(b:boolean)=>void; setProfile:(p:{name:string;role:string;email:string;goal:string})=>void; saveProfile:()=>Promise<void>; logout:()=>Promise<void>; notify:(s:string)=>void; streak:number; bestStreak:number; go:(view:View)=>void }) {
+  return <div className="page inner-page"><div className="profile-hero"><div className="avatar huge">RM</div><div><p className="eyebrow">PERFIL DO ALUNO</p><h1>{profile.name}</h1><p>{profile.role}</p></div><div className="profile-actions"><button className="outline-button" onClick={()=>setEditing(!editing)}>{editing?"Cancelar":"Editar perfil"}</button><button className="logout-button" onClick={()=>void logout()}>Sair da conta</button></div></div>{editing&&<form className="profile-form" onSubmit={e=>{e.preventDefault();void saveProfile()}}><label>Nome completo<input value={profile.name} onChange={e=>setProfile({...profile,name:e.target.value})}/></label><label>E-mail<input type="email" value={profile.email} readOnly/><small>O e-mail vem da conta autenticada no banco.</small></label><label>Ocupação<input value={profile.role} onChange={e=>setProfile({...profile,role:e.target.value})}/></label><label>Objetivo profissional<input value={profile.goal} onChange={e=>setProfile({...profile,goal:e.target.value})}/></label><button className="primary-button">Salvar no banco</button></form>}<div className="profile-stats"><div><span>◆</span><strong>{score.toLocaleString("pt-BR")}</strong><small>XP acumulados</small></div><div><span>✓</span><strong>{completed.length}</strong><small>Módulos concluídos</small></div><div><span>♨</span><strong>{streak} {streak===1?"dia":"dias"}</strong><small>Dias de Ofensiva</small></div><div><span>♜</span><strong>{score?"Classificado":"Sem posição"}</strong><small>Posição na turma</small></div></div><div className="profile-columns"><section><p className="eyebrow">DIAS DE OFENSIVA</p><h2>Badges de consistência</h2><button className="outline-button" style={{margin:"0 0 14px"}} onClick={()=>go("ofensiva")}>Abrir calendário e prêmio →</button><div className="badges offensive">{offensiveBadges.slice(0,4).map(badge=><div className={bestStreak>=badge.days?"earned":"locked-badge"} key={badge.days}><i>{badge.icon}</i><strong>{badge.name}</strong><small>{bestStreak>=badge.days?"Conquistada":`${bestStreak} de ${badge.days} dias`}</small></div>)}</div></section><section><p className="eyebrow">OBJETIVO</p><h2>{profile.goal}</h2><p>Matricule-se no primeiro curso para começar a construir seu portfólio em segurança de aplicações.</p><div className="long-progress"><i style={{width:`${Math.min(completed.length*6,100)}%`}}/></div><small>{Math.min(completed.length*6,100)}% do objetivo atual</small></section></div></div>;
+}
