@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-01T03:50:49.791Z",
+  "generatedAt": "2026-10-01T03:54:11.899Z",
   "repository": "https://github.com/Vulcan-Defense/vulcan-academy",
   "highlights": [
     {
@@ -8,6 +8,7 @@
       "title": "Experiência visual e gestão da academia",
       "summary": "A interface pública e a área logada receberam uma revisão completa de legibilidade, navegação e consistência.",
       "items": [
+        "Guias de certificações e carreira atualizados com caminhos de IA, segurança, operações e governança para apoiar escolhas profissionais.",
         "Página inicial da Sentinela renovada com visual de cibersegurança, fundo animado opcional e destaque para a participação da VulcanDefense no Guardião Cibernético 8.0.",
         "Painel do aluno destaca a próxima atividade pendente, reconhece formações concluídas e mantém as recomendações acessíveis em todas as telas.",
         "Gestão de permissões modernizada com seleção de função compacta e responsiva.",
@@ -26,6 +27,20 @@
     }
   ],
   "commits": [
+    {
+      "hash": "6e54b404242d90b60725378d9968e3a847a2f397",
+      "shortHash": "6e54b40",
+      "date": "2026-10-01T00:51:47-03:00",
+      "message": "Atualização da plataforma",
+      "areas": [
+        "Projeto",
+        "Interface",
+        "Dados",
+        "Plataforma",
+        "Autenticação e serviços"
+      ],
+      "filesChanged": 125
+    },
     {
       "hash": "bd3f112883a254615995218269b87b4e63215bd8",
       "shortHash": "bd3f112",
@@ -211,16 +226,6 @@
       "shortHash": "b9a2ee7",
       "date": "2026-09-27T12:28:15Z",
       "message": "chore: atualizar postagens LinkedIn [12:28]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
-    },
-    {
-      "hash": "56be770eda0cd4610acea60d186c27445ed4689a",
-      "shortHash": "56be770",
-      "date": "2026-09-27T06:36:40Z",
-      "message": "chore: atualizar postagens LinkedIn [06:36]",
       "areas": [
         "Projeto"
       ],
