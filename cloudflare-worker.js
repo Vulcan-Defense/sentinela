@@ -68,6 +68,17 @@ const REMOVE = [
   "via",
 ];
 
+const MOBILE_REGISTRATION_PATH = "/api/mobile-registration";
+const MOBILE_REGISTRATION_ENDPOINT = "https://formspree.io/f/xaenzpjq";
+
+function registrationPage(title, message, status) {
+  const accent = status < 400 ? "#38d9ff" : "#ff8c9a";
+  return new Response(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title} | Sentinela</title></head><body style="margin:0;background:#07111b;color:#e8f6ff;font-family:system-ui,sans-serif;display:grid;place-items:center;min-height:100vh;padding:24px;box-sizing:border-box"><main style="max-width:540px;border:1px solid ${accent};border-radius:16px;padding:32px;background:#0b1926"><p style="color:${accent};font:700 12px ui-monospace,monospace;letter-spacing:.08em">TESTES MOBILE</p><h1>${title}</h1><p style="line-height:1.6">${message}</p><a href="/testes-mobile" style="color:${accent}">Voltar ao cadastro</a></main></body></html>`, {
+    status,
+    headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" },
+  });
+}
+
 function isAsset(pathname) {
   return /\.(?:css|js|woff2|png|svg|jpg|jpeg|gif|ico|webp|json)$/i.test(pathname);
 }
@@ -90,6 +101,22 @@ function contentTypeFor(pathname) {
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    if (url.pathname === MOBILE_REGISTRATION_PATH && request.method === "POST") {
+      const contentType = request.headers.get("Content-Type") || "";
+      if (!contentType.startsWith("application/x-www-form-urlencoded") && !contentType.startsWith("multipart/form-data")) {
+        return registrationPage("Formato de cadastro inválido", "Atualize a página e tente enviar novamente.", 400);
+      }
+
+      const upstream = await fetch(MOBILE_REGISTRATION_ENDPOINT, {
+        method: "POST",
+        headers: { "Accept": "application/json", "Content-Type": contentType },
+        body: request.body,
+      });
+      if (upstream.ok) {
+        return registrationPage("Cadastro enviado", "Recebemos suas informações. A equipe entrará em contato caso seu dispositivo seja selecionado.", 200);
+      }
+      return registrationPage("Não foi possível enviar", "Tente novamente em alguns minutos.", 502);
+    }
     const originResponse = await fetch(request);
     const headers = new Headers(originResponse.headers);
 
