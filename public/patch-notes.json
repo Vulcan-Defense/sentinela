@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-01T14:09:43.411Z",
+  "generatedAt": "2026-10-01T14:15:38.975Z",
   "repository": "https://github.com/Vulcan-Defense/vulcan-academy",
   "highlights": [
     {
@@ -8,7 +8,7 @@
       "title": "Experiência visual e gestão da academia",
       "summary": "A interface pública e a área logada receberam uma revisão completa de legibilidade, navegação e consistência.",
       "items": [
-        "Cadastro para testes mobile agora usa envio direto, mais confiável também em páginas abertas localmente.",
+        "Projeto de testes mobile agora conta com endereço público próprio para facilitar o cadastro de participantes.",
         "Nova página de testes mobile facilita o cadastro de participantes com Android ou iPhone.",
         "Guia de certificações passou a destacar a formação de governança de IA da VulcanAcademy para facilitar a escolha do próximo aprendizado.",
         "Fundo do site ganhou animação suave de terminal para reforçar o tema de segurança sem atrapalhar a leitura.",
@@ -31,6 +31,16 @@
     }
   ],
   "commits": [
+    {
+      "hash": "371ce6068f059aab5e27f9b88673f3d47278e252",
+      "shortHash": "371ce60",
+      "date": "2026-10-01T11:10:06-03:00",
+      "message": "Atualização da plataforma",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 4
+    },
     {
       "hash": "3881e737a49f662d6200680aa068e8b077820261",
       "shortHash": "3881e73",
@@ -220,16 +230,6 @@
       "shortHash": "ab214c4",
       "date": "2026-09-28T15:59:21Z",
       "message": "chore: atualizar postagens LinkedIn [15:59]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
-    },
-    {
-      "hash": "b117944e482098970131d7c278120f10437d9256",
-      "shortHash": "b117944",
-      "date": "2026-09-28T07:39:11Z",
-      "message": "chore: atualizar postagens LinkedIn [07:39]",
       "areas": [
         "Projeto"
       ],

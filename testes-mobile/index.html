@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>Testes mobile | Sentinela</title>
+    <link rel="icon" type="image/png" href="../favicon.png">
+    <link rel="stylesheet" href="../css/fonts.css">
+    <link rel="stylesheet" href="../css/utilities.css">
+    <link rel="stylesheet" href="../css/testes-mobile.css">
+</head>
+<body>
+    <a class="skip-link" href="#cadastro">Ir para o cadastro</a>
+    <nav class="nav" aria-label="Navegação principal do site">
+        <div class="nav-inner">
+            <a href="../index.html">Início</a>
+            <a href="../certificacoes.html">Guia de certificações</a>
+            <a href="../mercado-trabalho.html">Mercado de trabalho</a>
+            <a href="../perfis-profissionais.html">Perfis profissionais</a>
+            <a href="./" aria-current="page">Testes mobile</a>
+        </div>
+    </nav>
+    <div class="grid-bg" aria-hidden="true"></div>
+
+    <main id="conteudo" tabindex="-1" class="mobile-tests-page">
+        <header class="mobile-tests-header">
+            <a href="../index.html" class="logo">SENTINELA</a>
+            <p>Projeto de testes mobile</p>
+        </header>
+
+        <section class="mobile-tests-layout" aria-labelledby="mobile-tests-title">
+            <div class="mobile-tests-intro">
+                <p class="terminal-label"><span></span> laboratório de experiência mobile</p>
+                <h1 id="mobile-tests-title">Ajude a testar a próxima experiência no seu celular.</h1>
+                <p class="intro-copy">Cadastre-se para participar dos testes de aplicativos Android e iOS. Seu dispositivo ajuda a equipe a selecionar cenários reais de uso.</p>
+
+                <div class="device-stage" aria-hidden="true">
+                    <div class="device android-device"><span class="device-notch"></span><span class="device-screen">android<br><b>test</b></span></div>
+                    <div class="device ios-device"><span class="device-notch"></span><span class="device-screen">ios<br><b>test</b></span></div>
+                    <div class="device-signal"><i></i><i></i><i></i></div>
+                </div>
+
+                <dl class="test-details">
+                    <div><dt>Quem pode participar</dt><dd>Pessoas com Android ou iPhone para validar fluxos de uso.</dd></div>
+                    <div><dt>Como funciona</dt><dd>Após a seleção, você recebe orientações para o teste no seu dispositivo.</dd></div>
+                    <div><dt>Privacidade</dt><dd>Usaremos seus dados somente para organizar a participação no projeto.</dd></div>
+                </dl>
+            </div>
+
+            <section class="mobile-registration" id="cadastro" aria-labelledby="registration-title">
+                <div class="registration-heading">
+                    <p>Cadastro de participante</p>
+                    <h2 id="registration-title">Conte sobre seu dispositivo</h2>
+                    <span>Leva menos de um minuto.</span>
+                </div>
+                <form id="mobile-registration-form" action="https://formspree.io/f/xaenzpjq" method="POST">
+                    <input type="hidden" name="_subject" value="Cadastro — Projeto de testes mobile Sentinela">
+                    <input type="hidden" name="origem" value="Projeto de testes mobile Sentinela">
+                    <input type="text" name="_gotcha" class="hp-trap" tabindex="-1" autocomplete="off" aria-hidden="true">
+                    <label for="mobile-gmail">Gmail</label>
+                    <input id="mobile-gmail" name="email" type="email" inputmode="email" autocomplete="email" placeholder="voce@gmail.com" required>
+
+                    <label for="mobile-device">Dispositivo</label>
+                    <select id="mobile-device" name="device" required>
+                        <option value="" selected disabled>Selecione seu dispositivo</option>
+                        <option value="android">Android</option>
+                        <option value="ios">iPhone (iOS)</option>
+                        <option value="ambos">Android e iPhone</option>
+                    </select>
+
+                    <label for="mobile-name">Nome completo</label>
+                    <input id="mobile-name" name="name" type="text" autocomplete="name" placeholder="Como devemos chamar você" required>
+
+                    <label for="mobile-phone">Telefone</label>
+                    <input id="mobile-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="(00) 00000-0000" required>
+
+                    <label class="consent-row" for="mobile-consent">
+                        <input id="mobile-consent" name="consent" type="checkbox" required>
+                        <span>Concordo que meus dados sejam usados para organizar minha participação nos testes.</span>
+                    </label>
+
+                    <button type="submit">Enviar cadastro <span aria-hidden="true">↗</span></button>
+                </form>
+                <p class="registration-note">Ao enviar, suas informações seguem pelo canal de contato do projeto para contato@vulcandefense.com.br.</p>
+            </section>
+        </section>
+    </main>
+</body>
+</html>
