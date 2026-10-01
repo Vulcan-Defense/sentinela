@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-01T03:54:11.899Z",
+  "generatedAt": "2026-10-01T04:53:00.477Z",
   "repository": "https://github.com/Vulcan-Defense/vulcan-academy",
   "highlights": [
     {
@@ -8,6 +8,8 @@
       "title": "Experiência visual e gestão da academia",
       "summary": "A interface pública e a área logada receberam uma revisão completa de legibilidade, navegação e consistência.",
       "items": [
+        "Guia de certificações passou a destacar a formação de governança de IA da VulcanAcademy para facilitar a escolha do próximo aprendizado.",
+        "Fundo do site ganhou animação suave de terminal para reforçar o tema de segurança sem atrapalhar a leitura.",
         "Guias de certificações e carreira atualizados com caminhos de IA, segurança, operações e governança para apoiar escolhas profissionais.",
         "Página inicial da Sentinela renovada com visual de cibersegurança, fundo animado opcional e destaque para a participação da VulcanDefense no Guardião Cibernético 8.0.",
         "Painel do aluno destaca a próxima atividade pendente, reconhece formações concluídas e mantém as recomendações acessíveis em todas as telas.",
@@ -27,6 +29,16 @@
     }
   ],
   "commits": [
+    {
+      "hash": "50f8968dd20cadbe3117cc5b4a423cd3019d0a81",
+      "shortHash": "50f8968",
+      "date": "2026-10-01T01:46:54-03:00",
+      "message": "Atualização da plataforma",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 5
+    },
     {
       "hash": "6e54b404242d90b60725378d9968e3a847a2f397",
       "shortHash": "6e54b40",
@@ -216,16 +228,6 @@
       "shortHash": "d638e67",
       "date": "2026-09-27T17:12:42Z",
       "message": "chore: atualizar postagens LinkedIn [17:12]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
-    },
-    {
-      "hash": "b9a2ee74cb0122f5259b4d9cea2fe441179671e3",
-      "shortHash": "b9a2ee7",
-      "date": "2026-09-27T12:28:15Z",
-      "message": "chore: atualizar postagens LinkedIn [12:28]",
       "areas": [
         "Projeto"
       ],

@@ -75,48 +75,55 @@ body {
     height: 100%;
     pointer-events: none;
     z-index: 0;
-    background-image:
-        linear-gradient(rgba(0, 255, 136, 0.055) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 255, 136, 0.055) 1px, transparent 1px);
-    background-size: 56px 56px;
-    -webkit-mask-image: radial-gradient(ellipse 78% 72% at 50% 38%, #000 12%, transparent 78%);
-    mask-image: radial-gradient(ellipse 78% 72% at 50% 38%, #000 12%, transparent 78%);
-    animation: grid-drift 48s linear infinite;
+    overflow: hidden;
+    background:
+        radial-gradient(ellipse at 78% 8%, rgba(56, 217, 255, 0.09), transparent 34rem),
+        radial-gradient(ellipse at 12% 76%, rgba(244, 162, 97, 0.045), transparent 28rem),
+        linear-gradient(135deg, #060b13 0%, #081321 52%, #060b13 100%);
 }
 .grid-bg::before {
-    content: '';
+    content: 'auth=verified  0x4D  01001001  packet:accepted\A\A  query /intel  status:200  cipher:tls13  log_id:7F3A\A\A  [sentinela]  signal:stable  01100011  01111001\A\A  access:granted  node=br-01  hash:9c7e  stream:active\A\A  policy=allow  trace:clean  0xAF  01010010  telemetry:on\A\A  session:isolated  protocol:https  verify:complete  01100001\A\A  event:observed  scope:community  checksum:valid  0x2B';
     position: absolute;
-    inset: -8px 0;
-    background: repeating-linear-gradient(
-        to bottom,
-        transparent 0 3px,
-        rgba(0, 0, 0, 0.18) 3px 4px
-    );
-    opacity: 0.28;
-    animation: scan-shift 12s linear infinite;
+    inset: -7rem -15%;
+    color: rgba(112, 223, 250, 0.12);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: clamp(0.62rem, 1vw, 0.82rem);
+    line-height: 3.3;
+    letter-spacing: 0.24em;
+    white-space: pre-wrap;
+    word-spacing: 1.5rem;
+    transform: rotate(-8deg);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent), linear-gradient(180deg, transparent, #000 14%, #000 82%, transparent);
+    -webkit-mask-composite: source-in;
+    mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent), linear-gradient(180deg, transparent, #000 14%, #000 82%, transparent);
+    mask-composite: intersect;
+    text-shadow: 0 0 12px rgba(56, 217, 255, 0.16);
+    will-change: translate, opacity;
+    animation: code-drift 26s var(--ease-in-out) infinite;
     pointer-events: none;
 }
 .grid-bg::after {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(
-        180deg,
-        rgba(10, 14, 23, 0.2) 0%,
-        transparent 22%,
-        transparent 68%,
-        rgba(10, 14, 23, 0.55) 100%
-    );
+    background:
+        linear-gradient(180deg, rgba(6, 11, 19, 0.56) 0%, rgba(6, 11, 19, 0.1) 35%, rgba(6, 11, 19, 0.4) 100%),
+        linear-gradient(180deg, transparent 0 46%, rgba(91, 221, 255, 0.08) 49.8%, rgba(218, 249, 255, 0.15) 50%, rgba(91, 221, 255, 0.08) 50.2%, transparent 54%);
+    background-size: 100% 100%, 100% 260px;
+    background-position: 0 0, 0 -260px;
+    will-change: background-position, opacity;
+    animation: terminal-sweep 18s var(--ease-in-out) infinite;
     pointer-events: none;
 }
 
-@keyframes grid-drift {
-    from { background-position: 0 0, 0 0; }
-    to { background-position: 56px 56px, 56px 56px; }
+@keyframes code-drift {
+    0%, 100% { translate: 0 -2rem; opacity: 0.72; }
+    50% { translate: -1.35rem 2rem; opacity: 1; }
 }
-@keyframes scan-shift {
-    from { transform: translateY(0); }
-    to { transform: translateY(8px); }
+@keyframes terminal-sweep {
+    0%, 15% { background-position: 0 0, 0 -260px; opacity: 0.22; }
+    55% { background-position: 0 0, 0 110vh; opacity: 0.7; }
+    100% { background-position: 0 0, 0 calc(110vh + 260px); opacity: 0.22; }
 }
 
 .glow-orb {
@@ -283,6 +290,7 @@ html.js-motion:not(.cookies-ok) body {
     html { scroll-behavior: auto; }
     .grid-bg,
     .grid-bg::before,
+    .grid-bg::after,
     .glow-orb,
     .nav,
     .page-header,
