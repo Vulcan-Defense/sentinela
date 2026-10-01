@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-01T13:41:05.816Z",
+  "generatedAt": "2026-10-01T13:55:40.795Z",
   "repository": "https://github.com/Vulcan-Defense/vulcan-academy",
   "highlights": [
     {
@@ -8,7 +8,7 @@
       "title": "Experiência visual e gestão da academia",
       "summary": "A interface pública e a área logada receberam uma revisão completa de legibilidade, navegação e consistência.",
       "items": [
-        "Cadastro para testes mobile agora encaminha participantes ao canal de contato do projeto.",
+        "Cadastro para testes mobile agora envia informações pelo canal oficial do projeto.",
         "Nova página de testes mobile facilita o cadastro de participantes com Android ou iPhone.",
         "Guia de certificações passou a destacar a formação de governança de IA da VulcanAcademy para facilitar a escolha do próximo aprendizado.",
         "Fundo do site ganhou animação suave de terminal para reforçar o tema de segurança sem atrapalhar a leitura.",
@@ -31,6 +31,16 @@
     }
   ],
   "commits": [
+    {
+      "hash": "6d3c67312d19b3fc14640a7b57efe2b7adc559b6",
+      "shortHash": "6d3c673",
+      "date": "2026-10-01T10:41:31-03:00",
+      "message": "Atualização da plataforma",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 4
+    },
     {
       "hash": "cb6e24e960e342dabe04917efbe7a077134efd94",
       "shortHash": "cb6e24e",
@@ -224,16 +234,6 @@
         "Projeto"
       ],
       "filesChanged": 1
-    },
-    {
-      "hash": "71f03413f9d542a8b484ef7222ae95ada98cc084",
-      "shortHash": "71f0341",
-      "date": "2026-09-27T20:02:47-03:00",
-      "message": "Atualização da plataforma",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 18
     }
   ]
 }
