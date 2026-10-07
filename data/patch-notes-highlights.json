@@ -4,7 +4,7 @@
     "date": "2026-09-10",
     "title": "Experiência visual e gestão da academia",
     "summary": "A interface pública e a área logada receberam uma revisão completa de legibilidade, navegação e consistência.",
-  "items": [
+    "items": [
     "Cadastro de testes mobile agora envia pelo próprio site, oferecendo uma conclusão mais estável para participantes.",
         "Nova página de testes mobile facilita o cadastro de participantes com Android ou iPhone.",
         "Guia de certificações passou a destacar a formação de governança de IA da VulcanAcademy para facilitar a escolha do próximo aprendizado.",
@@ -23,7 +23,8 @@
       "Modo claro com cores ajustadas e telas readequadas para leitura confortável em qualquer dispositivo.",
       "Cadastro protegido por código de acesso e fluxo de login revisado.",
       "A mesma conta agora pode abrir reuniões no VulcanMeet sem criar um novo cadastro.",
-      "Reuniões do VulcanMeet agora guardam participantes e duração para consulta posterior."
+      "Reuniões do VulcanMeet agora guardam participantes e duração para consulta posterior.",
+      "Nota de lançamento do Vulcan Defense Mobile 1.0.23 publicada com resumo das novidades e leitura online."
     ]
   }
 ]
