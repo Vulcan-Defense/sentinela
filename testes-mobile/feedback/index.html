@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>Enviar feedback | Testes mobile Sentinela</title>
+    <link rel="icon" type="image/png" href="../../favicon.png">
+    <link rel="stylesheet" href="../../css/fonts.css">
+    <link rel="stylesheet" href="../../css/utilities.css">
+    <link rel="stylesheet" href="../../css/testes-mobile.css">
+</head>
+<body>
+    <a class="skip-link" href="#feedback-form">Ir para o formulário de feedback</a>
+    <nav class="nav" aria-label="Navegação principal do site">
+        <div class="nav-inner">
+            <a href="../../index.html">Início</a>
+            <a href="../">Testes mobile</a>
+            <a href="./" aria-current="page">Enviar feedback</a>
+        </div>
+    </nav>
+    <div class="grid-bg" aria-hidden="true"></div>
+
+    <main id="conteudo" tabindex="-1" class="feedback-page">
+        <header class="mobile-tests-header">
+            <a href="../../index.html" class="logo">SENTINELA</a>
+            <p>Projeto de testes mobile</p>
+        </header>
+
+        <div class="feedback-layout">
+            <section class="feedback-intro" aria-labelledby="feedback-title">
+                <p class="feedback-kicker"><span aria-hidden="true"></span> retorno de participante</p>
+                <h1 id="feedback-title">Conte o que funcionou no seu teste.</h1>
+                <p>Seu relato ajuda a encontrar pontos de melhoria antes de uma nova versão chegar a mais pessoas.</p>
+                <dl class="feedback-guide">
+                    <div><dt>1. Use seu código</dt><dd>Ele identifica a rodada de testes da qual você participou.</dd></div>
+                    <div><dt>2. Avalie a experiência</dt><dd>Leva poucos minutos e você pode detalhar o que observou.</dd></div>
+                    <div><dt>3. Envie quando terminar</dt><dd>O retorno chega à equipe responsável pelo projeto.</dd></div>
+                </dl>
+            </section>
+
+            <section class="feedback-form-panel" aria-labelledby="feedback-form-title">
+                <div class="feedback-form-heading">
+                    <p>Feedback do teste</p>
+                    <h2 id="feedback-form-title">Como foi a experiência?</h2>
+                    <span>Informe o código que recebeu com o convite.</span>
+                </div>
+                <form id="feedback-form" action="https://sentinelacibernetica.com.br/api/mobile-feedback" method="POST">
+                    <input type="hidden" name="_subject" value="Feedback — Projeto de testes mobile Sentinela">
+                    <input type="hidden" name="origem" value="Projeto de testes mobile Sentinela">
+                    <input type="text" name="_gotcha" class="hp-trap" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+                    <label for="feedback-code">Código de feedback</label>
+                    <input id="feedback-code" name="feedback_code" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="VULCAN-FB-0000" required>
+
+                    <label for="feedback-name">Nome</label>
+                    <input id="feedback-name" name="name" type="text" autocomplete="name" placeholder="Como devemos chamar você" required>
+
+                    <label for="feedback-device">Dispositivo testado</label>
+                    <select id="feedback-device" name="device" required>
+                        <option value="" selected disabled>Selecione uma opção</option>
+                        <option value="android">Android</option>
+                        <option value="ios">iPhone (iOS)</option>
+                    </select>
+
+                    <fieldset class="feedback-score">
+                        <legend>Nota geral</legend>
+                        <div>
+                            <input id="score-1" name="score" type="radio" value="1" required><label for="score-1">1</label>
+                            <input id="score-2" name="score" type="radio" value="2"><label for="score-2">2</label>
+                            <input id="score-3" name="score" type="radio" value="3"><label for="score-3">3</label>
+                            <input id="score-4" name="score" type="radio" value="4"><label for="score-4">4</label>
+                            <input id="score-5" name="score" type="radio" value="5"><label for="score-5">5</label>
+                        </div>
+                    </fieldset>
+
+                    <label for="feedback-type">O que você quer contar?</label>
+                    <select id="feedback-type" name="feedback_type" required>
+                        <option value="" selected disabled>Selecione uma opção</option>
+                        <option value="melhoria">Uma sugestão de melhoria</option>
+                        <option value="erro">Um erro ou comportamento inesperado</option>
+                        <option value="elogio">Algo que funcionou bem</option>
+                        <option value="outro">Outro comentário</option>
+                    </select>
+
+                    <label for="feedback-message">Seu relato</label>
+                    <textarea id="feedback-message" name="message" rows="5" placeholder="Descreva o que aconteceu e, se possível, o que você esperava que acontecesse." required></textarea>
+
+                    <button type="submit">Enviar feedback <span aria-hidden="true">↗</span></button>
+                </form>
+                <p class="registration-note">O código é conferido antes do envio. Não inclua senhas, dados bancários ou outras informações sensíveis no relato.</p>
+            </section>
+        </div>
+    </main>
+</body>
+</html>

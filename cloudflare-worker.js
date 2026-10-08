@@ -69,11 +69,17 @@ const REMOVE = [
 ];
 
 const MOBILE_REGISTRATION_PATH = "/api/mobile-registration";
+const MOBILE_FEEDBACK_PATH = "/api/mobile-feedback";
 const MOBILE_REGISTRATION_ENDPOINT = "https://formspree.io/f/xaenzpjq";
+const FEEDBACK_CODES = new Set([
+  "VULCAN-FB-7K2M", "VULCAN-FB-9Q4R", "VULCAN-FB-3T8N", "VULCAN-FB-6P5X",
+  "VULCAN-FB-4D7L", "VULCAN-FB-8H2C", "VULCAN-FB-5W9J", "VULCAN-FB-2Y6V",
+  "VULCAN-FB-7B3F", "VULCAN-FB-9M4K", "VULCAN-FB-6R8D", "VULCAN-FB-3X5P",
+]);
 
-function registrationPage(title, message, status) {
+function formPage(title, message, status, returnPath, returnLabel) {
   const accent = status < 400 ? "#38d9ff" : "#ff8c9a";
-  return new Response(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title} | Sentinela</title></head><body style="margin:0;background:#07111b;color:#e8f6ff;font-family:system-ui,sans-serif;display:grid;place-items:center;min-height:100vh;padding:24px;box-sizing:border-box"><main style="max-width:540px;border:1px solid ${accent};border-radius:16px;padding:32px;background:#0b1926"><p style="color:${accent};font:700 12px ui-monospace,monospace;letter-spacing:.08em">TESTES MOBILE</p><h1>${title}</h1><p style="line-height:1.6">${message}</p><a href="/testes-mobile" style="color:${accent}">Voltar ao cadastro</a></main></body></html>`, {
+    return new Response(`<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title} | Sentinela</title></head><body style="margin:0;background:#07111b;color:#e8f6ff;font-family:system-ui,sans-serif;display:grid;place-items:center;min-height:100vh;padding:24px;box-sizing:border-box"><main style="max-width:540px;border:1px solid ${accent};border-radius:16px;padding:32px;background:#0b1926"><p style="color:${accent};font:700 12px ui-monospace,monospace;letter-spacing:.08em">TESTES MOBILE</p><h1>${title}</h1><p style="line-height:1.6">${message}</p><a href="${returnPath}" style="color:${accent}">${returnLabel}</a></main></body></html>`, {
     status,
     headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" },
   });
@@ -104,7 +110,7 @@ export default {
     if (url.pathname === MOBILE_REGISTRATION_PATH && request.method === "POST") {
       const contentType = request.headers.get("Content-Type") || "";
       if (!contentType.startsWith("application/x-www-form-urlencoded") && !contentType.startsWith("multipart/form-data")) {
-        return registrationPage("Formato de cadastro inválido", "Atualize a página e tente enviar novamente.", 400);
+        return formPage("Formato de cadastro inválido", "Atualize a página e tente enviar novamente.", 400, "/testes-mobile", "Voltar ao cadastro");
       }
 
       const upstream = await fetch(MOBILE_REGISTRATION_ENDPOINT, {
@@ -113,9 +119,29 @@ export default {
         body: request.body,
       });
       if (upstream.ok) {
-        return registrationPage("Cadastro enviado", "Recebemos suas informações. A equipe entrará em contato caso seu dispositivo seja selecionado.", 200);
+        return formPage("Cadastro enviado", "Recebemos suas informações. A equipe entrará em contato caso seu dispositivo seja selecionado.", 200, "/testes-mobile", "Voltar ao cadastro");
       }
-      return registrationPage("Não foi possível enviar", "Tente novamente em alguns minutos.", 502);
+      return formPage("Não foi possível enviar", "Tente novamente em alguns minutos.", 502, "/testes-mobile", "Voltar ao cadastro");
+    }
+    if (url.pathname === MOBILE_FEEDBACK_PATH && request.method === "POST") {
+      const contentType = request.headers.get("Content-Type") || "";
+      if (!contentType.startsWith("application/x-www-form-urlencoded") && !contentType.startsWith("multipart/form-data")) {
+        return formPage("Formato de feedback inválido", "Atualize a página e tente enviar novamente.", 400, "/testes-mobile/feedback/", "Voltar ao feedback");
+      }
+      const fields = await request.clone().formData();
+      const code = String(fields.get("feedback_code") || "").trim().toUpperCase();
+      if (!FEEDBACK_CODES.has(code)) {
+        return formPage("Código não reconhecido", "Confira o código recebido no convite e tente novamente.", 403, "/testes-mobile/feedback/", "Voltar ao feedback");
+      }
+      const upstream = await fetch(MOBILE_REGISTRATION_ENDPOINT, {
+        method: "POST",
+        headers: { "Accept": "application/json", "Content-Type": contentType },
+        body: request.body,
+      });
+      if (upstream.ok) {
+        return formPage("Feedback enviado", "Obrigado pelo seu retorno. A equipe vai considerar suas observações na próxima etapa do projeto.", 200, "/testes-mobile/feedback/", "Enviar outro feedback");
+      }
+      return formPage("Não foi possível enviar", "Tente novamente em alguns minutos.", 502, "/testes-mobile/feedback/", "Voltar ao feedback");
     }
     const originResponse = await fetch(request);
     const headers = new Headers(originResponse.headers);
