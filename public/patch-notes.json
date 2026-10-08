@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-07T00:28:18.018Z",
+  "generatedAt": "2026-10-08T02:53:57.033Z",
   "repository": "https://github.com/Vulcan-Defense/vulcan-academy",
   "highlights": [
     {
@@ -27,11 +27,22 @@
         "Cadastro protegido por código de acesso e fluxo de login revisado.",
         "A mesma conta agora pode abrir reuniões no VulcanMeet sem criar um novo cadastro.",
         "Reuniões do VulcanMeet agora guardam participantes e duração para consulta posterior.",
-        "Nota de lançamento do Vulcan Defense Mobile 1.0.23 publicada com resumo das novidades e leitura online."
+        "Nota de lançamento do Vulcan Defense Mobile 1.0.23 publicada com resumo das novidades e leitura online.",
+        "Atualização das notícias agora funciona de forma confiável nas publicações automáticas."
       ]
     }
   ],
   "commits": [
+    {
+      "hash": "c7f75aa5ed54aa34c63c8290fcaec7b875fb2c2a",
+      "shortHash": "c7f75aa",
+      "date": "2026-10-06T21:29:27-03:00",
+      "message": "feat: publicar nota do Vulcan Defense Mobile 1.0.23",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 5
+    },
     {
       "hash": "42a42f346285f0ebaf0900800175141998c4ab50",
       "shortHash": "42a42f3",
@@ -221,16 +232,6 @@
       "shortHash": "ae704ff",
       "date": "2026-09-29T07:27:06Z",
       "message": "chore: atualizar postagens LinkedIn [07:27]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
-    },
-    {
-      "hash": "c902b9a2585ff44403965b7ed4a08e1838aad1d7",
-      "shortHash": "c902b9a",
-      "date": "2026-09-29T01:29:55Z",
-      "message": "chore: atualizar postagens LinkedIn [01:29]",
       "areas": [
         "Projeto"
       ],

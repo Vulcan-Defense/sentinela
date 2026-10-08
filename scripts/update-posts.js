@@ -3,10 +3,13 @@
  * Atualiza posts.json a partir do RSS do WordPress (Blog de Ti / Tiparaleigo).
  * Uso: node scripts/update-posts.js
  */
-const fs = require('fs');
-const path = require('path');
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const OUT = path.join(__dirname, '..', 'posts.json');
+const scriptPath = fileURLToPath(import.meta.url);
+const scriptDir = path.dirname(scriptPath);
+const OUT = path.join(scriptDir, '..', 'posts.json');
 const FEED_URL = 'https://tiparaleigo.wordpress.com/feed/';
 
 const months = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
