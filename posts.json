@@ -1,6 +1,6 @@
 {
   "profileUrl": "https://tiparaleigo.wordpress.com/",
-  "lastUpdated": "2026-10-10T07:07:08.896Z",
+  "lastUpdated": "2026-10-10T13:41:40.894Z",
   "posts": [
     {
       "url": "https://tiparaleigo.wordpress.com/2026/04/03/como-instalar-um-cluster-k3s-com-varios-nos-no-ubuntu-24-04/",
@@ -22,7 +22,7 @@
     },
     {
       "url": "https://tiparaleigo.wordpress.com/2026/03/15/como-instalar-gateway-api-no-kubernetes/",
-      "text": "Como Instalar Gateway API no Kubernetes — Guia prático para redes modernas em clusters Kubernetes Por Rodrigo Carran A forma tradicional de expor aplicações no Kubernetes sempre foi através do Ingress. Porém, esse modelo possui algumas limitações importantes: Para resolver esses problemas surgiu o Ga… Continuar Lendo →",
+      "text": "Como Instalar Gateway API no Kubernetes — Guia prático para redes modernas em clusters Kubernetes Por Rodrigo Carran A forma tradicional de expor aplicações no Kubernetes sempre foi através do Ingress. Porém, esse modelo possui algumas limitações importantes: depende muito do vendor usa annotations e… Continuar Lendo →",
       "meta": "Blog de Ti · 15 mar. 2026",
       "date": "2026-03-15T20:55:41.000Z"
     },
@@ -34,7 +34,7 @@
     },
     {
       "url": "https://tiparaleigo.wordpress.com/2026/03/15/zabbix-como-monitorar-emails-nao-lidos-maildir-em-servidores-linux/",
-      "text": "Zabbix: Como Monitorar Emails Não Lidos (Maildir) em Servidores Linux — Autor: Rodrigo Carran Em ambientes de NOC, SOC ou suporte técnico, muitas solicitações críticas chegam por email ou voicemail automatizado. Quando essas mensagens não são lidas rapidamente, podem ocorrer problemas como: Uma solução simples e eficiente é monit… Continuar Lendo →",
+      "text": "Zabbix: Como Monitorar Emails Não Lidos (Maildir) em Servidores Linux — Autor: Rodrigo Carran Em ambientes de NOC, SOC ou suporte técnico, muitas solicitações críticas chegam por email ou voicemail automatizado. Quando essas mensagens não são lidas rapidamente, podem ocorrer problemas como: violações de SLA incidentes não tratado… Continuar Lendo →",
       "meta": "Blog de Ti · 15 mar. 2026",
       "date": "2026-03-15T19:36:07.000Z"
     },
