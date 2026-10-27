@@ -1,5 +1,19 @@
 [
   {
+    "version": "Outubro 2026",
+    "date": "2026-10-26",
+    "title": "Visual renovado no site público",
+    "summary": "As páginas abertas do Sentinela ganharam uma identidade visual nova, com navegação mais clara e leitura confortável em qualquer tamanho de tela.",
+    "items": [
+      "Novo visual do site público, com cores, tipografia e cartões atualizados para destacar melhor cada conteúdo.",
+      "Menu principal fixo mantém os atalhos sempre à mão e mostra com clareza em qual página você está.",
+      "Página inicial reorganizada aproxima os canais da comunidade do convite para receber o boletim.",
+      "Guias de certificações, ferramentas, mercado de trabalho e perfis profissionais agora seguem o mesmo padrão de leitura.",
+      "Página de testes mobile mais confortável no celular, com espaçamentos e botões ajustados.",
+      "Ajustes de contraste e de rolagem deixam a navegação mais estável em telas pequenas."
+    ]
+  },
+  {
     "version": "Setembro 2026",
     "date": "2026-09-10",
     "title": "Experiência visual e gestão da academia",
