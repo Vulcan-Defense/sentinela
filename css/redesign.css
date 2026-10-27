@@ -2642,3 +2642,266 @@ body.page-404 .link-accent {
     .perfil-card-emp:hover,
     .trilha-card:hover { transform: none; }
 }
+
+/* --------------------------------------------------------------------------
+   25. Acabamento: produto final, não demonstração
+   --------------------------------------------------------------------------
+   Remove a malha de fundo, os brilhos neon e a microtipografia monoespaçada
+   em caixa alta. O resultado é uma superfície contínua, com hierarquia clara
+   e componentes discretos.
+   -------------------------------------------------------------------------- */
+
+/* Fundo: uma superfície só, sem grade nem aurora */
+.grid-bg { display: none; }
+
+body {
+    background-color: #0a0b10;
+    background-image: linear-gradient(180deg, #0f1118 0%, #0a0b11 46%, #08090d 100%);
+    background-attachment: fixed;
+}
+
+@media (max-width: 768px) {
+    body { background-attachment: scroll; }
+}
+
+/* Marca e números sem gradiente */
+.logo,
+.page-header .logo,
+.mobile-tests-header .logo,
+a.logo,
+.page-header a.logo,
+.mobile-tests-header a.logo {
+    font-family: var(--rd-font-sans);
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    color: var(--rd-ink);
+    background-image: none;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
+    -webkit-text-fill-color: currentColor;
+}
+
+.hero h1 strong,
+.stat-card .value {
+    background-image: none;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
+    -webkit-text-fill-color: currentColor;
+}
+
+.hero h1 strong { color: var(--rd-lime); }
+
+.stat-card .value { color: var(--rd-ink); }
+
+.stat-card .value { font-family: var(--rd-font-sans); }
+
+/* Rótulos: caixa normal e sem monoespaçada */
+.hero-status,
+.tagline,
+.feature-label,
+.posts-live-badge,
+.post-card .post-meta,
+.org-tabs-label,
+.toc-label,
+.cert-badge,
+.cert-niche-tag,
+.layout-kicker,
+.stat-card .label,
+.perfil-card-emp .block-title,
+.btn-vulcan-cta .btn-vulcan-link,
+.featured-aside-kicker,
+.perfis-tabela th,
+.cargos-tabela th,
+.gupy-tier h4,
+.release-kicker,
+.registration-heading p,
+.cert-category h3,
+.cert-diagram-section h3,
+.chart-card h3,
+.cert-featured-pill {
+    font-family: var(--rd-font-sans);
+    text-transform: none;
+    letter-spacing: 0.01em;
+}
+
+.cert-menu li.cert-featured a .cert-featured-pill {
+    text-transform: none;
+    letter-spacing: 0.01em;
+    font-family: var(--rd-font-sans);
+}
+
+.posts-update-info,
+.posts-loading,
+.newsletter-card .newsletter-post span,
+.usage-label,
+.perfil-card .junior-tag,
+.perfil-card .horizon-tag,
+.perfis-tabela .nivel,
+.perfis-tabela .nivel-vazio,
+.list-pager-btn,
+.list-pager-num,
+.gupy-status,
+.footer .footer-cookies,
+.guardiao-facts dt {
+    font-family: var(--rd-font-sans);
+}
+
+.hero-status,
+.feature-label,
+.layout-kicker,
+.featured-aside-kicker,
+.release-kicker,
+.registration-heading p {
+    color: var(--rd-muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.hero .hero-status { font-size: 0.78rem; }
+
+.hero-status { color: var(--rd-ink-soft); }
+
+.hero-status span {
+    background: var(--rd-lime);
+    box-shadow: none;
+    animation: none;
+}
+
+/* Ações: cor sólida, sem brilho */
+.btn-inscreva {
+    border-radius: 10px;
+    background: var(--rd-lime);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.btn-inscreva:hover {
+    background: var(--rd-lime-deep);
+    box-shadow: 0 12px 24px -14px rgba(0, 0, 0, 0.85);
+    filter: none;
+}
+
+.btn-inscrever-projeto,
+.modal-boletim .btn-submit,
+.mobile-registration button {
+    border-radius: 10px;
+    background: var(--rd-lime);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.btn-inscrever-projeto:hover,
+.modal-boletim .btn-submit:hover,
+.mobile-registration button:hover {
+    background: var(--rd-lime-deep);
+    box-shadow: 0 12px 24px -14px rgba(0, 0, 0, 0.85);
+    filter: none;
+}
+
+.feedback-entry:hover {
+    background: var(--rd-lime-deep);
+    box-shadow: 0 12px 24px -14px rgba(0, 0, 0, 0.85);
+}
+
+.modal-boletim {
+    background: #0d1018;
+    border-color: var(--rd-line);
+}
+
+.btn-dashboard,
+.back-link,
+.btn-materiais,
+.featured-aside-cta,
+.btn-inscrever-projeto,
+.modal-boletim .btn-submit,
+.mobile-registration button,
+.cookie-consent .btn-aceitar,
+.list-pager-btn,
+.list-pager-num,
+.release-note-link {
+    border-radius: 10px;
+}
+
+.skip-link { box-shadow: 0 10px 24px -14px rgba(0, 0, 0, 0.8); }
+
+.nav a[aria-current="page"] {
+    color: var(--rd-lime);
+    background: rgba(198, 255, 79, 0.12);
+    box-shadow: none;
+}
+
+.nav a[aria-current="page"]:hover { color: var(--rd-lime); }
+
+.niche-tab.active,
+.org-tab.active,
+.filter-nav a.active,
+.filter-nav a[aria-current="page"] {
+    color: var(--rd-lime);
+    border-color: rgba(198, 255, 79, 0.45);
+    background: rgba(198, 255, 79, 0.1);
+    box-shadow: none;
+}
+
+/* Superfícies: fundo sólido e borda de 1px */
+.guardiao-feature {
+    background: var(--rd-surface);
+    box-shadow: var(--rd-shadow-sm);
+}
+
+.guardiao-feature::before,
+.guardiao-feature::after { display: none; }
+
+.guardiao-radar span { box-shadow: none; }
+
+.btn-vulcan-cta {
+    background: var(--rd-surface);
+    border-color: var(--rd-line);
+    box-shadow: var(--rd-shadow-sm);
+}
+
+.btn-vulcan-cta::before { display: none; }
+
+.btn-vulcan-cta:hover {
+    border-color: rgba(198, 255, 79, 0.45);
+    background: var(--rd-surface-2);
+    box-shadow: var(--rd-shadow-sm);
+}
+
+.featured-aside-card {
+    background: var(--rd-surface);
+    border-color: var(--rd-line);
+    box-shadow: var(--rd-shadow-sm);
+}
+
+.featured-aside-list li::before { box-shadow: none; }
+
+.posts-section h2::before,
+.cert-category h3::before {
+    width: 3px;
+    height: 1em;
+    border-radius: 2px;
+    background: var(--rd-lime);
+    box-shadow: none;
+}
+
+.usage-fill {
+    background: var(--rd-lime);
+    box-shadow: none;
+}
+
+.usage-fill.medium { background: #ffc65c; }
+.usage-fill.low { background: #e5675f; }
+
+.device-signal i { box-shadow: none; }
+
+.feedback-entry {
+    background: var(--rd-lime);
+    box-shadow: none;
+}
+
+/* Tracejados viram linhas contínuas */
+.empty-state { border-style: solid; }
+.gupy-vaga { border-bottom-style: solid; }
+.dica-card { border-style: solid; }
+
+/* Diagramas sem malha de fundo */
+.cert-diagram-wrap::before,
+.foundation-diagram-wrap::before { background-image: none; }
