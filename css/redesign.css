@@ -1373,6 +1373,71 @@ body.page-home main > .tagline {
     background: rgba(10, 102, 194, 0.12);
 }
 
+/* Projeto da comunidade: o card ocupa a linha toda do grid de certificações */
+.cert-menu > li.community-project-item { grid-column: 1 / -1; }
+
+/* Links internos do card não herdam o visual de item de lista */
+.community-project-item a {
+    display: inline;
+    height: auto;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit;
+    transform: none;
+}
+
+.community-project-item h4 a { color: var(--rd-ink); }
+.community-project-item h4 a:hover { color: var(--rd-lime); }
+
+.community-project-item .community-author { overflow-wrap: anywhere; }
+.community-project-item .community-author a { color: var(--rd-lime); }
+.community-project-item .community-author a:hover { text-decoration: underline; }
+
+.community-project-item .btn-materiais {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.55rem 0.9rem;
+    border: 1px solid var(--rd-line);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.02);
+    color: var(--rd-muted);
+    font-size: 0.73rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.community-project-item .btn-materiais:hover {
+    color: var(--rd-lime);
+    border-color: rgba(198, 255, 79, 0.45);
+    background: rgba(198, 255, 79, 0.08);
+}
+
+.community-project-item .community-linkedin {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    padding: 0.35rem;
+    border: 1px solid var(--rd-line);
+    border-radius: 10px;
+    background: rgba(10, 102, 194, 0.12);
+    color: #59a6ff;
+}
+
+.community-project-item .community-linkedin:hover {
+    border-color: rgba(10, 102, 194, 0.7);
+    background: rgba(10, 102, 194, 0.22);
+    color: #8cc4ff;
+}
+
 /* --------------------------------------------------------------------------
    14. Painéis, cartões e blocos
    -------------------------------------------------------------------------- */
