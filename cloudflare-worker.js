@@ -73,6 +73,7 @@ const MOBILE_FEEDBACK_PATH = "/api/mobile-feedback";
 const FEEDBACK_PAGE_PATH = "/testes-mobile/feedback/";
 const FEEDBACK_CTA_STYLE_PATH = "/css/mobile-feedback-cta.css";
 const FEEDBACK_PAGE_STYLE_PATH = "/css/mobile-feedback-page.css";
+const MOBILE_FORM_CONTRAST_STYLE_PATH = "/css/mobile-form-contrast.css";
 const MOBILE_REGISTRATION_ENDPOINT = "https://formspree.io/f/xaenzpjq";
 const FEEDBACK_CODES = new Set([
   "VULCAN-FB-7K2M", "VULCAN-FB-9Q4R", "VULCAN-FB-3T8N", "VULCAN-FB-6P5X",
@@ -84,6 +85,17 @@ const FEEDBACK_CTA_STYLE = `
   .feedback-worker-button { display: inline-flex; align-items: center; justify-content: center; gap: .6rem; min-height: 52px; margin-top: 1.35rem; padding: .8rem 1.1rem; border-radius: 9px; background: #38d9ff; color: #03111a; font: 750 .92rem system-ui, sans-serif; text-decoration: none; box-shadow: 0 12px 30px rgba(56,217,255,.22); }
   .feedback-worker-button:hover { background: #76e7ff; transform: translateY(-1px); }
   .feedback-worker-button:focus-visible { outline: 3px solid #f5bd48; outline-offset: 4px; }
+`;
+
+const MOBILE_FORM_CONTRAST_STYLE = `
+  .mobile-registration { background: linear-gradient(145deg, #102535, #08121c) !important; color: #edf7ff !important; }
+  .mobile-registration label, .mobile-registration .registration-heading h2 { color: #f5fbff !important; }
+  .mobile-registration input:not([type="checkbox"]), .mobile-registration select { border-color: #426077 !important; background: #07111b !important; color: #f5fbff !important; -webkit-text-fill-color: #f5fbff !important; color-scheme: dark; }
+  .mobile-registration select option { background: #07111b !important; color: #f5fbff !important; }
+  .mobile-registration input::placeholder { color: #a9c0d0 !important; opacity: 1 !important; }
+  .mobile-registration input:-webkit-autofill, .mobile-registration input:-webkit-autofill:hover, .mobile-registration input:-webkit-autofill:focus { -webkit-text-fill-color: #f5fbff !important; -webkit-box-shadow: 0 0 0 1000px #07111b inset !important; box-shadow: 0 0 0 1000px #07111b inset !important; caret-color: #f5fbff; }
+  .mobile-registration input:not([type="checkbox"]):focus, .mobile-registration select:focus { border-color: #38d9ff !important; background: #0a1926 !important; box-shadow: 0 0 0 3px rgba(56, 217, 255, .24) !important; }
+  .mobile-registration .consent-row, .mobile-registration .registration-note { color: #c7d9e5 !important; }
 `;
 
 const FEEDBACK_PAGE_STYLE = `
@@ -132,6 +144,9 @@ export default {
     }
     if (request.method === "GET" && url.pathname === FEEDBACK_PAGE_STYLE_PATH) {
       return new Response(FEEDBACK_PAGE_STYLE, { headers: { "Content-Type": "text/css; charset=utf-8", "Cache-Control": "public, max-age=86400" } });
+    }
+    if (request.method === "GET" && url.pathname === MOBILE_FORM_CONTRAST_STYLE_PATH) {
+      return new Response(MOBILE_FORM_CONTRAST_STYLE, { headers: { "Content-Type": "text/css; charset=utf-8", "Cache-Control": "public, max-age=86400" } });
     }
     if (url.pathname === MOBILE_REGISTRATION_PATH && request.method === "POST") {
       const contentType = request.headers.get("Content-Type") || "";
@@ -204,7 +219,7 @@ export default {
     let responseBody = originResponse.body;
     if (request.method === "GET" && (url.pathname === "/testes-mobile" || url.pathname === "/testes-mobile/")) {
       responseBody = new HTMLRewriter()
-        .on("head", { element(element) { element.append(`<link rel="stylesheet" href="${FEEDBACK_CTA_STYLE_PATH}">`, { html: true }); } })
+        .on("head", { element(element) { element.append(`<link rel="stylesheet" href="${FEEDBACK_CTA_STYLE_PATH}"><link rel="stylesheet" href="${MOBILE_FORM_CONTRAST_STYLE_PATH}">`, { html: true }); } })
         .on(".registration-note", { element(element) { element.after(`<a class="feedback-worker-button" href="${FEEDBACK_PAGE_PATH}">Enviar feedback <span aria-hidden="true">↗</span></a>`, { html: true }); } })
         .transform(originResponse).body;
     }
