@@ -100,6 +100,8 @@ const MOBILE_FORM_CONTRAST_STYLE = `
   .mobile-registration input:-webkit-autofill, .mobile-registration input:-webkit-autofill:hover, .mobile-registration input:-webkit-autofill:focus { -webkit-text-fill-color: #f5fbff !important; -webkit-box-shadow: 0 0 0 1000px #07111b inset !important; box-shadow: 0 0 0 1000px #07111b inset !important; caret-color: #f5fbff; }
   .mobile-registration input:not([type="checkbox"]):focus, .mobile-registration select:focus { border-color: #38d9ff !important; background: #0a1926 !important; box-shadow: 0 0 0 3px rgba(56, 217, 255, .24) !important; }
   .mobile-registration .consent-row, .mobile-registration .registration-note { color: #c7d9e5 !important; }
+  .feedback-update { display:grid; grid-template-columns:minmax(180px,.7fr) 1.3fr auto; gap:clamp(1rem,3vw,2.2rem); align-items:start; margin-top:1.25rem; padding:1.3rem 1.45rem; border:1px solid rgba(245,189,72,.38); border-radius:12px; background:linear-gradient(100deg,rgba(245,189,72,.10),rgba(56,217,255,.035)); }
+  .feedback-update p { margin:0; color:#c7d9e5; font-size:.85rem; line-height:1.58; }.feedback-update p + p { margin-top:.65rem; color:#edf7ff; }.feedback-update .feedback-label { color:#f5bd48; font:500 .72rem ui-monospace,monospace; letter-spacing:.04em; }.feedback-update h3 { margin:.55rem 0 0; color:#f5fbff; font-size:1.04rem; line-height:1.2; }.feedback-update .feedback-status { padding:.4rem .55rem; border:1px solid rgba(245,189,72,.42); border-radius:999px; color:#ffdb8a; font:500 .66rem ui-monospace,monospace; white-space:nowrap; } @media (max-width:840px) { .feedback-update { grid-template-columns:1fr; gap:.5rem; }.feedback-update .feedback-status { justify-self:start; margin-top:.5rem; } }
 `;
 
 const FEEDBACK_PAGE_STYLE = `
@@ -226,6 +228,7 @@ export default {
       responseBody = new HTMLRewriter()
         .on("head", { element(element) { element.append(`<link rel="stylesheet" href="${FEEDBACK_CTA_STYLE_PATH}"><link rel="stylesheet" href="${MOBILE_FORM_CONTRAST_STYLE_PATH}">`, { html: true }); } })
         .on(".registration-note", { element(element) { element.after(`<a class="feedback-worker-button" href="${FEEDBACK_PAGE_PATH}">Enviar feedback <span aria-hidden="true">↗</span></a>`, { html: true }); } })
+        .on(".release-privacy", { element(element) { element.after(`<aside class="feedback-update" aria-label="Melhoria planejada a partir de feedback"><div><p class="feedback-label">Retorno de testes</p><h3>Estabilidade de comunicação com o SOC</h3></div><div><p>Feedback encaminhado por Eduardo. Identificamos uma ocorrência intermitente ao reabrir o aplicativo, na qual o status de comunicação com o SOC pode apresentar falha temporária antes de se recuperar automaticamente.</p><p>Na próxima atualização, será aplicado um aprimoramento de resiliência e recuperação da conexão para tornar a experiência mais estável nas reaberturas do aplicativo.</p></div><span class="feedback-status">Próxima atualização</span></aside>`, { html: true }); } })
         .transform(originResponse).body;
     }
 
