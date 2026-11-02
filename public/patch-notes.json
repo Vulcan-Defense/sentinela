@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-02T18:55:16.807Z",
+  "generatedAt": "2026-11-02T18:59:55.958Z",
   "repository": "https://github.com/Vulcan-Defense/vulcan-academy",
   "highlights": [
     {
@@ -17,7 +17,8 @@
         "O bloco de projeto da comunidade na página de ferramentas agora usa a largura disponível e mantém o texto legível, sem quebras estranhas.",
         "Campos do formulário de testes mobile agora mantêm texto e fundo legíveis em qualquer navegador.",
         "Códigos individuais de feedback permitem identificar cada participante da rodada de testes.",
-        "Feedback de teste recebido foi convertido em melhoria planejada para reforçar a estabilidade da comunicação com o SOC."
+        "Feedback de teste recebido foi convertido em melhoria planejada para reforçar a estabilidade da comunicação com o SOC.",
+        "Nota de melhoria de testes ajustada para aparecer uma única vez na página."
       ]
     },
     {
@@ -53,6 +54,16 @@
     }
   ],
   "commits": [
+    {
+      "hash": "b30c95e127c54406784ada0e16b89129e4057760",
+      "shortHash": "b30c95e",
+      "date": "2026-11-02T15:55:43-03:00",
+      "message": "feat: registrar melhoria de estabilidade do SOC",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 5
+    },
     {
       "hash": "771f25d2fe9e713693a7362b24d4df9ac6c51438",
       "shortHash": "771f25d",
@@ -238,16 +249,6 @@
       "shortHash": "b91b664",
       "date": "2026-10-30T01:38:27Z",
       "message": "chore: atualizar postagens LinkedIn [01:38]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
-    },
-    {
-      "hash": "8cc8ea431529686465581b4f7333587a43a8ae9a",
-      "shortHash": "8cc8ea4",
-      "date": "2026-10-29T21:55:45Z",
-      "message": "chore: atualizar postagens LinkedIn [21:55]",
       "areas": [
         "Projeto"
       ],

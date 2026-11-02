@@ -228,7 +228,6 @@ export default {
       responseBody = new HTMLRewriter()
         .on("head", { element(element) { element.append(`<link rel="stylesheet" href="${FEEDBACK_CTA_STYLE_PATH}"><link rel="stylesheet" href="${MOBILE_FORM_CONTRAST_STYLE_PATH}">`, { html: true }); } })
         .on(".registration-note", { element(element) { element.after(`<a class="feedback-worker-button" href="${FEEDBACK_PAGE_PATH}">Enviar feedback <span aria-hidden="true">↗</span></a>`, { html: true }); } })
-        .on(".release-privacy", { element(element) { element.after(`<aside class="feedback-update" aria-label="Melhoria planejada a partir de feedback"><div><p class="feedback-label">Retorno de testes</p><h3>Estabilidade de comunicação com o SOC</h3></div><div><p>Feedback encaminhado por Eduardo. Identificamos uma ocorrência intermitente ao reabrir o aplicativo, na qual o status de comunicação com o SOC pode apresentar falha temporária antes de se recuperar automaticamente.</p><p>Na próxima atualização, será aplicado um aprimoramento de resiliência e recuperação da conexão para tornar a experiência mais estável nas reaberturas do aplicativo.</p></div><span class="feedback-status">Próxima atualização</span></aside>`, { html: true }); } })
         .transform(originResponse).body;
     }
 
