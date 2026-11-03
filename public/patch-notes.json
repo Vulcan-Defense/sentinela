@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-02T18:59:55.958Z",
+  "generatedAt": "2026-11-03T14:52:03.194Z",
   "repository": "https://github.com/Vulcan-Defense/vulcan-academy",
   "highlights": [
     {
@@ -18,7 +18,8 @@
         "Campos do formulário de testes mobile agora mantêm texto e fundo legíveis em qualquer navegador.",
         "Códigos individuais de feedback permitem identificar cada participante da rodada de testes.",
         "Feedback de teste recebido foi convertido em melhoria planejada para reforçar a estabilidade da comunicação com o SOC.",
-        "Nota de melhoria de testes ajustada para aparecer uma única vez na página."
+        "Nota de melhoria de testes ajustada para aparecer uma única vez na página.",
+        "Novo acesso de feedback cadastrado para ampliar a rodada de testes mobile."
       ]
     },
     {
@@ -54,6 +55,46 @@
     }
   ],
   "commits": [
+    {
+      "hash": "a4f78d9fb84c19bc4f2ee2822eff88d2dd34594e",
+      "shortHash": "a4f78d9",
+      "date": "2026-11-03T09:51:54Z",
+      "message": "chore: atualizar postagens LinkedIn [09:51]",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 1
+    },
+    {
+      "hash": "1743951c9644da484373cd1db7ffc5343538755d",
+      "shortHash": "1743951",
+      "date": "2026-11-03T02:22:08Z",
+      "message": "chore: atualizar postagens LinkedIn [02:22]",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 1
+    },
+    {
+      "hash": "131610fb5968bcc4ff8eeed5b62d47817db9dca3",
+      "shortHash": "131610f",
+      "date": "2026-11-02T20:12:31Z",
+      "message": "chore: atualizar postagens LinkedIn [20:12]",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 1
+    },
+    {
+      "hash": "ae292e8fb3dd65530d31b3c0ad2166a87e788376",
+      "shortHash": "ae292e8",
+      "date": "2026-11-02T16:00:19-03:00",
+      "message": "fix: remover nota de melhoria duplicada",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 3
+    },
     {
       "hash": "b30c95e127c54406784ada0e16b89129e4057760",
       "shortHash": "b30c95e",
@@ -213,46 +254,6 @@
         "Projeto"
       ],
       "filesChanged": 4
-    },
-    {
-      "hash": "a32ceefb5f009e87e95bf1b96e94a5e9914000b4",
-      "shortHash": "a32ceef",
-      "date": "2026-10-30T14:32:58Z",
-      "message": "chore: atualizar postagens LinkedIn [14:32]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
-    },
-    {
-      "hash": "40bc69a366ccb7434498a3f991fc82719483d8cf",
-      "shortHash": "40bc69a",
-      "date": "2026-10-30T10:15:55-03:00",
-      "message": "fix: reforçar contraste no formulário mobile",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 4
-    },
-    {
-      "hash": "1ddf958c4ead72b92820d89ed4ba2c644101d8e1",
-      "shortHash": "1ddf958",
-      "date": "2026-10-30T07:43:22Z",
-      "message": "chore: atualizar postagens LinkedIn [07:43]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
-    },
-    {
-      "hash": "b91b664b255e6edccc2d6b55dacd795d7c8f490e",
-      "shortHash": "b91b664",
-      "date": "2026-10-30T01:38:27Z",
-      "message": "chore: atualizar postagens LinkedIn [01:38]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
     }
   ]
 }
