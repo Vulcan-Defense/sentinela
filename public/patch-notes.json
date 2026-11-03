@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T18:22:11.372Z",
+  "generatedAt": "2026-11-03T19:51:31.063Z",
   "repository": "https://github.com/Vulcan-Defense/vulcan-academy",
   "highlights": [
     {
@@ -20,7 +20,8 @@
         "Feedback de teste recebido foi convertido em melhoria planejada para reforçar a estabilidade da comunicação com o SOC.",
         "Nota de melhoria de testes ajustada para aparecer uma única vez na página.",
         "Novo acesso de feedback cadastrado para ampliar a rodada de testes mobile.",
-        "Novos acessos de feedback foram cadastrados para ampliar a rodada de testes mobile."
+        "Novos acessos de feedback foram cadastrados para ampliar a rodada de testes mobile.",
+        "Botão de feedback ajustado para aparecer uma única vez na página de testes mobile."
       ]
     },
     {
@@ -56,6 +57,16 @@
     }
   ],
   "commits": [
+    {
+      "hash": "f987e540722eb18a36da61cda10cb01e254ac0c5",
+      "shortHash": "f987e54",
+      "date": "2026-11-03T15:22:34-03:00",
+      "message": "chore: registrar novos acessos de feedback",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 2
+    },
     {
       "hash": "1359c8fadfe25130c6eaa4bd8da727aacb5a53ac",
       "shortHash": "1359c8f",
@@ -241,16 +252,6 @@
       "shortHash": "ebf90ee",
       "date": "2026-10-31T02:38:19Z",
       "message": "chore: atualizar postagens LinkedIn [02:38]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
-    },
-    {
-      "hash": "19dfd1fd6ecd446a61794361005a56a11f48e89e",
-      "shortHash": "19dfd1f",
-      "date": "2026-10-30T23:16:16Z",
-      "message": "chore: atualizar postagens LinkedIn [23:16]",
       "areas": [
         "Projeto"
       ],

@@ -226,8 +226,7 @@ export default {
     let responseBody = originResponse.body;
     if (request.method === "GET" && (url.pathname === "/testes-mobile" || url.pathname === "/testes-mobile/")) {
       responseBody = new HTMLRewriter()
-        .on("head", { element(element) { element.append(`<link rel="stylesheet" href="${FEEDBACK_CTA_STYLE_PATH}"><link rel="stylesheet" href="${MOBILE_FORM_CONTRAST_STYLE_PATH}">`, { html: true }); } })
-        .on(".registration-note", { element(element) { element.after(`<a class="feedback-worker-button" href="${FEEDBACK_PAGE_PATH}">Enviar feedback <span aria-hidden="true">↗</span></a>`, { html: true }); } })
+        .on("head", { element(element) { element.append(`<link rel="stylesheet" href="${MOBILE_FORM_CONTRAST_STYLE_PATH}">`, { html: true }); } })
         .transform(originResponse).body;
     }
 
