@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T14:52:03.194Z",
+  "generatedAt": "2026-11-03T18:22:11.372Z",
   "repository": "https://github.com/Vulcan-Defense/vulcan-academy",
   "highlights": [
     {
@@ -19,7 +19,8 @@
         "Códigos individuais de feedback permitem identificar cada participante da rodada de testes.",
         "Feedback de teste recebido foi convertido em melhoria planejada para reforçar a estabilidade da comunicação com o SOC.",
         "Nota de melhoria de testes ajustada para aparecer uma única vez na página.",
-        "Novo acesso de feedback cadastrado para ampliar a rodada de testes mobile."
+        "Novo acesso de feedback cadastrado para ampliar a rodada de testes mobile.",
+        "Novos acessos de feedback foram cadastrados para ampliar a rodada de testes mobile."
       ]
     },
     {
@@ -55,6 +56,26 @@
     }
   ],
   "commits": [
+    {
+      "hash": "1359c8fadfe25130c6eaa4bd8da727aacb5a53ac",
+      "shortHash": "1359c8f",
+      "date": "2026-11-03T17:34:12Z",
+      "message": "chore: atualizar postagens LinkedIn [17:34]",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 1
+    },
+    {
+      "hash": "bbedd19077ebd15da6d579dfeb04d415d7160978",
+      "shortHash": "bbedd19",
+      "date": "2026-11-03T11:52:21-03:00",
+      "message": "chore: registrar novo acesso de feedback",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 2
+    },
     {
       "hash": "a4f78d9fb84c19bc4f2ee2822eff88d2dd34594e",
       "shortHash": "a4f78d9",
@@ -234,26 +255,6 @@
         "Projeto"
       ],
       "filesChanged": 1
-    },
-    {
-      "hash": "de998eba18482854b31679154067f74d15ccaf69",
-      "shortHash": "de998eb",
-      "date": "2026-10-30T19:42:48Z",
-      "message": "chore: atualizar postagens LinkedIn [19:42]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
-    },
-    {
-      "hash": "1c1078266c97ebafe259e1fad663e4a90367067d",
-      "shortHash": "1c10782",
-      "date": "2026-10-30T11:42:48-03:00",
-      "message": "feat: cadastrar participantes de feedback",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 4
     }
   ]
 }
