@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-03T19:51:31.063Z",
+  "generatedAt": "2026-11-10T17:43:11.836Z",
   "repository": "https://github.com/Vulcan-Defense/vulcan-academy",
   "highlights": [
     {
@@ -8,6 +8,7 @@
       "title": "Visual renovado no site público",
       "summary": "As páginas abertas do Sentinela ganharam uma identidade visual nova, com navegação mais clara e leitura confortável em qualquer tamanho de tela.",
       "items": [
+        "Catálogo de ferramentas renovado com busca e filtros para encontrar recursos de cibersegurança com mais facilidade.",
         "Novo visual do site público, com cores, tipografia e cartões atualizados para destacar melhor cada conteúdo.",
         "Menu principal fixo mantém os atalhos sempre à mão e mostra com clareza em qual página você está.",
         "Página inicial reorganizada aproxima os canais da comunidade do convite para receber o boletim.",
@@ -57,6 +58,86 @@
     }
   ],
   "commits": [
+    {
+      "hash": "8b650b4e08279b5a03dce1599e454f33353f3416",
+      "shortHash": "8b650b4",
+      "date": "2026-11-05T18:59:04Z",
+      "message": "chore: atualizar postagens LinkedIn [18:59]",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 1
+    },
+    {
+      "hash": "cba9f52132a688dc5cccfd7b04b2a5a8598b39f2",
+      "shortHash": "cba9f52",
+      "date": "2026-11-05T11:30:56Z",
+      "message": "chore: atualizar postagens LinkedIn [11:30]",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 1
+    },
+    {
+      "hash": "db862081baa653018d66eb4fe21486a723544e79",
+      "shortHash": "db86208",
+      "date": "2026-11-05T03:36:38Z",
+      "message": "chore: atualizar postagens LinkedIn [03:36]",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 1
+    },
+    {
+      "hash": "79bcc125b0391cb5473cf025215a195d11ddcc9d",
+      "shortHash": "79bcc12",
+      "date": "2026-11-04T23:16:01Z",
+      "message": "chore: atualizar postagens LinkedIn [23:16]",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 1
+    },
+    {
+      "hash": "4fb373f9d7e4e1adaf01341e3145dadcfb9fa779",
+      "shortHash": "4fb373f",
+      "date": "2026-11-04T17:46:59Z",
+      "message": "chore: atualizar postagens LinkedIn [17:46]",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 1
+    },
+    {
+      "hash": "c44d8d60c4955516af8451e814af8c5e8b93e21c",
+      "shortHash": "c44d8d6",
+      "date": "2026-11-04T02:43:00Z",
+      "message": "chore: atualizar postagens LinkedIn [02:43]",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 1
+    },
+    {
+      "hash": "5ac237077cf1c49563e8f2b2e49012230578cc79",
+      "shortHash": "5ac2370",
+      "date": "2026-11-03T22:30:54Z",
+      "message": "chore: atualizar postagens LinkedIn [22:30]",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 1
+    },
+    {
+      "hash": "c620c8db3dd096e4a80fcd88689300ec7238dec5",
+      "shortHash": "c620c8d",
+      "date": "2026-11-03T16:52:10-03:00",
+      "message": "fix: remover atalho de feedback duplicado",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 3
+    },
     {
       "hash": "f987e540722eb18a36da61cda10cb01e254ac0c5",
       "shortHash": "f987e54",
@@ -172,86 +253,6 @@
       "shortHash": "fed320b",
       "date": "2026-11-01T19:40:01Z",
       "message": "chore: atualizar postagens LinkedIn [19:40]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
-    },
-    {
-      "hash": "737359344c902ee1e904e00de30c60ca0aed5832",
-      "shortHash": "7373593",
-      "date": "2026-11-01T15:08:24Z",
-      "message": "chore: atualizar postagens LinkedIn [15:08]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
-    },
-    {
-      "hash": "f13bf7713a5ba49689d37fe562cd86d36dc8a92a",
-      "shortHash": "f13bf77",
-      "date": "2026-11-01T08:01:27Z",
-      "message": "chore: atualizar postagens LinkedIn [08:01]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
-    },
-    {
-      "hash": "4bedf12998f25e555bf401d53ec67384606d29e2",
-      "shortHash": "4bedf12",
-      "date": "2026-11-01T01:29:17Z",
-      "message": "chore: atualizar postagens LinkedIn [01:29]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
-    },
-    {
-      "hash": "23bcd0fb55589a990edebeedd9ad65a12c802976",
-      "shortHash": "23bcd0f",
-      "date": "2026-10-31T22:41:35Z",
-      "message": "chore: atualizar postagens LinkedIn [22:41]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
-    },
-    {
-      "hash": "8fbc379cc18253daba1800a0c674dbb92f6641c5",
-      "shortHash": "8fbc379",
-      "date": "2026-10-31T19:17:21Z",
-      "message": "chore: atualizar postagens LinkedIn [19:17]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
-    },
-    {
-      "hash": "d3dccceb14cc3bde48ecf09ac26434811889374e",
-      "shortHash": "d3dccce",
-      "date": "2026-10-31T15:05:15Z",
-      "message": "chore: atualizar postagens LinkedIn [15:05]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
-    },
-    {
-      "hash": "3c875368f59ba50b0a6445e0cd2dceac0675cb31",
-      "shortHash": "3c87536",
-      "date": "2026-10-31T08:53:51Z",
-      "message": "chore: atualizar postagens LinkedIn [08:53]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
-    },
-    {
-      "hash": "ebf90ee17ce03bc11a838dc8c14d1a8716a93992",
-      "shortHash": "ebf90ee",
-      "date": "2026-10-31T02:38:19Z",
-      "message": "chore: atualizar postagens LinkedIn [02:38]",
       "areas": [
         "Projeto"
       ],
