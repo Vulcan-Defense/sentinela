@@ -111,6 +111,15 @@
         .guardiao-links { display: flex; flex-wrap: wrap; gap: 1rem 1.45rem; margin-top: 1.25rem; }.guardiao-links a { color: var(--text); font-size: 0.86rem; font-weight: 600; text-decoration: none; border-bottom: 1px solid rgba(56, 217, 255, 0.5); padding-bottom: 0.22rem; }.guardiao-links a:hover { color: var(--accent); }.guardiao-links a span { color: var(--accent); }
         .guardiao-facts { position: relative; z-index: 1; margin: 0; border-left: 1px solid var(--border); }.guardiao-facts div { padding: 0.7rem 0 0.7rem 1.25rem; border-bottom: 1px solid var(--border); }.guardiao-facts div:last-child { border-bottom: 0; }.guardiao-facts dt { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; font-weight: 700; }.guardiao-facts dd { margin: 0.25rem 0 0; color: var(--text-muted); font-size: 0.75rem; }
 
+        .recommended-video { width: 100%; max-width: 960px; margin-top: 1.25rem; padding: clamp(1rem, 3vw, 1.5rem); display: grid; grid-template-columns: minmax(0, 0.82fr) minmax(280px, 1.18fr); align-items: center; gap: clamp(1rem, 3vw, 2rem); border: 1px solid rgba(56, 217, 255, 0.28); border-radius: 16px; background: linear-gradient(120deg, rgba(13, 23, 36, 0.98), rgba(56, 217, 255, 0.07)); box-shadow: 0 16px 45px rgba(0, 0, 0, 0.18); }
+        .recommended-video-copy { padding: clamp(0.15rem, 1vw, 0.55rem); }
+        .recommended-video-copy h2 { margin: 0.35rem 0 0.65rem; font-size: clamp(1.2rem, 2.4vw, 1.65rem); line-height: 1.15; }
+        .recommended-video-copy p:not(.feature-label) { margin: 0 0 1rem; color: var(--text-muted); font-size: 0.9rem; line-height: 1.55; }
+        .recommended-video-copy a { color: var(--accent); font-size: 0.85rem; font-weight: 600; text-decoration: none; }
+        .recommended-video-copy a:hover { text-decoration: underline; }
+        .recommended-video-frame { position: relative; overflow: hidden; aspect-ratio: 16 / 9; border: 1px solid rgba(56, 217, 255, 0.4); border-radius: 10px; background: #03070c; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.32); }
+        .recommended-video-frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
         .communities {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -573,6 +582,7 @@
             .posts-columns {
                 grid-template-columns: 1fr;
             }
+            .recommended-video { grid-template-columns: 1fr; }
             main {
                 padding-left: 1rem;
                 padding-right: 1rem;

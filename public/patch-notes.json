@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-17T21:14:03.453Z",
+  "generatedAt": "2026-11-17T21:32:34.709Z",
   "repository": "https://github.com/Vulcan-Defense/vulcan-academy",
   "highlights": [
     {
@@ -8,6 +8,7 @@
       "title": "Visual renovado no site público",
       "summary": "As páginas abertas do Sentinela ganharam uma identidade visual nova, com navegação mais clara e leitura confortável em qualquer tamanho de tela.",
       "items": [
+        "Novo vídeo recomendado aproxima conteúdos da Vulcan Defense da comunidade de cibersegurança.",
         "Novo guia gratuito para Analista SOC N1, sugerido pela comunidade, ajuda a organizar os estudos para a área de defesa cibernética.",
         "Catálogo de ferramentas renovado com busca e filtros para encontrar recursos de cibersegurança com mais facilidade.",
         "Novo visual do site público, com cores, tipografia e cartões atualizados para destacar melhor cada conteúdo.",
@@ -60,198 +61,198 @@
   ],
   "commits": [
     {
-      "hash": "f7f7dea35d3639d08761804fa8fd4135ffa6a1f8",
-      "shortHash": "f7f7dea",
-      "date": "2026-11-10T14:44:58-03:00",
+      "hash": "c6d794f10a764ff6ac4127e7c9c97bb96bf865e1",
+      "shortHash": "c6d794f",
+      "date": "2026-11-17T18:15:59-03:00",
       "message": "Merge branch 'main' of https://github.com/Vulcan-Defense/sentinela",
       "areas": [],
       "filesChanged": 0
     },
     {
-      "hash": "6983dc9f12b1094f43c14b1add74d95ff0c44280",
-      "shortHash": "6983dc9",
-      "date": "2026-11-10T14:44:56-03:00",
+      "hash": "8bbfecace8dfef173a5aff1ec8134f5b2feba29c",
+      "shortHash": "8bbfeca",
+      "date": "2026-11-17T18:15:57-03:00",
       "message": "Atualização da plataforma",
       "areas": [
         "Projeto"
       ],
-      "filesChanged": 8
+      "filesChanged": 4
     },
     {
-      "hash": "848bee4565c58390841e4b8532eb271e1bca5e1c",
-      "shortHash": "848bee4",
-      "date": "2026-11-10T10:48:34Z",
-      "message": "chore: atualizar postagens LinkedIn [10:48]",
+      "hash": "2e6b5f2ec0f31c501fa91eff66d3de6d4e8bedea",
+      "shortHash": "2e6b5f2",
+      "date": "2026-11-17T18:11:39Z",
+      "message": "chore: atualizar postagens LinkedIn [18:11]",
       "areas": [
         "Projeto"
       ],
       "filesChanged": 1
     },
     {
-      "hash": "7a8e129757851aa4e6e3c54cfc83733a85b90d64",
-      "shortHash": "7a8e129",
-      "date": "2026-11-10T02:51:40Z",
-      "message": "chore: atualizar postagens LinkedIn [02:51]",
+      "hash": "53a2b041f4a9ce58a4c0088d0b3c6314cad36b5a",
+      "shortHash": "53a2b04",
+      "date": "2026-11-17T08:50:29Z",
+      "message": "chore: atualizar postagens LinkedIn [08:50]",
       "areas": [
         "Projeto"
       ],
       "filesChanged": 1
     },
     {
-      "hash": "3a557bd471c0d7e865c7542e62965bdefb321158",
-      "shortHash": "3a557bd",
-      "date": "2026-11-09T20:27:09Z",
-      "message": "chore: atualizar postagens LinkedIn [20:27]",
+      "hash": "a34bf99c470b74f596c23247fd6cb642cf2aaade",
+      "shortHash": "a34bf99",
+      "date": "2026-11-17T00:47:25Z",
+      "message": "chore: atualizar postagens LinkedIn [00:47]",
       "areas": [
         "Projeto"
       ],
       "filesChanged": 1
     },
     {
-      "hash": "cbc0f0b237a0baddf1796ef6b5b04ca20a7a06e4",
-      "shortHash": "cbc0f0b",
-      "date": "2026-11-09T09:47:41Z",
-      "message": "chore: atualizar postagens LinkedIn [09:47]",
+      "hash": "8b87254ad186ba513664cf6b9240651307f13510",
+      "shortHash": "8b87254",
+      "date": "2026-11-16T17:00:37Z",
+      "message": "chore: atualizar postagens LinkedIn [17:00]",
       "areas": [
         "Projeto"
       ],
       "filesChanged": 1
     },
     {
-      "hash": "354e082a66b90f7d0d39605948eeead290d7f9ae",
-      "shortHash": "354e082",
-      "date": "2026-11-09T02:01:26Z",
-      "message": "chore: atualizar postagens LinkedIn [02:01]",
+      "hash": "0a75dd5b0c7f652f2cea63b96854299cfb4394f1",
+      "shortHash": "0a75dd5",
+      "date": "2026-11-16T07:03:04Z",
+      "message": "chore: atualizar postagens LinkedIn [07:03]",
       "areas": [
         "Projeto"
       ],
       "filesChanged": 1
     },
     {
-      "hash": "ad9e815df6ef5a845428bca8dde25cc0c5350fd0",
-      "shortHash": "ad9e815",
-      "date": "2026-11-08T22:43:53Z",
-      "message": "chore: atualizar postagens LinkedIn [22:43]",
+      "hash": "ac9491b860a75cdba5c8aa82ed92658c015d190a",
+      "shortHash": "ac9491b",
+      "date": "2026-11-16T00:16:40Z",
+      "message": "chore: atualizar postagens LinkedIn [00:16]",
       "areas": [
         "Projeto"
       ],
       "filesChanged": 1
     },
     {
-      "hash": "e24f9c6cb8c06e3a5c8e5050f2689f8769f19c54",
-      "shortHash": "e24f9c6",
-      "date": "2026-11-08T18:57:28Z",
-      "message": "chore: atualizar postagens LinkedIn [18:57]",
+      "hash": "15cc954e857b7bc59620c32e4a3e9b0f2cee3899",
+      "shortHash": "15cc954",
+      "date": "2026-11-15T20:29:04Z",
+      "message": "chore: atualizar postagens LinkedIn [20:29]",
       "areas": [
         "Projeto"
       ],
       "filesChanged": 1
     },
     {
-      "hash": "5f04ad81f18822d08bbbe0e46bb310f7238a7ce6",
-      "shortHash": "5f04ad8",
-      "date": "2026-11-08T14:25:31Z",
-      "message": "chore: atualizar postagens LinkedIn [14:25]",
+      "hash": "b3a19fd304fb956f1f5553a0cc5c8f592cde1756",
+      "shortHash": "b3a19fd",
+      "date": "2026-11-15T15:23:50Z",
+      "message": "chore: atualizar postagens LinkedIn [15:23]",
       "areas": [
         "Projeto"
       ],
       "filesChanged": 1
     },
     {
-      "hash": "91447303d1acadfb18c38ff84acffff1604c6904",
-      "shortHash": "9144730",
-      "date": "2026-11-08T07:19:59Z",
-      "message": "chore: atualizar postagens LinkedIn [07:19]",
+      "hash": "0928aab39591541d9710bdb37fbca0cb5720a380",
+      "shortHash": "0928aab",
+      "date": "2026-11-15T07:51:45Z",
+      "message": "chore: atualizar postagens LinkedIn [07:51]",
       "areas": [
         "Projeto"
       ],
       "filesChanged": 1
     },
     {
-      "hash": "1296c974b33c566b80ee8e0015f8c1e36eadac6e",
-      "shortHash": "1296c97",
-      "date": "2026-11-08T01:07:00Z",
-      "message": "chore: atualizar postagens LinkedIn [01:07]",
+      "hash": "51ddb740b16a6bcc32af88113a396fcf3f3e9bd1",
+      "shortHash": "51ddb74",
+      "date": "2026-11-15T01:02:55Z",
+      "message": "chore: atualizar postagens LinkedIn [01:02]",
       "areas": [
         "Projeto"
       ],
       "filesChanged": 1
     },
     {
-      "hash": "572af1038fcd4b677b473e25bf085b3fa257d4af",
-      "shortHash": "572af10",
-      "date": "2026-11-07T21:50:41Z",
-      "message": "chore: atualizar postagens LinkedIn [21:50]",
+      "hash": "f11a458e6bd88dd3c772e2c91664bf3080de7cfb",
+      "shortHash": "f11a458",
+      "date": "2026-11-14T21:07:07Z",
+      "message": "chore: atualizar postagens LinkedIn [21:07]",
       "areas": [
         "Projeto"
       ],
       "filesChanged": 1
     },
     {
-      "hash": "2991c49108d3c1e259aa72ddfd2d25cdb3b99c66",
-      "shortHash": "2991c49",
-      "date": "2026-11-07T18:10:16Z",
-      "message": "chore: atualizar postagens LinkedIn [18:10]",
+      "hash": "bb2284562c4e9794aad237235ee063181528d388",
+      "shortHash": "bb22845",
+      "date": "2026-11-14T16:54:59Z",
+      "message": "chore: atualizar postagens LinkedIn [16:54]",
       "areas": [
         "Projeto"
       ],
       "filesChanged": 1
     },
     {
-      "hash": "7b6b350699b7901921a4632808fe168f101f6813",
-      "shortHash": "7b6b350",
-      "date": "2026-11-07T13:24:38Z",
-      "message": "chore: atualizar postagens LinkedIn [13:24]",
+      "hash": "8fc63da36dd101f23b8c666d8bb44a4aadb3892d",
+      "shortHash": "8fc63da",
+      "date": "2026-11-14T10:57:30Z",
+      "message": "chore: atualizar postagens LinkedIn [10:57]",
       "areas": [
         "Projeto"
       ],
       "filesChanged": 1
     },
     {
-      "hash": "70e82bab681bd7800efda0782a5571eb995becfb",
-      "shortHash": "70e82ba",
-      "date": "2026-11-07T06:22:57Z",
-      "message": "chore: atualizar postagens LinkedIn [06:22]",
+      "hash": "a326e77db4fb984f0cf44b23ee91042ab16989e8",
+      "shortHash": "a326e77",
+      "date": "2026-11-14T03:35:00Z",
+      "message": "chore: atualizar postagens LinkedIn [03:35]",
       "areas": [
         "Projeto"
       ],
       "filesChanged": 1
     },
     {
-      "hash": "77d7a6d99336eb8a188d743ea07568d835ee5852",
-      "shortHash": "77d7a6d",
-      "date": "2026-11-07T00:22:48Z",
-      "message": "chore: atualizar postagens LinkedIn [00:22]",
+      "hash": "cd73e986b8ac8aa5cf13c75a26435f17c8171141",
+      "shortHash": "cd73e98",
+      "date": "2026-11-13T23:33:17Z",
+      "message": "chore: atualizar postagens LinkedIn [23:33]",
       "areas": [
         "Projeto"
       ],
       "filesChanged": 1
     },
     {
-      "hash": "5167eb418ff4d2f69b00fafdc52af5b1e62a7d9a",
-      "shortHash": "5167eb4",
-      "date": "2026-11-06T20:42:12Z",
-      "message": "chore: atualizar postagens LinkedIn [20:42]",
+      "hash": "40926593b9e56a88100353a88812076b75e080bd",
+      "shortHash": "4092659",
+      "date": "2026-11-13T18:05:04Z",
+      "message": "chore: atualizar postagens LinkedIn [18:05]",
       "areas": [
         "Projeto"
       ],
       "filesChanged": 1
     },
     {
-      "hash": "e068201b7f5798b43d780d30c5620993a1e50f40",
-      "shortHash": "e068201",
-      "date": "2026-11-06T14:47:59Z",
-      "message": "chore: atualizar postagens LinkedIn [14:47]",
+      "hash": "1283a95bf623fca20b4fa0bb85109d39f63803b6",
+      "shortHash": "1283a95",
+      "date": "2026-11-13T10:37:38Z",
+      "message": "chore: atualizar postagens LinkedIn [10:37]",
       "areas": [
         "Projeto"
       ],
       "filesChanged": 1
     },
     {
-      "hash": "27d20ab5b82a1eecebcc4b8f1ff9d7e1fe16f31d",
-      "shortHash": "27d20ab",
-      "date": "2026-11-06T06:45:32Z",
-      "message": "chore: atualizar postagens LinkedIn [06:45]",
+      "hash": "a3bc1964885c7f15360008d5b56aeacdc7f739df",
+      "shortHash": "a3bc196",
+      "date": "2026-11-13T02:55:23Z",
+      "message": "chore: atualizar postagens LinkedIn [02:55]",
       "areas": [
         "Projeto"
       ],
