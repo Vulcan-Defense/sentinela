@@ -319,6 +319,9 @@
         .filter-nav a:hover { color: var(--accent); background: var(--accent-dim); }
         .links-oficiais-note { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem; }
         .links-oficiais-note strong { color: var(--accent); }
+        .community-credit { margin-top: 0.65rem; color: var(--text-muted); font-size: 0.8rem; line-height: 1.5; }
+        .community-credit a { color: var(--accent); }
+        .community-credit a:hover { color: var(--text); }
         .footer {
             margin-top: 3rem;
             text-align: center;
