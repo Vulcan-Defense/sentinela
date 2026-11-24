@@ -51,7 +51,7 @@
 
     function endpoint(repo, kind) {
         if (!USE_PROXY) return kind === 'stats' ? repo.api : repo.commits;
-        return '/api/github/crptochat?repo=' + encodeURIComponent(repo.key) + '&kind=' + kind;
+        return '/api/github/crptochat?repo=' + encodeURIComponent(repo.key) + '&kind=' + kind + '&v=3';
     }
 
     function getJSON(url) {

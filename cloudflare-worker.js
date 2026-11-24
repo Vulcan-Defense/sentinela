@@ -153,6 +153,27 @@ function contentTypeFor(pathname) {
   return null;
 }
 
+/* O JS estático publicado ainda chama a API do GitHub direto, o que o CSP bloqueia.
+   Este carregador mantém a página funcionando até o arquivo estático ser atualizado. */
+const CRIPTOCHAT_LOADER = `(function () {
+    'use strict';
+    var nativeFetch = window.fetch.bind(window);
+    window.fetch = function (input, options) {
+        var url = typeof input === 'string' ? input : (input && input.url) || '';
+        var prefix = 'https://api.github.com/repos/';
+        if (url.indexOf(prefix) === 0) {
+            var parts = url.slice(prefix.length).split('/');
+            var repo = parts[1] === 'crptochat-android' ? 'mobile' : 'desktop';
+            var kind = parts[2] && parts[2].indexOf('commits') === 0 ? 'commits' : 'stats';
+            return nativeFetch('/api/github/crptochat?repo=' + repo + '&kind=' + kind + '&v=3', options);
+        }
+        return nativeFetch(input, options);
+    };
+    var script = document.createElement('script');
+    script.src = '/js/crptochat.js?original=1';
+    document.head.appendChild(script);
+})();`;
+
 function jsonResponse(data, status) {
   return new Response(JSON.stringify(data), {
     status,
@@ -226,6 +247,7 @@ async function fetchGitHubThroughSocket(source) {
   const status = Number(head.split("\r\n")[0].split(" ")[1]);
   let body = raw.slice(separator + 4);
   if (/transfer-encoding:\s*chunked/i.test(head)) body = decodeChunked(body);
+  body = body.replace(/(?:\r\n)?0\r\n\r\n$/, "");
   return new Response(body, { status: Number.isFinite(status) ? status : 502 });
 }
 
@@ -256,7 +278,9 @@ export default {
       if (!source) return jsonResponse({ error: "Parâmetros inválidos." }, 400);
 
       const cache = caches.default;
-      const cacheKey = new Request(source);
+      const cacheUrl = new URL(source);
+      cacheUrl.searchParams.set("__cache", "v3");
+      const cacheKey = new Request(cacheUrl.toString());
       const cached = await cache.match(cacheKey);
       if (cached) {
         const headers = new Headers(cached.headers);
@@ -279,6 +303,16 @@ export default {
       });
       ctx.waitUntil(cache.put(cacheKey, response.clone()));
       return response;
+    }
+
+    if (request.method === "GET" && url.pathname === "/js/crptochat.js" && !url.searchParams.has("original")) {
+      return new Response(CRIPTOCHAT_LOADER, {
+        headers: {
+          "Content-Type": "text/javascript; charset=utf-8",
+          "Cache-Control": "no-store",
+          "X-Content-Type-Options": "nosniff"
+        }
+      });
     }
 
     if (request.method === "GET" && (url.pathname === FEEDBACK_PAGE_PATH || url.pathname === "/testes-mobile/feedback")) {
@@ -366,6 +400,12 @@ export default {
     if (request.method === "GET" && (url.pathname === "/testes-mobile" || url.pathname === "/testes-mobile/")) {
       responseBody = new HTMLRewriter()
         .on("head", { element(element) { element.append(`<link rel="stylesheet" href="${MOBILE_FORM_CONTRAST_STYLE_PATH}">`, { html: true }); } })
+        .transform(originResponse).body;
+    } else if (request.method === "GET" && url.pathname === "/crptochat.html") {
+      responseBody = new HTMLRewriter()
+        .on('script[src="js/crptochat.js"]', {
+          element(element) { element.setAttribute("src", "js/crptochat.js?loader=1"); }
+        })
         .transform(originResponse).body;
     }
 

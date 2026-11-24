@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-24T16:00:11.806Z",
+  "generatedAt": "2026-11-24T16:25:17.128Z",
   "repository": "https://github.com/Vulcan-Defense/vulcan-academy",
   "highlights": [
     {
@@ -76,6 +76,16 @@
     }
   ],
   "commits": [
+    {
+      "hash": "33df1e67f3bcc98bbeb6fd92747b66d2b0e82036",
+      "shortHash": "33df1e6",
+      "date": "2026-11-24T13:00:38-03:00",
+      "message": "Corrige painel do CriptoChat em produção",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 6
+    },
     {
       "hash": "cae342a70406b4bcea7c382226d13f73ffdea6b3",
       "shortHash": "cae342a",
@@ -260,16 +270,6 @@
       "shortHash": "8593f46",
       "date": "2026-11-21T08:00:55Z",
       "message": "chore: atualizar postagens LinkedIn [08:00]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
-    },
-    {
-      "hash": "fcc63c750317f00f85e31004b9a56714458d6ae8",
-      "shortHash": "fcc63c7",
-      "date": "2026-11-21T00:47:08Z",
-      "message": "chore: atualizar postagens LinkedIn [00:47]",
       "areas": [
         "Projeto"
       ],
