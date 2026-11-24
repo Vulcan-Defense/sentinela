@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../../css/fonts.css">
     <link rel="stylesheet" href="../../css/utilities.css">
     <link rel="stylesheet" href="../../css/testes-mobile.css">
+    <script src="../../js/nav.js" defer></script>
 </head>
 <body>
     <a class="skip-link" href="#feedback-form">Ir para o formulário de feedback</a>
@@ -16,8 +17,14 @@
         <div class="nav-inner">
             <a href="../../index.html">Início</a>
             <a href="../">Testes mobile</a>
-            <a href="../../crptochat.html">CriptoChat</a>
+            <button type="button" class="nav-group-toggle" data-nav-menu-toggle aria-expanded="false" aria-controls="nav-tools">Ferramentas open source <span class="nav-caret" aria-hidden="true">⌄</span></button>
+            <a href="../../projetos.html">Projetos</a>
             <a href="./" aria-current="page">Enviar feedback</a>
+        </div>
+    
+        <div class="nav-group-menu" id="nav-tools" role="group" aria-label="Links de ferramentas open source" hidden>
+            <a href="../../ferramentas.html">Ferramentas Open Source <span aria-hidden="true">↗</span></a>
+            <a href="../../crptochat.html">CriptoChat <span aria-hidden="true">↗</span></a>
         </div>
     </nav>
     <div class="grid-bg" aria-hidden="true"></div>
