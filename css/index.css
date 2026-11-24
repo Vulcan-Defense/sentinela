@@ -753,3 +753,43 @@
             .featured-project { grid-template-columns: 1fr; }
             .featured-project-side { justify-items: start; text-align: left; }
         }
+
+        /* Capa do vídeo recomendado (sem player incorporado) */
+        .video-cover {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            background:
+                radial-gradient(circle at 50% 42%, rgba(56, 217, 255, 0.2), transparent 42%),
+                repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 12px),
+                linear-gradient(135deg, #07131f, #0b1b2a 60%, #1a0f26);
+            text-decoration: none;
+        }
+        .video-play {
+            display: grid;
+            place-items: center;
+            width: 58px;
+            height: 58px;
+            padding-left: 4px;
+            border: 1px solid rgba(56, 217, 255, 0.7);
+            border-radius: 50%;
+            background: rgba(56, 217, 255, 0.14);
+            color: #9dfff2;
+            font-size: 1.15rem;
+            box-shadow: 0 0 32px rgba(56, 217, 255, 0.25);
+            transition: transform 180ms ease, background-color 180ms ease;
+        }
+        .video-cover:hover .video-play {
+            transform: scale(1.08);
+            background: rgba(56, 217, 255, 0.25);
+        }
+        .video-cover-label {
+            position: absolute;
+            left: 14px;
+            bottom: 12px;
+            color: #9dfff2;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }

@@ -2,11 +2,11 @@
   {
     "version": "Novembro 2026",
     "date": "2026-11-24",
-    "title": "CriptoChat em destaque nas ferramentas",
-    "summary": "Agora é fácil acompanhar o projeto open source CriptoChat e sua versão para Android a partir do catálogo de ferramentas.",
+    "title": "Página de acompanhamento do CriptoChat",
+    "summary": "A comunidade agora tem uma página própria para acompanhar o projeto open source CriptoChat e sua versão para Android.",
     "items": [
-      "Página inicial ganhou destaque com botão para abrir o acompanhamento do CriptoChat.",
-      "Catálogo de ferramentas reúne os links dos projetos e mostra o andamento dos repositórios.",
+      "Página inicial ganhou destaque com botão para abrir a página do CriptoChat.",
+      "Nova página reúne os links dos projetos e mostra o andamento dos repositórios.",
       "Painel exibe estrelas, forks, issues e os commits mais recentes dos dois projetos.",
       "Cliente Android ganhou destaque com acesso direto ao código, às issues e ao guia de compilação.",
       "Visual cyberpunk com terminal ilustrativo e leitura confortável no celular."
