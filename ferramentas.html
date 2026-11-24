@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="css/utilities.css">
     <link rel="stylesheet" href="css/ferramentas.css">
     <link rel="stylesheet" href="css/redesign.css">
+    <link rel="stylesheet" href="css/crptochat.css">
     <script src="js/ux.js"></script>
 </head>
 <body class="page-ferramentas">
@@ -22,7 +23,7 @@
             <a href="https://academy.vulcandefense.com.br" target="_blank" rel="noopener noreferrer">Vulcan Academy</a>
             <a href="certificacoes-gratuitas.html">Treinamentos, Certificações Grátis</a>
             <a href="ferramentas.html" aria-current="page">Ferramentas Open Source</a>
-            <a href="crptochat.html">CriptoChat</a>
+            <a href="#crptochat">CriptoChat</a>
             <a href="mercado-trabalho.html">Mercado De Trabalho</a>
             <a href="perfis-profissionais.html">Perfis Profissionais</a>
         </div>
@@ -41,6 +42,7 @@
                 <span><strong id="total-tools">0</strong> ferramentas</span>
                 <span><strong id="total-categories">0</strong> categorias</span>
             </div>
+            <p><a href="#crptochat" class="cc-jump">Ver projeto em destaque: CriptoChat <span aria-hidden="true">↓</span></a></p>
         </header>
 
         <section class="catalog-panel" id="catalogo" aria-labelledby="catalog-title">
@@ -66,6 +68,224 @@
             <p class="catalog-empty" id="catalog-empty" hidden>Nenhuma ferramenta corresponde à busca. Tente outro termo ou remova o filtro.</p>
         </section>
 
+        <section class="cc-project" id="crptochat" aria-labelledby="cc-project-title">
+            <div class="cc-scanlines" aria-hidden="true"></div>
+
+            <header class="cc-hero">
+                <div class="cc-hero-copy">
+                    <p class="feature-label">// projeto em destaque · open source</p>
+                    <p class="cc-kicker"><span class="cc-live-dot" aria-hidden="true"></span> // código aberto · sinal ao vivo</p>
+                    <h2 class="cc-title" id="cc-project-title"><span class="cc-glitch" data-text="CRPTOCHAT">CRPTOCHAT</span></h2>
+                    <p class="cc-lead">Um chat de terminal com <strong>criptografia ponta a ponta</strong>, servidor cego e nenhum histórico por padrão. Agora também cabe no seu bolso.</p>
+                    <p class="cc-hero-text">Acompanhe aqui o desenvolvimento do projeto, veja a atividade dos repositórios e encontre o caminho entre a versão para terminal e o cliente Android.</p>
+                    <div class="cc-hero-actions">
+                        <a class="cc-btn cc-btn-primary" href="https://github.com/hacking-table/crptochat-oss" target="_blank" rel="noopener noreferrer">Abrir o código <span aria-hidden="true">↗</span></a>
+                        <a class="cc-btn cc-btn-secondary" href="#mobile">Ver o cliente mobile <span aria-hidden="true">↓</span></a>
+                    </div>
+                    <p class="cc-hero-note">Código aberto sob licença MIT · Python no servidor e no cliente de terminal · Android 8.0+</p>
+                </div>
+
+                <div class="cc-terminal" role="img" aria-label="Prévia ilustrativa do terminal do CriptoChat: sessão cifrada, chave verificada e mensagens entre dois usuários">
+                    <div class="cc-terminal-bar">
+                        <span class="cc-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                        <span>~/crptochat — sessão segura</span>
+                        <span class="cc-terminal-status">E2EE ●</span>
+                    </div>
+                    <div class="cc-terminal-body" aria-hidden="true">
+                        <p><span class="cc-prompt">$</span> crptochat chat.exemplo.org -n neo</p>
+                        <p class="cc-dim">conectando • TLS verificado por fingerprint</p>
+                        <p><span class="cc-ok">[ok]</span> chave Ed25519 carregada</p>
+                        <p><span class="cc-ok">[ok]</span> canal #lobby • criptografia ativa</p>
+                        <p class="cc-space"></p>
+                        <p><span class="cc-nick cc-nick-cyan">neo</span> o servidor não lê esta mensagem</p>
+                        <p><span class="cc-nick cc-nick-pink">trinity</span> confirmado, bloco cifrado ✓</p>
+                        <p><span class="cc-prompt">›</span><span class="cc-caret"></span></p>
+                    </div>
+                    <div class="cc-terminal-foot">fingerprint conferida · sem histórico por padrão</div>
+                </div>
+            </header>
+
+            <section class="cc-section" aria-labelledby="cc-pulso-title">
+                <div class="cc-section-head">
+                    <div>
+                        <p class="feature-label">// telemetria dos repositórios</p>
+                        <h3 id="cc-pulso-title">Pulso do projeto</h3>
+                    </div>
+                    <p class="cc-update" id="cc-update" role="status" aria-live="polite">Consultando o GitHub…</p>
+                </div>
+
+                <div class="cc-metrics">
+                    <article class="cc-metric-card cc-metric-desktop" data-repo="desktop" aria-labelledby="cc-metric-desktop-title">
+                        <div class="cc-metric-head">
+                            <span class="cc-metric-index">01 / principal</span>
+                            <h4 id="cc-metric-desktop-title">crptochat-oss</h4>
+                            <p>hacking-table · terminal e servidor</p>
+                        </div>
+                        <dl class="cc-metric-grid">
+                            <div><dt>Estrelas</dt><dd data-metric="stargazers_count">—</dd></div>
+                            <div><dt>Forks</dt><dd data-metric="forks_count">—</dd></div>
+                            <div><dt>Issues abertas</dt><dd data-metric="open_issues_count">—</dd></div>
+                            <div><dt>Último envio</dt><dd data-metric="pushed_at">—</dd></div>
+                        </dl>
+                        <a class="cc-metric-link" href="https://github.com/hacking-table/crptochat-oss" target="_blank" rel="noopener noreferrer">Ir para o repositório <span aria-hidden="true">↗</span></a>
+                    </article>
+
+                    <article class="cc-metric-card cc-metric-mobile" data-repo="mobile" aria-labelledby="cc-metric-mobile-title">
+                        <div class="cc-metric-head">
+                            <span class="cc-metric-index">02 / mobile</span>
+                            <h4 id="cc-metric-mobile-title">crptochat-android</h4>
+                            <p>Vulcan-Defense · cliente Android</p>
+                        </div>
+                        <dl class="cc-metric-grid">
+                            <div><dt>Estrelas</dt><dd data-metric="stargazers_count">—</dd></div>
+                            <div><dt>Forks</dt><dd data-metric="forks_count">—</dd></div>
+                            <div><dt>Issues abertas</dt><dd data-metric="open_issues_count">—</dd></div>
+                            <div><dt>Último envio</dt><dd data-metric="pushed_at">—</dd></div>
+                        </dl>
+                        <a class="cc-metric-link" href="https://github.com/Vulcan-Defense/crptochat-android" target="_blank" rel="noopener noreferrer">Ir para o repositório <span aria-hidden="true">↗</span></a>
+                    </article>
+                </div>
+            </section>
+
+            <section class="cc-section" aria-labelledby="cc-commits-title">
+                <div class="cc-section-head">
+                    <div>
+                        <p class="feature-label">// atividade recente</p>
+                        <h3 id="cc-commits-title">Últimos commits</h3>
+                    </div>
+                    <a class="cc-head-link" href="https://github.com/hacking-table/crptochat-oss/commits/main" target="_blank" rel="noopener noreferrer">Histórico completo <span aria-hidden="true">↗</span></a>
+                </div>
+                <div class="cc-activity" id="cc-activity">
+                    <p class="cc-activity-placeholder">Carregando os commits mais recentes…</p>
+                </div>
+            </section>
+
+            <section class="cc-section" aria-labelledby="cc-repos-title">
+                <div class="cc-section-head">
+                    <div>
+                        <p class="feature-label">// dois projetos, uma conversa</p>
+                        <h3 id="cc-repos-title">Onde acompanhar</h3>
+                    </div>
+                </div>
+
+                <div class="cc-repos">
+                    <article class="cc-repo-card cc-repo-desktop">
+                        <div class="cc-repo-top">
+                            <span class="cc-repo-number">01</span>
+                            <span class="cc-repo-type">núcleo · open source</span>
+                        </div>
+                        <h4>hacking-table/crptochat-oss</h4>
+                        <p class="cc-repo-desc">Chat de terminal cifrado ponta a ponta. O servidor apenas encaminha blocos cifrados: não lê as conversas e, por padrão, não guarda histórico.</p>
+                        <ul class="cc-feature-list">
+                            <li>Canais abertos e privados com senha que nunca vai ao servidor</li>
+                            <li>Mensagens de voz e arquivos cifrados, com opção P2P</li>
+                            <li>Nicks presos a chaves Ed25519 e verificação de identidade</li>
+                            <li>Interface de terminal cyberpunk, com temas e atalhos</li>
+                        </ul>
+                        <div class="cc-repo-links">
+                            <a href="https://github.com/hacking-table/crptochat-oss" target="_blank" rel="noopener noreferrer">Código <span aria-hidden="true">↗</span></a>
+                            <a href="https://github.com/hacking-table/crptochat-oss/issues" target="_blank" rel="noopener noreferrer">Issues <span aria-hidden="true">↗</span></a>
+                            <a href="https://github.com/hacking-table/crptochat-oss/releases" target="_blank" rel="noopener noreferrer">Releases <span aria-hidden="true">↗</span></a>
+                            <a href="https://crptochat.acpt.app.br" target="_blank" rel="noopener noreferrer">Site do projeto <span aria-hidden="true">↗</span></a>
+                        </div>
+                    </article>
+
+                    <article class="cc-repo-card cc-repo-mobile" id="mobile">
+                        <div class="cc-repo-top">
+                            <span class="cc-repo-number">02</span>
+                            <span class="cc-repo-type">port mobile · open source</span>
+                        </div>
+                        <h4>Vulcan-Defense/crptochat-android</h4>
+                        <p class="cc-repo-desc">O cliente Android do CriptoChat. Uma camada enxuta que abre o cliente web em um WebView restrito e conversa com o mesmo relay por WebSocket.</p>
+                        <ul class="cc-feature-list">
+                            <li>Conexão wss já configurada no build</li>
+                            <li>Endpoint fixado para evitar redirecionamentos silenciosos</li>
+                            <li>Allowlist de origem e bloqueio de conteúdo inseguro</li>
+                            <li>Sem permissões de câmera, microfone, arquivos ou localização</li>
+                        </ul>
+                        <div class="cc-repo-links">
+                            <a href="https://github.com/Vulcan-Defense/crptochat-android" target="_blank" rel="noopener noreferrer">Código <span aria-hidden="true">↗</span></a>
+                            <a href="https://github.com/Vulcan-Defense/crptochat-android/issues" target="_blank" rel="noopener noreferrer">Issues <span aria-hidden="true">↗</span></a>
+                            <a href="https://github.com/Vulcan-Defense/crptochat-android#build" target="_blank" rel="noopener noreferrer">Como compilar <span aria-hidden="true">↗</span></a>
+                            <a href="https://github.com/Vulcan-Defense/crptochat-android#readme" target="_blank" rel="noopener noreferrer">README <span aria-hidden="true">↗</span></a>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <section class="cc-section cc-flow-section" aria-labelledby="cc-flow-title">
+                <div class="cc-section-head">
+                    <div>
+                        <p class="feature-label">// arquitetura em uma linha</p>
+                        <h3 id="cc-flow-title">Como as peças se conectam</h3>
+                    </div>
+                </div>
+                <div class="cc-flow">
+                    <article class="cc-flow-node">
+                        <span class="cc-flow-step">01 · cliente</span>
+                        <h4>Terminal</h4>
+                        <p>Chaves, cifra e interface ficam no computador de quem conversa.</p>
+                    </article>
+                    <span class="cc-flow-arrow" aria-hidden="true">→</span>
+                    <article class="cc-flow-node">
+                        <span class="cc-flow-step">02 · relay</span>
+                        <h4>Servidor cego</h4>
+                        <p>Encaminha apenas blocos cifrados. Não lê texto nem áudio.</p>
+                    </article>
+                    <span class="cc-flow-arrow" aria-hidden="true">→</span>
+                    <article class="cc-flow-node">
+                        <span class="cc-flow-step">03 · mobile</span>
+                        <h4>Android</h4>
+                        <p>Mesmo protocolo WebSocket, com origem e endpoint fixados.</p>
+                    </article>
+                </div>
+                <p class="cc-flow-note">O port Android não reimplementa a criptografia: ele usa o cliente web publicado pelo projeto principal.</p>
+            </section>
+
+            <section class="cc-section" aria-labelledby="cc-follow-title">
+                <div class="cc-section-head">
+                    <div>
+                        <p class="feature-label">// fique por dentro</p>
+                        <h3 id="cc-follow-title">Como acompanhar o desenvolvimento</h3>
+                    </div>
+                </div>
+                <ol class="cc-follow-grid">
+                    <li>
+                        <span class="cc-follow-num">01</span>
+                        <h4>Ative o acompanhamento</h4>
+                        <p>No GitHub, use <strong>Watch</strong> para receber novidades e <strong>Star</strong> para guardar o projeto.</p>
+                        <a href="https://github.com/hacking-table/crptochat-oss" target="_blank" rel="noopener noreferrer">Abrir no GitHub <span aria-hidden="true">↗</span></a>
+                    </li>
+                    <li>
+                        <span class="cc-follow-num">02</span>
+                        <h4>Acompanhe as entregas</h4>
+                        <p>As releases trazem binários assinados e notas de versão. Confira sempre a assinatura e o SHA-256.</p>
+                        <a href="https://github.com/hacking-table/crptochat-client/releases" target="_blank" rel="noopener noreferrer">Ver releases <span aria-hidden="true">↗</span></a>
+                    </li>
+                    <li>
+                        <span class="cc-follow-num">03</span>
+                        <h4>Participe das issues</h4>
+                        <p>Relatos de uso, ideias e revisões ajudam a melhorar o cliente de terminal e o app Android.</p>
+                        <a href="https://github.com/Vulcan-Defense/crptochat-android/issues" target="_blank" rel="noopener noreferrer">Abrir issues <span aria-hidden="true">↗</span></a>
+                    </li>
+                    <li>
+                        <span class="cc-follow-num">04</span>
+                        <h4>Leia a documentação</h4>
+                        <p>Os READMEs explicam instalação, servidor, moderação, build e os limites de segurança.</p>
+                        <a href="https://github.com/hacking-table/crptochat-oss#readme" target="_blank" rel="noopener noreferrer">Ler o README <span aria-hidden="true">↗</span></a>
+                    </li>
+                </ol>
+            </section>
+
+            <aside class="cc-notice">
+                <span class="cc-notice-mark" aria-hidden="true">!</span>
+                <div>
+                    <h2>Antes de conectar</h2>
+                    <p>Confira a fingerprint do servidor por outro canal, proteja a chave do seu nick com uma senha forte e use a ferramenta apenas em ambientes autorizados. Mensagens temporárias e histórico cifrado não impedem cópias feitas por quem participa da conversa.</p>
+                </div>
+            </aside>
+        </section>
+
         <footer class="footer"><p><a href="index.html" class="link-accent">Voltar ao início</a></p></footer>
     </main>
 
@@ -76,5 +296,6 @@
 
     <script src="js/ferramentas-catalog.js"></script>
     <script src="js/ferramentas.js" defer></script>
+    <script src="js/crptochat.js" defer></script>
 </body>
 </html>
