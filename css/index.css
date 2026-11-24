@@ -670,3 +670,86 @@
             background: #00e676;
             transform: translateY(-1px);
         }
+
+        /* Projeto em destaque na página inicial */
+        .featured-project {
+            width: 100%;
+            max-width: 960px;
+            margin-top: 1.25rem;
+            padding: clamp(1.25rem, 3vw, 2rem);
+            display: grid;
+            grid-template-columns: minmax(0, 1.35fr) minmax(220px, 0.65fr);
+            align-items: center;
+            gap: clamp(1rem, 3vw, 2.25rem);
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 63, 208, 0.32);
+            border-radius: 16px;
+            background: linear-gradient(115deg, rgba(8, 22, 31, 0.97), rgba(30, 9, 31, 0.92) 70%, rgba(56, 217, 255, 0.08));
+            box-shadow: 0 20px 55px rgba(0, 0, 0, 0.25);
+        }
+        .featured-project::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 120px;
+            height: 2px;
+            background: linear-gradient(90deg, #ff3fd0, transparent);
+        }
+        .featured-project-copy { position: relative; z-index: 1; }
+        .featured-project-copy .feature-label { color: #ff77df; }
+        .featured-project-copy h2 {
+            margin: 0.25rem 0 0.7rem;
+            font-size: clamp(1.3rem, 2.7vw, 1.95rem);
+            line-height: 1.15;
+            letter-spacing: -0.035em;
+        }
+        .featured-project-copy > p:not(.feature-label) {
+            margin: 0 0 1.15rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.65;
+        }
+        .featured-project-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.75rem 1.2rem;
+            border: 1px solid #2ff3e0;
+            border-radius: 4px;
+            background: rgba(47, 243, 224, 0.12);
+            color: #9dfff2;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: background-color 180ms ease, transform 180ms ease;
+        }
+        .featured-project-btn:hover {
+            background: rgba(47, 243, 224, 0.22);
+            transform: translateY(-2px);
+        }
+        .featured-project-side {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            gap: 0.4rem;
+            justify-items: end;
+            text-align: right;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .featured-tag { color: #2ff3e0; font-size: 0.68rem; letter-spacing: 0.12em; }
+        .featured-word {
+            font-size: clamp(1.4rem, 3.2vw, 2.15rem);
+            font-weight: 700;
+            letter-spacing: -0.06em;
+            line-height: 1;
+            color: #eafcff;
+        }
+        .featured-word b { color: #ff3fd0; font-weight: 700; }
+        .featured-meta { color: var(--text-muted); font-size: 0.66rem; }
+        @media (max-width: 720px) {
+            .featured-project { grid-template-columns: 1fr; }
+            .featured-project-side { justify-items: start; text-align: left; }
+        }

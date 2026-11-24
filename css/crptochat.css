@@ -5,7 +5,7 @@
    neon ciano/magenta, molduras recortadas e movimento discreto.
    ========================================================================== */
 
-body.page-crptochat {
+.cc-project {
     --cc-cyan: #2ff3e0;
     --cc-pink: #ff3fd0;
     --cc-lime: #c6ff4f;
@@ -13,6 +13,11 @@ body.page-crptochat {
     --cc-muted: #8fa9b8;
     --cc-panel: rgba(7, 15, 24, 0.78);
     --cc-line: rgba(47, 243, 224, 0.22);
+    position: relative;
+    overflow: hidden;
+    margin-top: clamp(3rem, 6vw, 4.5rem);
+    padding: clamp(2rem, 5vw, 3.5rem) clamp(1.1rem, 3vw, 2.25rem);
+    border: 1px solid rgba(47, 243, 224, 0.18);
     background-color: #04060c;
     background-image:
         radial-gradient(48rem 34rem at 88% -8%, rgba(255, 63, 208, 0.13), transparent 68%),
@@ -20,25 +25,36 @@ body.page-crptochat {
         radial-gradient(40rem 30rem at 50% 108%, rgba(124, 107, 255, 0.09), transparent 70%);
 }
 
-body.page-crptochat .grid-bg::before {
-    background-image:
-        linear-gradient(to right, rgba(47, 243, 224, 0.055) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(47, 243, 224, 0.055) 1px, transparent 1px);
-    background-size: 62px 62px;
+.cc-project > *:not(.cc-scanlines) {
+    position: relative;
+    z-index: 1;
 }
 
-body.page-crptochat .grid-bg::after {
-    background: conic-gradient(from 210deg at 50% -10%,
-        rgba(47, 243, 224, 0.13),
-        transparent 32%,
-        rgba(255, 63, 208, 0.13) 64%,
-        transparent 88%);
+.cc-jump {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 1.35rem;
+    padding: 0.55rem 1rem;
+    border: 1px solid rgba(47, 243, 224, 0.35);
+    border-radius: 999px;
+    color: var(--cc-cyan, #2ff3e0);
+    font-family: var(--rd-font-mono);
+    font-size: 0.74rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color 180ms ease, border-color 180ms ease;
+}
+
+.cc-jump:hover {
+    border-color: var(--cc-cyan, #2ff3e0);
+    background: rgba(47, 243, 224, 0.1);
 }
 
 .cc-scanlines {
-    position: fixed;
+    position: absolute;
     inset: 0;
-    z-index: 3;
+    z-index: 0;
     pointer-events: none;
     background: repeating-linear-gradient(
         to bottom,
@@ -47,12 +63,6 @@ body.page-crptochat .grid-bg::after {
     );
     opacity: 0.35;
     mix-blend-mode: multiply;
-}
-
-body.page-crptochat .nav a[aria-current="page"] {
-    color: #03161a;
-    background: linear-gradient(120deg, #9dfff2, var(--cc-cyan) 65%, #15c9bb);
-    box-shadow: 0 10px 26px -12px rgba(47, 243, 224, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 /* --------------------------------------------------------------------------
@@ -373,7 +383,7 @@ body.page-crptochat .nav a[aria-current="page"] {
     margin-bottom: 1.6rem;
 }
 
-body.page-crptochat .feature-label {
+.cc-project .feature-label {
     margin: 0 0 0.45rem;
     color: var(--cc-cyan);
     font-family: var(--rd-font-mono);
@@ -383,7 +393,8 @@ body.page-crptochat .feature-label {
     text-transform: uppercase;
 }
 
-.cc-section-head h2 {
+.cc-section-head h2,
+.cc-section-head h3 {
     margin: 0;
     font-size: clamp(1.65rem, 3.4vw, 2.35rem);
     font-weight: 700;
@@ -450,7 +461,8 @@ body.page-crptochat .feature-label {
 
 .cc-metric-mobile .cc-metric-index { color: var(--cc-pink); }
 
-.cc-metric-head h3 {
+.cc-metric-head h3,
+.cc-metric-head h4 {
     margin: 0.5rem 0 0.15rem;
     font-family: var(--rd-font-mono);
     font-size: clamp(1rem, 2vw, 1.2rem);
@@ -643,7 +655,8 @@ body.page-crptochat .feature-label {
     text-align: right;
 }
 
-.cc-repo-card h3 {
+.cc-repo-card h3,
+.cc-repo-card h4 {
     margin: 0 0 0.65rem;
     font-family: var(--rd-font-mono);
     font-size: clamp(1rem, 2vw, 1.18rem);
@@ -748,7 +761,8 @@ body.page-crptochat .feature-label {
     text-transform: uppercase;
 }
 
-.cc-flow-node h3 {
+.cc-flow-node h3,
+.cc-flow-node h4 {
     margin: 0.55rem 0 0.4rem;
     font-size: 1rem;
 }
@@ -803,7 +817,8 @@ body.page-crptochat .feature-label {
     letter-spacing: 0.1em;
 }
 
-.cc-follow-grid h3 {
+.cc-follow-grid h3,
+.cc-follow-grid h4 {
     margin: 0.4rem 0 0.5rem;
     font-size: 1rem;
 }
