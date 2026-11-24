@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="css/redesign.css">
     <script src="vendor/chart.umd.min.js" integrity="sha384-vsrfeLOOY6KuIYKDlmVH5UiBmgIdB1oEf7p01YgWHuqmOHfZr374+odEv96n9tNC" defer></script>
     <script src="js/ux.js"></script>
+    <script src="js/nav.js" defer></script>
 </head>
 <body class="page-mercado">
     <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
@@ -22,10 +23,15 @@
             <a href="certificacoes.html">Certificações</a>
             <a href="https://academy.vulcandefense.com.br" target="_blank" rel="noopener noreferrer">Vulcan Academy</a>
             <a href="certificacoes-gratuitas.html">Treinamentos grátis</a>
-            <a href="ferramentas.html">Ferramentas</a>
-            <a href="crptochat.html">CriptoChat</a>
+            <button type="button" class="nav-group-toggle" data-nav-menu-toggle aria-expanded="false" aria-controls="nav-tools">Ferramentas open source <span class="nav-caret" aria-hidden="true">⌄</span></button>
+            <a href="projetos.html">Projetos</a>
             <a href="mercado-trabalho.html" aria-current="page">Mercado de trabalho</a>
             <a href="perfis-profissionais.html">Perfis profissionais</a>
+        </div>
+    
+        <div class="nav-group-menu" id="nav-tools" role="group" aria-label="Links de ferramentas open source" hidden>
+            <a href="ferramentas.html">Ferramentas Open Source <span aria-hidden="true">↗</span></a>
+            <a href="crptochat.html">CriptoChat <span aria-hidden="true">↗</span></a>
         </div>
     </nav>
     <div class="grid-bg" aria-hidden="true"></div>
