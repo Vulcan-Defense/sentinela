@@ -571,6 +571,88 @@ body.page-crptochat .feature-label {
 }
 
 /* --------------------------------------------------------------------------
+   Contribuidores e participação
+   -------------------------------------------------------------------------- */
+
+.cc-contributors {
+    border-top: 1px solid rgba(47, 243, 224, 0.18);
+}
+
+.cc-contributor-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.cc-contributor {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr);
+    align-items: center;
+    gap: 0.85rem;
+    padding: 1rem;
+    border: 1px solid rgba(47, 243, 224, 0.16);
+    background: linear-gradient(140deg, rgba(47, 243, 224, 0.06), rgba(255, 63, 208, 0.04));
+    color: var(--cc-ink);
+    text-decoration: none;
+    transition: border-color 180ms ease, transform 180ms ease, background-color 180ms ease;
+}
+
+.cc-contributor:hover {
+    border-color: rgba(47, 243, 224, 0.5);
+    background: rgba(47, 243, 224, 0.09);
+    transform: translateY(-2px);
+}
+
+.cc-contributor-avatar {
+    display: block;
+    width: 48px;
+    height: 48px;
+    border: 1px solid rgba(47, 243, 224, 0.45);
+    border-radius: 50%;
+    object-fit: cover;
+    background: rgba(47, 243, 224, 0.08);
+}
+
+.cc-contributor-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.cc-contributor-meta strong {
+    color: var(--cc-cyan);
+    font-family: var(--rd-font-mono);
+    font-size: 0.78rem;
+    overflow-wrap: anywhere;
+}
+
+.cc-contributor-meta small {
+    color: var(--cc-muted);
+    font-family: var(--rd-font-mono);
+    font-size: 0.66rem;
+}
+
+.cc-contributor-bar {
+    grid-column: 1 / -1;
+    display: block;
+    height: 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.09);
+    overflow: hidden;
+}
+
+.cc-contributor-fill {
+    display: block;
+    height: 100%;
+    min-width: 4px;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--cc-cyan), var(--cc-pink));
+    box-shadow: 0 0 12px rgba(47, 243, 224, 0.35);
+}
+
+/* --------------------------------------------------------------------------
    Cartões dos repositórios
    -------------------------------------------------------------------------- */
 
@@ -913,7 +995,8 @@ body.page-crptochat .feature-label {
 @media (max-width: 720px) {
     .cc-metrics,
     .cc-repos,
-    .cc-follow-grid {
+    .cc-follow-grid,
+    .cc-contributor-grid {
         grid-template-columns: 1fr;
     }
 

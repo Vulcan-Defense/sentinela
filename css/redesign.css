@@ -429,6 +429,37 @@ body.page-home main > .tagline {
     line-height: 1.45;
 }
 
+.hero-shortcuts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem 1.35rem;
+    margin-top: 1.35rem;
+}
+
+.hero-shortcuts a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding-bottom: 0.2rem;
+    border-bottom: 1px solid var(--rd-line-strong);
+    color: var(--rd-ink-soft);
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 180ms ease, border-color 180ms ease;
+}
+
+.hero-shortcuts a span {
+    color: var(--rd-lime);
+    font-size: 0.8em;
+}
+
+.hero-shortcuts a:hover,
+.hero-shortcuts a:focus-visible {
+    color: var(--rd-lime);
+    border-color: var(--rd-lime);
+}
+
 /* Comunidades dentro do hero, em coluna */
 .hero .communities {
     grid-column: 2;

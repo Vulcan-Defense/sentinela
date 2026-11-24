@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>Radar de projetos | Sentinela</title>
+    <meta name="description" content="Radar de projetos open source da comunidade Sentinela: estrelas, forks, colaboradores e atividade dos repositórios.">
+    <meta name="theme-color" content="#06070c">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="stylesheet" href="css/fonts.css">
+    <link rel="stylesheet" href="css/utilities.css">
+    <link rel="stylesheet" href="css/projetos.css">
+    <link rel="stylesheet" href="css/redesign.css">
+    <script src="js/ux.js"></script>
+    <script src="js/nav.js" defer></script>
+</head>
+<body class="page-projetos">
+    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
+    <nav class="nav" aria-label="Navegação principal do site">
+        <div class="nav-inner">
+            <a href="index.html">Início</a>
+            <a href="index.html#guardiao">Guardião Cibernético</a>
+            <a href="certificacoes.html">Guia de Certificações</a>
+            <a href="https://academy.vulcandefense.com.br" target="_blank" rel="noopener noreferrer">Vulcan Academy</a>
+            <a href="certificacoes-gratuitas.html">Treinamentos, Certificações Grátis</a>
+            <button type="button" class="nav-group-toggle" data-nav-menu-toggle aria-expanded="false" aria-controls="nav-tools">Ferramentas open source <span class="nav-caret" aria-hidden="true">⌄</span></button>
+            <a href="projetos.html" aria-current="page">Projetos</a>
+            <a href="mercado-trabalho.html">Mercado De Trabalho</a>
+            <a href="perfis-profissionais.html">Perfis Profissionais</a>
+            <a href="testes-mobile/">Testes mobile</a>
+        </div>
+
+        <div class="nav-group-menu" id="nav-tools" role="group" aria-label="Links de ferramentas open source" hidden>
+            <a href="ferramentas.html">Ferramentas Open Source <span aria-hidden="true">↗</span></a>
+            <a href="crptochat.html">CriptoChat <span aria-hidden="true">↗</span></a>
+        </div>
+    </nav>
+    <div class="grid-bg" aria-hidden="true"></div>
+
+    <main id="conteudo" tabindex="-1">
+        <header class="projects-hero">
+            <a href="index.html" class="logo">SENTINELA</a>
+            <p class="tagline">// radar de projetos open source</p>
+
+            <div class="projects-hero-grid">
+                <div class="projects-hero-copy">
+                    <p class="projects-kicker"><span aria-hidden="true"></span> painel comunitário · dados públicos</p>
+                    <h1>O que a comunidade <strong>está construindo.</strong></h1>
+                    <p>Repositórios públicos da Vulcan Defense e do hacking-table em um único painel. Acompanhe estrelas, forks, colaboradores e a atividade mais recente de cada projeto.</p>
+                    <div class="projects-actions">
+                        <a href="#projetos" class="projects-primary-btn">Explorar projetos <span aria-hidden="true">↓</span></a>
+                        <button type="button" class="projects-refresh-btn" id="projects-refresh">Atualizar do GitHub</button>
+                    </div>
+                    <p class="projects-update" id="projects-update" aria-live="polite">Carregando dados…</p>
+                </div>
+
+                <div class="projects-counters" aria-label="Totais dos projetos monitorados">
+                    <div class="projects-counter">
+                        <strong id="total-projects">—</strong>
+                        <span>projetos</span>
+                    </div>
+                    <div class="projects-counter">
+                        <strong id="total-stars">—</strong>
+                        <span>estrelas</span>
+                    </div>
+                    <div class="projects-counter">
+                        <strong id="total-forks">—</strong>
+                        <span>forks</span>
+                    </div>
+                    <div class="projects-counter">
+                        <strong id="total-collaborators">—</strong>
+                        <span>colaboradores</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <section class="leaderboard" id="projetos" aria-labelledby="projects-title">
+            <div class="leaderboard-head">
+                <div>
+                    <p class="eyebrow">Leaderboard</p>
+                    <h2 id="projects-title">Projetos em movimento</h2>
+                    <p class="leaderboard-hint">A ordenação padrão mistura estrelas, forks e colaboradores. Ajuste os filtros para encontrar o que importa para você.</p>
+                </div>
+                <div class="leaderboard-tools">
+                    <label class="projects-search">
+                        <span class="visually-hidden">Buscar projetos</span>
+                        <input type="search" id="projects-search" placeholder="Buscar projeto, tag ou linguagem" autocomplete="off">
+                    </label>
+                    <label class="projects-sort">
+                        <span class="visually-hidden">Ordenar projetos</span>
+                        <select id="projects-sort">
+                            <option value="score">Relevância</option>
+                            <option value="stars">Estrelas</option>
+                            <option value="forks">Forks</option>
+                            <option value="collaborators">Colaboradores</option>
+                            <option value="updated">Atividade recente</option>
+                            <option value="name">Nome (A–Z)</option>
+                        </select>
+                    </label>
+                </div>
+            </div>
+
+            <div class="projects-filters" role="group" aria-label="Filtrar projetos por origem">
+                <button type="button" class="projects-filter" data-filter="all" aria-pressed="true">Todos</button>
+                <button type="button" class="projects-filter" data-filter="featured" aria-pressed="false">Em destaque</button>
+                <button type="button" class="projects-filter" data-filter="Vulcan-Defense" aria-pressed="false">Vulcan Defense</button>
+                <button type="button" class="projects-filter" data-filter="hacking-table" aria-pressed="false">hacking-table</button>
+            </div>
+
+            <p class="projects-result" id="projects-result" aria-live="polite"></p>
+            <div class="project-grid" id="project-grid">
+                <p class="projects-loading">Carregando projetos…</p>
+            </div>
+            <p class="projects-empty" id="projects-empty" hidden>Nenhum projeto corresponde à busca. Tente outro termo ou remova o filtro.</p>
+        </section>
+
+        <section class="projects-method" aria-labelledby="method-title">
+            <div>
+                <p class="eyebrow">Metodologia</p>
+                <h2 id="method-title">Como ler os números</h2>
+                <p>Os valores vêm da API pública do GitHub e representam o estado dos repositórios no momento da atualização. Eles mostram tração e colaboração — não qualidade ou segurança do código.</p>
+            </div>
+            <dl class="method-grid">
+                <div>
+                    <dt>★ Estrelas</dt>
+                    <dd>Interesse e visibilidade do repositório na comunidade.</dd>
+                </div>
+                <div>
+                    <dt>⑂ Forks</dt>
+                    <dd>Cópias usadas para estudar, adaptar ou contribuir.</dd>
+                </div>
+                <div>
+                    <dt>◉ Colaboradores</dt>
+                    <dd>Pessoas com commits contabilizadas pelo GitHub.</dd>
+                </div>
+                <div>
+                    <dt>↻ Atividade</dt>
+                    <dd>Data do último push registrado no repositório.</dd>
+                </div>
+            </dl>
+            <p class="method-note">Dados: <a href="data/projetos.json">data/projetos.json</a> · fonte: <a href="https://docs.github.com/rest" target="_blank" rel="noopener noreferrer">GitHub REST API</a>. Nenhum projeto deste painel é afiliado ao PortWatch VI.</p>
+        </section>
+
+        <footer class="footer">
+            <p>Projetos com responsabilidade: use ferramentas de segurança apenas em ambientes autorizados.</p>
+            <p><a href="index.html" class="link-accent">Voltar ao início</a></p>
+        </footer>
+    </main>
+
+    <div id="cookie-consent" class="cookie-consent">
+        <p>Utilizamos cookies para melhorar sua experiência. Ao continuar, você concorda com o uso de cookies. <a href="index.html#cookies">Saiba mais</a></p>
+        <button type="button" class="btn-aceitar" id="btn-aceitar-cookies">Aceitar</button>
+    </div>
+
+    <script src="js/projetos.js" defer></script>
+</body>
+</html>
