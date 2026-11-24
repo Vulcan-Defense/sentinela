@@ -26,7 +26,7 @@ const CSP = [
   "style-src 'self'",
   "img-src 'self' https://www.google.com https://t0.gstatic.com https://t1.gstatic.com https://t2.gstatic.com https://t3.gstatic.com",
   "font-src 'self'",
-  "connect-src 'self' https://formspree.io https://api.web3forms.com",
+  "connect-src 'self' https://formspree.io https://api.web3forms.com https://api.github.com",
   "frame-src 'none'",
   "media-src 'none'",
   "manifest-src 'self'",
