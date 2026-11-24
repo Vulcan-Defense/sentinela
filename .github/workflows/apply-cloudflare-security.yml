@@ -2,6 +2,14 @@ name: Aplicar headers Cloudflare
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - scripts/apply-cloudflare-security.py
+      - cloudflare-worker.js
+      - _headers
+      - js/crptochat.js
 
 jobs:
   apply:

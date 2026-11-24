@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-24T15:43:35.825Z",
+  "generatedAt": "2026-11-24T16:00:11.806Z",
   "repository": "https://github.com/Vulcan-Defense/vulcan-academy",
   "highlights": [
     {
@@ -14,7 +14,8 @@
         "Cliente Android ganhou destaque com acesso direto ao código, às issues e ao guia de compilação.",
         "Visual cyberpunk com terminal ilustrativo e leitura confortável no celular.",
         "Vídeos recomendados e videoaulas agora abrem no YouTube com um clique, sem depender de player incorporado.",
-        "Projetos open source agora têm regras de colaboração no GitHub, com revisão de pull requests e proteção de branches e tags."
+        "Projetos open source agora têm regras de colaboração no GitHub, com revisão de pull requests e proteção de branches e tags.",
+        "Painel de atividade do CriptoChat agora carrega com mais estabilidade e mostra os dados salvos quando o GitHub não responde."
       ]
     },
     {
@@ -75,6 +76,16 @@
     }
   ],
   "commits": [
+    {
+      "hash": "cae342a70406b4bcea7c382226d13f73ffdea6b3",
+      "shortHash": "cae342a",
+      "date": "2026-11-24T12:44:35-03:00",
+      "message": "Atualização da plataforma",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 6
+    },
     {
       "hash": "215b46d856f5df6026bc1c84147c54eb5ce540bd",
       "shortHash": "215b46d",
@@ -259,16 +270,6 @@
       "shortHash": "fcc63c7",
       "date": "2026-11-21T00:47:08Z",
       "message": "chore: atualizar postagens LinkedIn [00:47]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
-    },
-    {
-      "hash": "77544f2e8ea47797cd0ac38f6c7b6b5c20817bd1",
-      "shortHash": "77544f2",
-      "date": "2026-11-20T19:00:55Z",
-      "message": "chore: atualizar postagens LinkedIn [19:00]",
       "areas": [
         "Projeto"
       ],
