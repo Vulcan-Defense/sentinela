@@ -82,11 +82,13 @@ const GITHUB_PROXY_TTL = 10 * 60;
 const GITHUB_SOURCES = {
   desktop: {
     stats: "https://api.github.com/repos/hacking-table/crptochat-oss",
-    commits: "https://api.github.com/repos/hacking-table/crptochat-oss/commits?per_page=4"
+    commits: "https://api.github.com/repos/hacking-table/crptochat-oss/commits?per_page=4",
+    pulls: "https://api.github.com/repos/hacking-table/crptochat-oss/pulls?state=closed&sort=updated&direction=desc&per_page=10"
   },
   mobile: {
     stats: "https://api.github.com/repos/Vulcan-Defense/crptochat-android",
-    commits: "https://api.github.com/repos/Vulcan-Defense/crptochat-android/commits?per_page=4"
+    commits: "https://api.github.com/repos/Vulcan-Defense/crptochat-android/commits?per_page=4",
+    pulls: "https://api.github.com/repos/Vulcan-Defense/crptochat-android/pulls?state=closed&sort=updated&direction=desc&per_page=10"
   }
 };
 
@@ -172,7 +174,24 @@ const CRIPTOCHAT_LOADER = `(function () {
     var script = document.createElement('script');
     script.src = '/js/crptochat.js?original=1';
     document.head.appendChild(script);
+
+    if (!document.getElementById('cc-contributors')) {
+        var activity = document.getElementById('cc-activity');
+        var section = document.createElement('section');
+        section.className = 'cc-section cc-contributors-section';
+        section.setAttribute('aria-labelledby', 'cc-contributors-title');
+        section.innerHTML = '<div class="cc-section-head"><div><p class="feature-label">// quem move o projeto</p><h2 id="cc-contributors-title">Contribuições recentes</h2></div><a class="cc-head-link" href="https://github.com/hacking-table/crptochat-oss/pulls" target="_blank" rel="noopener noreferrer">Ver pull requests <span aria-hidden="true">↗</span></a></div><div class="cc-contributors" id="cc-contributors"><p class="cc-activity-placeholder">Carregando as contas que contribuíram…</p></div>';
+        if (activity && activity.parentNode) activity.parentNode.after(section);
+    }
+    var contrib = document.createElement('script');
+    contrib.src = '/js/crptochat-contrib.js';
+    contrib.defer = true;
+    document.head.appendChild(contrib);
 })();`;
+
+/* BEGIN CONTRIB SCRIPT — gerado por scripts/sync-contrib-worker.mjs */
+const CONTRIB_SCRIPT = "/* Sentinela — contribuidores recentes do CriptoChat.\n   Mostra as contas dos pull requests recentes e a participação de cada uma. */\n(function () {\n    'use strict';\n\n    var USE_PROXY = /^(www\\.)?sentinelacibernetica\\.com\\.br$/.test(location.hostname) || /\\.pages\\.dev$/.test(location.hostname);\n    var REPOS = [\n        { key: 'desktop', full: 'hacking-table/crptochat-oss' },\n        { key: 'mobile', full: 'Vulcan-Defense/crptochat-android' }\n    ];\n    var root = document.getElementById('cc-contributors');\n    if (!root) return;\n\n    function endpoint(repo) {\n        if (!USE_PROXY) {\n            return 'https://api.github.com/repos/' + repo.full + '/pulls?state=closed&sort=updated&direction=desc&per_page=10';\n        }\n        return '/api/github/crptochat?repo=' + repo.key + '&kind=pulls&v=4';\n    }\n\n    function placeholder(text) {\n        root.textContent = '';\n        var p = document.createElement('p');\n        p.className = 'cc-activity-placeholder';\n        p.textContent = text;\n        root.appendChild(p);\n    }\n\n    function element(tag, className, text) {\n        var node = document.createElement(tag);\n        if (className) node.className = className;\n        if (text) node.textContent = text;\n        return node;\n    }\n\n    function render(users) {\n        var list = Object.keys(users).map(function (login) {\n            return users[login];\n        }).filter(function (user) {\n            return user.count > 0;\n        }).sort(function (a, b) {\n            return b.count - a.count || a.login.localeCompare(b.login);\n        }).slice(0, 6);\n\n        if (!list.length) {\n            placeholder('Nenhum pull request recente para mostrar. Confira os repositórios no GitHub.');\n            return;\n        }\n\n        var total = list.reduce(function (sum, user) {\n            return sum + user.count;\n        }, 0);\n\n        root.textContent = '';\n        var grid = element('div', 'cc-contributor-grid');\n\n        list.forEach(function (user) {\n            var percent = Math.round((user.count / total) * 100);\n            var card = element('a', 'cc-contributor');\n            card.href = user.url || ('https://github.com/' + encodeURIComponent(user.login));\n            card.target = '_blank';\n            card.rel = 'noopener noreferrer';\n            card.setAttribute('aria-label', 'Perfil de @' + user.login + ' no GitHub');\n\n            var avatar = element('img', 'cc-contributor-avatar');\n            avatar.src = user.avatar || '';\n            avatar.alt = 'Foto do perfil de @' + user.login;\n            avatar.width = 48;\n            avatar.height = 48;\n            avatar.loading = 'lazy';\n            avatar.referrerPolicy = 'no-referrer';\n\n            var meta = element('span', 'cc-contributor-meta');\n            meta.appendChild(element('strong', '', '@' + user.login));\n            meta.appendChild(element('small', '', user.count + (user.count === 1 ? ' PR · ' : ' PRs · ') + percent + '%'));\n\n            var bar = element('span', 'cc-contributor-bar');\n            bar.setAttribute('role', 'img');\n            bar.setAttribute('aria-label', percent + '% das contribuições recentes');\n            var fill = element('span', 'cc-contributor-fill');\n            fill.style.width = percent + '%';\n            bar.appendChild(fill);\n\n            card.appendChild(avatar);\n            card.appendChild(meta);\n            card.appendChild(bar);\n            grid.appendChild(card);\n        });\n\n        root.appendChild(grid);\n    }\n\n    var calls = REPOS.map(function (repo) {\n        return fetch(endpoint(repo), {\n            headers: { 'Accept': 'application/vnd.github+json' },\n            cache: 'no-store'\n        }).then(function (response) {\n            if (!response.ok) throw new Error('GitHub respondeu ' + response.status);\n            return response.json();\n        });\n    });\n\n    Promise.allSettled(calls).then(function (results) {\n        var users = {};\n        var ok = 0;\n\n        results.forEach(function (result) {\n            if (result.status !== 'fulfilled' || !Array.isArray(result.value)) return;\n            ok += 1;\n            result.value.forEach(function (pr) {\n                var account = pr && pr.user;\n                if (!account || !account.login || !pr.merged_at) return;\n                var entry = users[account.login] || (users[account.login] = {\n                    login: account.login,\n                    avatar: account.avatar_url,\n                    url: account.html_url,\n                    count: 0\n                });\n                entry.count += 1;\n            });\n        });\n\n        if (!ok) {\n            placeholder('Não foi possível carregar as contribuições agora. Abra os repositórios no GitHub para ver os dados mais recentes.');\n            return;\n        }\n        render(users);\n    }).catch(function () {\n        placeholder('Não foi possível carregar as contribuições agora. Abra os repositórios no GitHub para ver os dados mais recentes.');\n    });\n})();\n";
+/* END CONTRIB SCRIPT */
 
 function jsonResponse(data, status) {
   return new Response(JSON.stringify(data), {
@@ -307,6 +326,15 @@ export default {
 
     if (request.method === "GET" && url.pathname === "/js/crptochat.js" && !url.searchParams.has("original")) {
       return new Response(CRIPTOCHAT_LOADER, {
+        headers: {
+          "Content-Type": "text/javascript; charset=utf-8",
+          "Cache-Control": "no-store",
+          "X-Content-Type-Options": "nosniff"
+        }
+      });
+    }
+    if (request.method === "GET" && url.pathname === "/js/crptochat-contrib.js") {
+      return new Response(CONTRIB_SCRIPT, {
         headers: {
           "Content-Type": "text/javascript; charset=utf-8",
           "Cache-Control": "no-store",

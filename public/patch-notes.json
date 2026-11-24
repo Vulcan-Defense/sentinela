@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-24T16:25:17.128Z",
+  "generatedAt": "2026-11-24T17:32:35.544Z",
   "repository": "https://github.com/Vulcan-Defense/vulcan-academy",
   "highlights": [
     {
@@ -15,7 +15,8 @@
         "Visual cyberpunk com terminal ilustrativo e leitura confortável no celular.",
         "Vídeos recomendados e videoaulas agora abrem no YouTube com um clique, sem depender de player incorporado.",
         "Projetos open source agora têm regras de colaboração no GitHub, com revisão de pull requests e proteção de branches e tags.",
-        "Painel de atividade do CriptoChat agora carrega com mais estabilidade e mostra os dados salvos quando o GitHub não responde."
+        "Painel de atividade do CriptoChat agora carrega com mais estabilidade e mostra os dados salvos quando o GitHub não responde.",
+        "Página do CriptoChat agora mostra as contas que enviaram melhorias recentes, com fotos, links e um gráfico de participação."
       ]
     },
     {
@@ -76,6 +77,16 @@
     }
   ],
   "commits": [
+    {
+      "hash": "7d023962a6d6c8b965495077572d489862ee2e9c",
+      "shortHash": "7d02396",
+      "date": "2026-11-24T13:25:40-03:00",
+      "message": "Ajusta proxy do GitHub e painel do CriptoChat",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 3
+    },
     {
       "hash": "33df1e67f3bcc98bbeb6fd92747b66d2b0e82036",
       "shortHash": "33df1e6",
@@ -260,16 +271,6 @@
       "shortHash": "954ad98",
       "date": "2026-11-21T16:08:27Z",
       "message": "chore: atualizar postagens LinkedIn [16:08]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
-    },
-    {
-      "hash": "8593f4612acbe863c5c26bab796ea4910a1e0f06",
-      "shortHash": "8593f46",
-      "date": "2026-11-21T08:00:55Z",
-      "message": "chore: atualizar postagens LinkedIn [08:00]",
       "areas": [
         "Projeto"
       ],
