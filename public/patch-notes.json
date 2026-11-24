@@ -1,18 +1,19 @@
 {
-  "generatedAt": "2026-11-24T15:29:09.638Z",
+  "generatedAt": "2026-11-24T15:39:23.618Z",
   "repository": "https://github.com/Vulcan-Defense/vulcan-academy",
   "highlights": [
     {
       "version": "Novembro 2026",
       "date": "2026-11-24",
-      "title": "CriptoChat em destaque nas ferramentas",
-      "summary": "Agora é fácil acompanhar o projeto open source CriptoChat e sua versão para Android a partir do catálogo de ferramentas.",
+      "title": "Página de acompanhamento do CriptoChat",
+      "summary": "A comunidade agora tem uma página própria para acompanhar o projeto open source CriptoChat e sua versão para Android.",
       "items": [
-        "Página inicial ganhou destaque com botão para abrir o acompanhamento do CriptoChat.",
-        "Catálogo de ferramentas reúne os links dos projetos e mostra o andamento dos repositórios.",
+        "Página inicial ganhou destaque com botão para abrir a página do CriptoChat.",
+        "Nova página reúne os links dos projetos e mostra o andamento dos repositórios.",
         "Painel exibe estrelas, forks, issues e os commits mais recentes dos dois projetos.",
         "Cliente Android ganhou destaque com acesso direto ao código, às issues e ao guia de compilação.",
-        "Visual cyberpunk com terminal ilustrativo e leitura confortável no celular."
+        "Visual cyberpunk com terminal ilustrativo e leitura confortável no celular.",
+        "Vídeos recomendados e videoaulas agora abrem no YouTube com um clique, sem depender de player incorporado."
       ]
     },
     {
@@ -73,6 +74,26 @@
     }
   ],
   "commits": [
+    {
+      "hash": "ff4b449df33cb2bbfcf6d13980e384f62d143e21",
+      "shortHash": "ff4b449",
+      "date": "2026-11-24T12:38:02-03:00",
+      "message": "Atualização da plataforma",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 15
+    },
+    {
+      "hash": "e01c3cd048d22c853c9321cf62e588660fda0d59",
+      "shortHash": "e01c3cd",
+      "date": "2026-11-24T12:29:46-03:00",
+      "message": "Atualização da plataforma",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 15
+    },
     {
       "hash": "32d50bc2b7c7130fab2a08f08dc41f559310fc69",
       "shortHash": "32d50bc",
@@ -246,26 +267,6 @@
       "shortHash": "58644ef",
       "date": "2026-11-20T02:51:24Z",
       "message": "chore: atualizar postagens LinkedIn [02:51]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
-    },
-    {
-      "hash": "f08f7888eb11b96847b2eef77c9ade9a4bd49217",
-      "shortHash": "f08f788",
-      "date": "2026-11-19T21:51:18Z",
-      "message": "chore: atualizar postagens LinkedIn [21:51]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
-    },
-    {
-      "hash": "5ccbecab6a163a588689abe687e21cfa031f4890",
-      "shortHash": "5ccbeca",
-      "date": "2026-11-19T13:44:40Z",
-      "message": "chore: atualizar postagens LinkedIn [13:44]",
       "areas": [
         "Projeto"
       ],
