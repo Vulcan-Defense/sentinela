@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-24T15:39:23.618Z",
+  "generatedAt": "2026-11-24T15:43:35.825Z",
   "repository": "https://github.com/Vulcan-Defense/vulcan-academy",
   "highlights": [
     {
@@ -13,7 +13,8 @@
         "Painel exibe estrelas, forks, issues e os commits mais recentes dos dois projetos.",
         "Cliente Android ganhou destaque com acesso direto ao código, às issues e ao guia de compilação.",
         "Visual cyberpunk com terminal ilustrativo e leitura confortável no celular.",
-        "Vídeos recomendados e videoaulas agora abrem no YouTube com um clique, sem depender de player incorporado."
+        "Vídeos recomendados e videoaulas agora abrem no YouTube com um clique, sem depender de player incorporado.",
+        "Projetos open source agora têm regras de colaboração no GitHub, com revisão de pull requests e proteção de branches e tags."
       ]
     },
     {
@@ -74,6 +75,27 @@
     }
   ],
   "commits": [
+    {
+      "hash": "215b46d856f5df6026bc1c84147c54eb5ce540bd",
+      "shortHash": "215b46d",
+      "date": "2026-11-24T12:39:42-03:00",
+      "message": "Atualização da plataforma",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 1
+    },
+    {
+      "hash": "98179c4088dc041bf44135c37a0a55c006e1e669",
+      "shortHash": "98179c4",
+      "date": "2026-11-24T12:39:36-03:00",
+      "message": "Atualização da plataforma",
+      "areas": [
+        "Projeto",
+        "Interface"
+      ],
+      "filesChanged": 6
+    },
     {
       "hash": "ff4b449df33cb2bbfcf6d13980e384f62d143e21",
       "shortHash": "ff4b449",
@@ -247,26 +269,6 @@
       "shortHash": "77544f2",
       "date": "2026-11-20T19:00:55Z",
       "message": "chore: atualizar postagens LinkedIn [19:00]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
-    },
-    {
-      "hash": "34c7ce3113316e29c97f4b094e9703d0c85dad5d",
-      "shortHash": "34c7ce3",
-      "date": "2026-11-20T10:57:42Z",
-      "message": "chore: atualizar postagens LinkedIn [10:57]",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 1
-    },
-    {
-      "hash": "58644ef9e2664f57569d2f193743f31d30728471",
-      "shortHash": "58644ef",
-      "date": "2026-11-20T02:51:24Z",
-      "message": "chore: atualizar postagens LinkedIn [02:51]",
       "areas": [
         "Projeto"
       ],
