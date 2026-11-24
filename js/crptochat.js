@@ -1,10 +1,11 @@
 /* Sentinela — painel do projeto CriptoChat
-   Consulta a API pública do GitHub, sem token, com cache por sessão. */
+   Usa o proxy same-origin no Cloudflare Worker quando disponível e mantém cache por sessão. */
 (function () {
     'use strict';
 
     var CACHE_KEY = 'sentinela-crptochat-v1';
     var CACHE_TTL = 10 * 60 * 1000;
+    var USE_PROXY = /^(www\.)?sentinelacibernetica\.com\.br$/.test(location.hostname) || /\.pages\.dev$/.test(location.hostname);
     var REPOS = [
         {
             key: 'desktop',
@@ -24,6 +25,10 @@
     var activity = document.getElementById('cc-activity');
     if (!status || !activity) return;
 
+    var cached = readCache();
+    var cachedAt = cached ? cached.time : 0;
+    if (cached) apply(cached.data, 'cache');
+
     function readCache() {
         try {
             var raw = sessionStorage.getItem(CACHE_KEY);
@@ -42,6 +47,11 @@
         } catch {
             /* Armazenamento indisponível: a página continua funcionando. */
         }
+    }
+
+    function endpoint(repo, kind) {
+        if (!USE_PROXY) return kind === 'stats' ? repo.api : repo.commits;
+        return '/api/github/crptochat?repo=' + encodeURIComponent(repo.key) + '&kind=' + kind + '&v=3';
     }
 
     function getJSON(url) {
@@ -79,8 +89,9 @@
         return date(iso);
     }
 
-    function hour() {
-        return new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' }).format(new Date());
+    function hour(timestamp) {
+        return new Intl.DateTimeFormat('pt-BR', { hour: '2-digit', minute: '2-digit' })
+            .format(timestamp ? new Date(timestamp) : new Date());
     }
 
     function paintStats(repo, payload) {
@@ -156,43 +167,75 @@
         return entries;
     }
 
-    function apply(data, cached) {
+    function apply(data, mode) {
         REPOS.forEach(function (repo) {
             paintStats(repo, data.repos[repo.key]);
         });
         paintCommits(collectCommits(data));
         status.classList.remove('is-error');
-        status.textContent = (cached ? 'Dados em cache de ' : 'Dados do GitHub atualizados às ') + hour() + '.';
+        var labels = {
+            cache: 'Dados salvos das ',
+            partial: 'Alguns dados do GitHub atualizados às ',
+            live: 'Dados do GitHub atualizados às '
+        };
+        status.textContent = (labels[mode] || labels.live) + hour() + '.';
     }
 
     function fail() {
         status.classList.add('is-error');
-        status.textContent = 'GitHub indisponível agora — use os links dos repositórios para ver os dados mais recentes.';
+        status.textContent = cached
+            ? 'GitHub indisponível — mostrando dados salvos das ' + hour(cachedAt) + '.'
+            : 'GitHub indisponível agora — use os links dos repositórios para ver os dados mais recentes.';
         if (!activity.children.length || activity.querySelector('.cc-activity-placeholder')) {
             paintCommits([]);
         }
     }
 
-    var cached = readCache();
-    if (cached) apply(cached.data, true);
-
     var requests = [];
     REPOS.forEach(function (repo) {
-        requests.push(getJSON(repo.api).then(function (payload) {
-            return { repo: repo, kind: 'stats', payload: payload };
-        }));
-        requests.push(getJSON(repo.commits).then(function (payload) {
-            return { repo: repo, kind: 'commits', payload: payload };
-        }));
+        requests.push({ repo: repo, kind: 'stats' });
+        requests.push({ repo: repo, kind: 'commits' });
     });
 
-    Promise.all(requests).then(function (results) {
-        var data = { repos: {}, commits: {} };
-        results.forEach(function (result) {
-            if (result.kind === 'stats') data.repos[result.repo.key] = result.payload;
-            else data.commits[result.repo.key] = Array.isArray(result.payload) ? result.payload : [];
+    var calls = requests.map(function (item) {
+        return getJSON(endpoint(item.repo, item.kind)).then(function (payload) {
+            return { item: item, payload: payload };
         });
+    });
+
+    Promise.allSettled(calls).then(function (results) {
+        var data = { repos: {}, commits: {} };
+        var ok = 0;
+
+        results.forEach(function (result) {
+            if (result.status !== 'fulfilled') return;
+            ok += 1;
+            var item = result.value.item;
+            var payload = result.value.payload;
+            if (item.kind === 'stats') data.repos[item.repo.key] = payload;
+            else data.commits[item.repo.key] = Array.isArray(payload) ? payload : [];
+        });
+
+        if (!ok) {
+            fail();
+            return;
+        }
+
+        if (cached && cached.data) {
+            REPOS.forEach(function (repo) {
+                if (!data.repos[repo.key] && cached.data.repos && cached.data.repos[repo.key]) {
+                    data.repos[repo.key] = cached.data.repos[repo.key];
+                }
+                if (!data.commits[repo.key] && cached.data.commits && cached.data.commits[repo.key]) {
+                    data.commits[repo.key] = cached.data.commits[repo.key];
+                }
+            });
+        }
+
+        var now = Date.now();
         writeCache(data);
-        apply(data, false);
+        cached = { time: now, data: data };
+        cachedAt = now;
+        apply(data, ok === results.length ? 'live' : 'partial');
     }).catch(fail);
 })();

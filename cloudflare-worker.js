@@ -1,3 +1,4 @@
+/* global HTMLRewriter */
 /**
  * Cloudflare Worker — headers de segurança da Sentinela.
  *
@@ -76,6 +77,19 @@ const FEEDBACK_PAGE_STYLE_PATH = "/css/mobile-feedback-page.css";
 const MOBILE_FORM_CONTRAST_STYLE_PATH = "/css/mobile-form-contrast.css";
 const MOBILE_REGISTRATION_ENDPOINT = "https://formspree.io/f/xaenzpjq";
 
+const GITHUB_PROXY_PATH = "/api/github/crptochat";
+const GITHUB_PROXY_TTL = 10 * 60;
+const GITHUB_SOURCES = {
+  desktop: {
+    stats: "https://api.github.com/repos/hacking-table/crptochat-oss",
+    commits: "https://api.github.com/repos/hacking-table/crptochat-oss/commits?per_page=4"
+  },
+  mobile: {
+    stats: "https://api.github.com/repos/Vulcan-Defense/crptochat-android",
+    commits: "https://api.github.com/repos/Vulcan-Defense/crptochat-android/commits?per_page=4"
+  }
+};
+
 function feedbackParticipants(env) {
   try {
     const participants = JSON.parse(env.FEEDBACK_PARTICIPANTS || "{}");
@@ -139,9 +153,168 @@ function contentTypeFor(pathname) {
   return null;
 }
 
+/* O JS estático publicado ainda chama a API do GitHub direto, o que o CSP bloqueia.
+   Este carregador mantém a página funcionando até o arquivo estático ser atualizado. */
+const CRIPTOCHAT_LOADER = `(function () {
+    'use strict';
+    var nativeFetch = window.fetch.bind(window);
+    window.fetch = function (input, options) {
+        var url = typeof input === 'string' ? input : (input && input.url) || '';
+        var prefix = 'https://api.github.com/repos/';
+        if (url.indexOf(prefix) === 0) {
+            var parts = url.slice(prefix.length).split('/');
+            var repo = parts[1] === 'crptochat-android' ? 'mobile' : 'desktop';
+            var kind = parts[2] && parts[2].indexOf('commits') === 0 ? 'commits' : 'stats';
+            return nativeFetch('/api/github/crptochat?repo=' + repo + '&kind=' + kind + '&v=3', options);
+        }
+        return nativeFetch(input, options);
+    };
+    var script = document.createElement('script');
+    script.src = '/js/crptochat.js?original=1';
+    document.head.appendChild(script);
+})();`;
+
+function jsonResponse(data, status) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store",
+      "X-Content-Type-Options": "nosniff"
+    }
+  });
+}
+
+function decodeChunked(text) {
+  let output = "";
+  let rest = text;
+  while (rest.length > 0) {
+    const lineEnd = rest.indexOf("\r\n");
+    if (lineEnd === -1) break;
+    const size = parseInt(rest.slice(0, lineEnd).trim(), 16);
+    if (!Number.isFinite(size) || size < 0) break;
+    rest = rest.slice(lineEnd + 2);
+    if (size === 0) break;
+    output += rest.slice(0, size);
+    rest = rest.slice(size + 2);
+  }
+  return output;
+}
+
+/* Em custom domains, fetch() para api.github.com pode falhar com 525 por causa
+   do handshake pós-quântico. connect() com TLS explícito usa outro caminho. */
+async function fetchGitHubThroughSocket(source) {
+  const { connect } = await import("cloudflare:sockets");
+  const target = new URL(source);
+  const socket = connect(
+    { hostname: target.hostname, port: 443 },
+    { secureTransport: "on" }
+  );
+  const encoder = new TextEncoder();
+  const decoder = new TextDecoder();
+  const writer = socket.writable.getWriter();
+  const reader = socket.readable.getReader();
+
+  const requestText = [
+    `GET ${target.pathname}${target.search} HTTP/1.1`,
+    `Host: ${target.hostname}`,
+    "User-Agent: sentinela-crptochat",
+    "Accept: application/vnd.github+json",
+    "X-GitHub-Api-Version: 2026-03-10",
+    "Connection: close",
+    "",
+    ""
+  ].join("\r\n");
+
+  let raw = "";
+  try {
+    await writer.write(encoder.encode(requestText));
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      raw += decoder.decode(value, { stream: true });
+    }
+    raw += decoder.decode();
+  } finally {
+    reader.releaseLock();
+    writer.releaseLock();
+    socket.close();
+  }
+
+  const separator = raw.indexOf("\r\n\r\n");
+  if (separator === -1) throw new Error("Resposta HTTP inválida.");
+  const head = raw.slice(0, separator);
+  const status = Number(head.split("\r\n")[0].split(" ")[1]);
+  let body = raw.slice(separator + 4);
+  if (/transfer-encoding:\s*chunked/i.test(head)) body = decodeChunked(body);
+  body = body.replace(/(?:\r\n)?0\r\n\r\n$/, "");
+  return new Response(body, { status: Number.isFinite(status) ? status : 502 });
+}
+
+async function fetchGitHub(source) {
+  try {
+    const response = await fetch(source, {
+      headers: {
+        "Accept": "application/vnd.github+json",
+        "User-Agent": "sentinela-crptochat",
+        "X-GitHub-Api-Version": "2026-03-10"
+      }
+    });
+    if (response.status !== 525) return response;
+  } catch {
+    /* Tenta novamente com TLS explícito. */
+  }
+  return fetchGitHubThroughSocket(source);
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+
+    if (request.method === "GET" && url.pathname === GITHUB_PROXY_PATH) {
+      const repo = url.searchParams.get("repo");
+      const kind = url.searchParams.get("kind");
+      const source = (GITHUB_SOURCES[repo] || {})[kind];
+      if (!source) return jsonResponse({ error: "Parâmetros inválidos." }, 400);
+
+      const cache = caches.default;
+      const cacheUrl = new URL(source);
+      cacheUrl.searchParams.set("__cache", "v3");
+      const cacheKey = new Request(cacheUrl.toString());
+      const cached = await cache.match(cacheKey);
+      if (cached) {
+        const headers = new Headers(cached.headers);
+        headers.set("Cache-Control", `public, max-age=${GITHUB_PROXY_TTL}`);
+        return new Response(cached.body, { status: 200, headers });
+      }
+
+      const upstream = await fetchGitHub(source);
+      if (!upstream.ok) {
+        return jsonResponse({ error: "GitHub indisponível.", status: upstream.status }, 502);
+      }
+
+      const response = new Response(upstream.body, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Cache-Control": `public, max-age=${GITHUB_PROXY_TTL}`,
+          "X-Content-Type-Options": "nosniff"
+        }
+      });
+      ctx.waitUntil(cache.put(cacheKey, response.clone()));
+      return response;
+    }
+
+    if (request.method === "GET" && url.pathname === "/js/crptochat.js" && !url.searchParams.has("original")) {
+      return new Response(CRIPTOCHAT_LOADER, {
+        headers: {
+          "Content-Type": "text/javascript; charset=utf-8",
+          "Cache-Control": "no-store",
+          "X-Content-Type-Options": "nosniff"
+        }
+      });
+    }
+
     if (request.method === "GET" && (url.pathname === FEEDBACK_PAGE_PATH || url.pathname === "/testes-mobile/feedback")) {
       return feedbackScreen();
     }
@@ -227,6 +400,12 @@ export default {
     if (request.method === "GET" && (url.pathname === "/testes-mobile" || url.pathname === "/testes-mobile/")) {
       responseBody = new HTMLRewriter()
         .on("head", { element(element) { element.append(`<link rel="stylesheet" href="${MOBILE_FORM_CONTRAST_STYLE_PATH}">`, { html: true }); } })
+        .transform(originResponse).body;
+    } else if (request.method === "GET" && url.pathname === "/crptochat.html") {
+      responseBody = new HTMLRewriter()
+        .on('script[src="js/crptochat.js"]', {
+          element(element) { element.setAttribute("src", "js/crptochat.js?loader=1"); }
+        })
         .transform(originResponse).body;
     }
 
