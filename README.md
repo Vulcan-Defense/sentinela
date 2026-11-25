@@ -1,7 +1,11 @@
-# VulcanAcademy
+# Comunidade cibersec
 
-Plataforma de ensino de segurança ofensiva e defesa (Vulcan Defense), hospedada
-como um site full-stack em Cloudflare Workers.
+[Conecte-se. Compartilhe. Defenda melhor.](https://sentinelacibernetica.com.br/)
+
+Uma comunidade para acompanhar o cenário, trocar conhecimento e desenvolver
+práticas de segurança que funcionam no mundo real.
+
+Site: https://sentinelacibernetica.com.br/
 
 ## Stack
 
