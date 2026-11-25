@@ -59,6 +59,5 @@ Para adicionar um projeto ao radar da comunidade, siga o
 
 ## Saiba mais
 
-- [vinext](https://github.com/cloudflare/vinext)
 - [Cloudflare Workers](https://developers.cloudflare.com/workers/)
-- [Drizzle](https://orm.drizzle.team/docs/get-started/sqlite)
+
