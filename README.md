@@ -35,41 +35,6 @@ Site: https://sentinelacibernetica.com.br/
 | `/dashboard-ferramentas.html` | `dashboard-ferramentas.html` | Gráficos de adoção e maturidade das ferramentas |
 | `/404.html` | `404.html` | Página para rotas não encontradas |
 
-A aplicação React da academia fica em `app/page.tsx` e é servida em
-`academy.vulcandefense.com.br`; a validação de certificados fica em
-`app/verify/page.tsx` e é servida em `verify.vulcandefense.com.br`.
-
-## Pré-requisitos
-
-- Node.js `>=22.13.0`
-
-## Comandos
-
-```bash
-npm install        # instala dependências
-npm run dev        # desenvolvimento local (vinext dev)
-npm run build      # gera patch notes e valida o build (vinext build)
-npm test           # build + teste do HTML renderizado
-npm run lint       # ESLint
-npm run deploy     # publica no Cloudflare (wrangler deploy --keep-vars)
-```
-
-Para conferir as páginas estáticas sem o build, sirva a raiz do repositório com
-um servidor de arquivos, por exemplo `npx http-server .`.
-
-### Banco de dados
-
-```bash
-npm run db:generate          # gera migrações Drizzle após mudanças no schema
-npm run db:mysql             # aplica migrações no MySQL da academia
-npm run db:mysql:users       # migração específica de usuários
-npm run db:mysql:import-d1   # importa dados JSON do D1 para o MySQL
-```
-
-As variáveis de ambiente e segredos do Worker são gerenciados via
-`wrangler.jsonc`, `.dev.vars` (local) e os comandos `wrangler secret`. Os
-arquivos `.env*` e `.dev.vars` não devem ser versionados.
-
 
 ## Patch notes
 
