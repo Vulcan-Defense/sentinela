@@ -97,16 +97,6 @@ As variáveis de ambiente e segredos do Worker são gerenciados via
 `wrangler.jsonc`, `.dev.vars` (local) e os comandos `wrangler secret`. Os
 arquivos `.env*` e `.dev.vars` não devem ser versionados.
 
-### Auditoria do VulcanMeet
-
-O endpoint de auditoria recebe eventos assinados pelo Prosody e grava no MySQL a sala, participantes, horários e duração. Antes de publicar, aplique o schema e cadastre um segredo igual ao configurado no servidor do Meet:
-
-```bash
-npm run db:mysql
-npx wrangler secret put MEETING_AUDIT_TOKEN
-```
-
-Use o valor informado no segredo também como `MEETING_AUDIT_TOKEN` no Docker Compose do Meet. Esse token nunca deve ser colocado em arquivos versionados.
 
 ## Patch notes
 
@@ -116,15 +106,6 @@ fraseado de benefício e acessível a leigos, sem segredos ou detalhes de
 segurança. O arquivo `public/patch-notes.json` é regenerado pelo `prebuild` a
 partir dos commits recentes — não edite esse arquivo manualmente.
 
-## Autenticação por identidade (SIWC)
-
-Quando o site é servido pela plataforma de hosting, usuários autenticados
-recebem os headers `oai-authenticated-user-id` e
-`oai-authenticated-user-email`. O arquivo `app/chatgpt-auth.ts` oferece
-helpers para login/logout opcional ou obrigatório com Sign in with ChatGPT
-(`getChatGPTUser`, `requireChatGPTUser`, `chatGPTSignInPath`,
-`chatGPTSignOutPath`). Não crie rotas próprias para `/signin-with-chatgpt`,
-`/signout-with-chatgpt` ou `/callback` — a plataforma é dona desses paths.
 
 ## Como contribuir
 
