@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="../css/testes-mobile.css">
     <link rel="stylesheet" href="../css/redesign.css">
     <script src="../js/nav.js" defer></script>
+    <script src="../js/testes-mobile-status.js" defer></script>
 </head>
 <body class="page-testes">
     <a class="skip-link" href="#cadastro">Ir para o cadastro</a>
@@ -42,8 +43,15 @@
         <section class="mobile-tests-layout" aria-labelledby="mobile-tests-title">
             <div class="mobile-tests-intro">
                 <p class="terminal-label"><span></span> laboratório de experiência mobile</p>
-                <h1 id="mobile-tests-title">Ajude a testar a próxima experiência no seu celular.</h1>
-                <p class="intro-copy">Cadastre-se para participar dos testes de aplicativos Android e iOS. Seu dispositivo ajuda a equipe a selecionar cenários reais de uso.</p>
+                <h1 id="mobile-tests-title">A experiência mobile já está nas suas mãos.</h1>
+                <p class="intro-copy">O Vulcan Protect agora é público e pode ser instalado pela Google Play. Cadastre-se para participar das próximas rodadas de teste e ajudar a equipe com cenários reais de uso.</p>
+
+                <div class="public-release-callout">
+                    <p class="public-release-kicker"><span aria-hidden="true"></span> aplicativo público</p>
+                    <h2>Já dá para baixar o Vulcan Protect</h2>
+                    <p>O aplicativo saiu da fase de testes fechados. Instale pela Google Play e continue enviando sua experiência para fortalecer a proteção no celular.</p>
+                    <a class="public-release-link" href="https://play.google.com/store/apps/details?id=com.sec.vulcan_protect&amp;pli=1" target="_blank" rel="noopener noreferrer">Baixar na Google Play <span aria-hidden="true">↗</span></a>
+                </div>
 
                 <div class="device-stage" aria-hidden="true">
                     <div class="device android-device"><span class="device-notch"></span><span class="device-screen">android<br><b>test</b></span></div>
@@ -95,6 +103,40 @@
                 <p class="registration-note">Ao enviar, suas informações seguem pelo canal de contato do projeto para contato@vulcandefense.com.br.</p>
                 <a class="feedback-entry" href="feedback/">Enviar feedback <span aria-hidden="true">↗</span></a>
             </section>
+        </section>
+
+        <section class="mobile-status" id="status-crptochat-android" aria-labelledby="mobile-status-title">
+            <header class="mobile-status-head">
+                <div>
+                    <p class="terminal-label"><span aria-hidden="true"></span> novo projeto open source</p>
+                    <h2 id="mobile-status-title">CriptoChat Android em tempo real</h2>
+                    <p>Acompanhe o andamento do cliente Android da comunidade direto do repositório Vulcan-Defense/crptochat-android.</p>
+                </div>
+                <p class="mobile-status-update" id="mobile-status-update" role="status" aria-live="polite">Consultando o GitHub…</p>
+            </header>
+
+            <div class="mobile-status-grid">
+                <article class="mobile-status-panel" aria-labelledby="mobile-status-repo-title">
+                    <h3 id="mobile-status-repo-title">Saúde do repositório</h3>
+                    <dl class="mobile-status-metrics">
+                        <div><dt>Estrelas</dt><dd data-status-metric="stargazers_count">—</dd></div>
+                        <div><dt>Forks</dt><dd data-status-metric="forks_count">—</dd></div>
+                        <div><dt>Issues abertas</dt><dd data-status-metric="open_issues_count">—</dd></div>
+                        <div><dt>Último envio</dt><dd data-status-metric="pushed_at">—</dd></div>
+                    </dl>
+                    <div class="mobile-status-links">
+                        <a href="https://github.com/Vulcan-Defense/crptochat-android" target="_blank" rel="noopener noreferrer">Ver código <span aria-hidden="true">↗</span></a>
+                        <a href="https://github.com/Vulcan-Defense/crptochat-android/issues" target="_blank" rel="noopener noreferrer">Abrir issues <span aria-hidden="true">↗</span></a>
+                    </div>
+                </article>
+
+                <article class="mobile-status-panel" aria-labelledby="mobile-status-commits-title">
+                    <h3 id="mobile-status-commits-title">Commits recentes</h3>
+                    <ul class="mobile-status-commits" id="mobile-status-commits">
+                        <li>Carregando os últimos envios…</li>
+                    </ul>
+                </article>
+            </div>
         </section>
 
         <section class="release-notes" id="release-1-0-23" aria-labelledby="release-title">

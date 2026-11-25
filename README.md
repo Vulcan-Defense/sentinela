@@ -57,7 +57,7 @@ tests/              Testes do build renderizado (node --test)
 | `/certificacoes-gratuitas.html` | `certificacoes-gratuitas.html` | Treinamentos e provas gratuitos, separados por fonte e área |
 | `/mercado-trabalho.html` | `mercado-trabalho.html` | Portais de vagas, empresas, salários e tendências |
 | `/perfis-profissionais.html` | `perfis-profissionais.html` | Perfis e cargos para gestores e recrutadores |
-| `/testes-mobile/` | `testes-mobile/index.html` | Cadastro de participantes para testes Android e iOS |
+| `/testes-mobile/` | `testes-mobile/index.html` | Download público do Vulcan Protect, cadastro para testes Android/iOS e status do CriptoChat Android |
 | `/testes-mobile/feedback/` | `testes-mobile/feedback/index.html` | Feedback dos participantes dos testes |
 | `/dashboard-ferramentas.html` | `dashboard-ferramentas.html` | Gráficos de adoção e maturidade das ferramentas |
 | `/404.html` | `404.html` | Página para rotas não encontradas |
