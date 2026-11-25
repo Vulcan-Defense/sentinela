@@ -30,7 +30,7 @@ Site: https://sentinelacibernetica.com.br/
 | `/certificacoes-gratuitas.html` | `certificacoes-gratuitas.html` | Treinamentos e provas gratuitos, separados por fonte e área |
 | `/mercado-trabalho.html` | `mercado-trabalho.html` | Portais de vagas, empresas, salários e tendências |
 | `/perfis-profissionais.html` | `perfis-profissionais.html` | Perfis e cargos para gestores e recrutadores |
-| `/testes-mobile/` | `testes-mobile/index.html` | Download público do Vulcan Protect, cadastro para testes Android/iOS e status do CriptoChat Android |
+| `/testes-mobile/` | `testes-mobile/index.html` | Download do Vulcan Protect, cadastro para testes, status do CriptoChat Android e lista de projetos para baixar e contribuir |
 | `/testes-mobile/feedback/` | `testes-mobile/feedback/index.html` | Feedback dos participantes dos testes |
 | `/dashboard-ferramentas.html` | `dashboard-ferramentas.html` | Gráficos de adoção e maturidade das ferramentas |
 | `/404.html` | `404.html` | Página para rotas não encontradas |
