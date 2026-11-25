@@ -16,34 +16,7 @@ Site: https://sentinelacibernetica.com.br/
 - **Conteúdo versionado**: `posts.json` (blog), `js/ferramentas-catalog.js` (ferramentas) e `data/projetos.json` (projetos da comunidade)
 - **APIs do site**: proxy do GitHub, cadastro e feedback dos testes mobile em `cloudflare-worker.js`
 
-### Vulcan Academy
 
-- **Runtime web**: React 19 com Server Components via **vinext** (compatível com Next.js) sobre **Vite 8**
-- **Edge**: Cloudflare Workers — entry point em `worker/index.ts`, config em `wrangler.jsonc`
-- **Linguagem**: TypeScript 5.9, Node.js `>=22.13.0`
-- **Banco de dados**: MySQL (`mysql2`) como armazenamento principal; Drizzle com dialeto SQLite para o schema em `db/schema.ts` e as migrações em `drizzle/`
-- **Estilo**: Tailwind CSS 4 + PostCSS + CSS próprio em `app/`
-- **Pagamentos**: Stripe (planos de assinatura mensal, cursos avulsos e certificado impresso)
-- **Autenticação**: Google OAuth, login manual com e-mail/senha e Sign in with ChatGPT (SIWC)
-- **Mídia**: fotos de perfil em R2 (`PROFILE_IMAGES`)
-- **Deploy**: `wrangler deploy --keep-vars` para `academy.vulcandefense.com.br` e `verify.vulcandefense.com.br`
-
-## Estrutura
-
-```
-app/                UI e rotas React (Server Components)
-worker/             APIs e integrações executadas no Cloudflare Worker
-data/               Cursos, quizzes, guias, projetos e destaques de patch notes
-css/ js/            Estilos e scripts das páginas estáticas
-vendor/             Bibliotecas locais (Chart.js)
-posts.json          Posts do blog exibidos na home
-cloudflare-worker.js  Worker do site da comunidade
-wrangler.toml       Rota e worker do site da comunidade
-wrangler.jsonc      Configuração do Worker da academia
-scripts/            Utilitários (migrações MySQL, geração de patch notes)
-drizzle/            Migrações geradas pelo drizzle-kit
-tests/              Testes do build renderizado (node --test)
-```
 
 ## Páginas
 
