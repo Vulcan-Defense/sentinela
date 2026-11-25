@@ -16,34 +16,7 @@ Site: https://sentinelacibernetica.com.br/
 - **Conteúdo versionado**: `posts.json` (blog), `js/ferramentas-catalog.js` (ferramentas) e `data/projetos.json` (projetos da comunidade)
 - **APIs do site**: proxy do GitHub, cadastro e feedback dos testes mobile em `cloudflare-worker.js`
 
-### Vulcan Academy
 
-- **Runtime web**: React 19 com Server Components via **vinext** (compatível com Next.js) sobre **Vite 8**
-- **Edge**: Cloudflare Workers — entry point em `worker/index.ts`, config em `wrangler.jsonc`
-- **Linguagem**: TypeScript 5.9, Node.js `>=22.13.0`
-- **Banco de dados**: MySQL (`mysql2`) como armazenamento principal; Drizzle com dialeto SQLite para o schema em `db/schema.ts` e as migrações em `drizzle/`
-- **Estilo**: Tailwind CSS 4 + PostCSS + CSS próprio em `app/`
-- **Pagamentos**: Stripe (planos de assinatura mensal, cursos avulsos e certificado impresso)
-- **Autenticação**: Google OAuth, login manual com e-mail/senha e Sign in with ChatGPT (SIWC)
-- **Mídia**: fotos de perfil em R2 (`PROFILE_IMAGES`)
-- **Deploy**: `wrangler deploy --keep-vars` para `academy.vulcandefense.com.br` e `verify.vulcandefense.com.br`
-
-## Estrutura
-
-```
-app/                UI e rotas React (Server Components)
-worker/             APIs e integrações executadas no Cloudflare Worker
-data/               Cursos, quizzes, guias, projetos e destaques de patch notes
-css/ js/            Estilos e scripts das páginas estáticas
-vendor/             Bibliotecas locais (Chart.js)
-posts.json          Posts do blog exibidos na home
-cloudflare-worker.js  Worker do site da comunidade
-wrangler.toml       Rota e worker do site da comunidade
-wrangler.jsonc      Configuração do Worker da academia
-scripts/            Utilitários (migrações MySQL, geração de patch notes)
-drizzle/            Migrações geradas pelo drizzle-kit
-tests/              Testes do build renderizado (node --test)
-```
 
 ## Páginas
 
@@ -62,51 +35,6 @@ tests/              Testes do build renderizado (node --test)
 | `/dashboard-ferramentas.html` | `dashboard-ferramentas.html` | Gráficos de adoção e maturidade das ferramentas |
 | `/404.html` | `404.html` | Página para rotas não encontradas |
 
-A aplicação React da academia fica em `app/page.tsx` e é servida em
-`academy.vulcandefense.com.br`; a validação de certificados fica em
-`app/verify/page.tsx` e é servida em `verify.vulcandefense.com.br`.
-
-## Pré-requisitos
-
-- Node.js `>=22.13.0`
-
-## Comandos
-
-```bash
-npm install        # instala dependências
-npm run dev        # desenvolvimento local (vinext dev)
-npm run build      # gera patch notes e valida o build (vinext build)
-npm test           # build + teste do HTML renderizado
-npm run lint       # ESLint
-npm run deploy     # publica no Cloudflare (wrangler deploy --keep-vars)
-```
-
-Para conferir as páginas estáticas sem o build, sirva a raiz do repositório com
-um servidor de arquivos, por exemplo `npx http-server .`.
-
-### Banco de dados
-
-```bash
-npm run db:generate          # gera migrações Drizzle após mudanças no schema
-npm run db:mysql             # aplica migrações no MySQL da academia
-npm run db:mysql:users       # migração específica de usuários
-npm run db:mysql:import-d1   # importa dados JSON do D1 para o MySQL
-```
-
-As variáveis de ambiente e segredos do Worker são gerenciados via
-`wrangler.jsonc`, `.dev.vars` (local) e os comandos `wrangler secret`. Os
-arquivos `.env*` e `.dev.vars` não devem ser versionados.
-
-### Auditoria do VulcanMeet
-
-O endpoint de auditoria recebe eventos assinados pelo Prosody e grava no MySQL a sala, participantes, horários e duração. Antes de publicar, aplique o schema e cadastre um segredo igual ao configurado no servidor do Meet:
-
-```bash
-npm run db:mysql
-npx wrangler secret put MEETING_AUDIT_TOKEN
-```
-
-Use o valor informado no segredo também como `MEETING_AUDIT_TOKEN` no Docker Compose do Meet. Esse token nunca deve ser colocado em arquivos versionados.
 
 ## Patch notes
 
@@ -116,15 +44,6 @@ fraseado de benefício e acessível a leigos, sem segredos ou detalhes de
 segurança. O arquivo `public/patch-notes.json` é regenerado pelo `prebuild` a
 partir dos commits recentes — não edite esse arquivo manualmente.
 
-## Autenticação por identidade (SIWC)
-
-Quando o site é servido pela plataforma de hosting, usuários autenticados
-recebem os headers `oai-authenticated-user-id` e
-`oai-authenticated-user-email`. O arquivo `app/chatgpt-auth.ts` oferece
-helpers para login/logout opcional ou obrigatório com Sign in with ChatGPT
-(`getChatGPTUser`, `requireChatGPTUser`, `chatGPTSignInPath`,
-`chatGPTSignOutPath`). Não crie rotas próprias para `/signin-with-chatgpt`,
-`/signout-with-chatgpt` ou `/callback` — a plataforma é dona desses paths.
 
 ## Como contribuir
 
@@ -140,6 +59,5 @@ Para adicionar um projeto ao radar da comunidade, siga o
 
 ## Saiba mais
 
-- [vinext](https://github.com/cloudflare/vinext)
 - [Cloudflare Workers](https://developers.cloudflare.com/workers/)
-- [Drizzle](https://orm.drizzle.team/docs/get-started/sqlite)
+
