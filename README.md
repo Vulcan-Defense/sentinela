@@ -27,7 +27,7 @@ Site: https://sentinelacibernetica.com.br/
 | `/projetos.html` | `projetos.html` | Radar de projetos da comunidade, com busca, filtros e métricas do GitHub (`data/projetos.json`) |
 | `/crptochat.html` | `crptochat.html` | Pulso do CriptoChat: métricas, commits e contribuições recentes |
 | `/certificacoes.html` | `certificacoes.html` | Guia de certificações com mapa interativo por área |
-| `/certificacoes-gratuitas.html` | `certificacoes-gratuitas.html` | Treinamentos e provas gratuitos, separados por fonte e área |
+| `/certificacoes-gratuitas.html` | `certificacoes-gratuitas.html` | Guia dos melhores cursos gratuitos, novidades e treinamentos separados por fonte e área |
 | `/mercado-trabalho.html` | `mercado-trabalho.html` | Portais de vagas, empresas, salários e tendências |
 | `/perfis-profissionais.html` | `perfis-profissionais.html` | Perfis e cargos para gestores e recrutadores |
 | `/testes-mobile/` | `testes-mobile/index.html` | Download do Vulcan Protect, cadastro para testes, status do CriptoChat Android e lista de projetos para baixar e contribuir |
@@ -59,5 +59,6 @@ Para adicionar um projeto ao radar da comunidade, siga o
 
 ## Saiba mais
 
+- [Guia dos melhores cursos gratuitos](docs/melhores-cursos-gratuitos.md)
 - [Cloudflare Workers](https://developers.cloudflare.com/workers/)
 

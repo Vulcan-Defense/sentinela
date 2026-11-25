@@ -9,7 +9,7 @@
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="stylesheet" href="css/fonts.css">
     <link rel="stylesheet" href="css/utilities.css">
-    <link rel="stylesheet" href="css/certificacoes-gratuitas.css">
+    <link rel="stylesheet" href="css/certificacoes-gratuitas.css?v=2">
     <link rel="stylesheet" href="css/redesign.css">
     <script src="js/ux.js"></script>
     <script src="js/nav.js" defer></script>
@@ -52,6 +52,8 @@
             <p class="subtitle links-oficiais-note"><strong>Filtre por nicho ou campo de conhecimento</strong> e acesse links oficiais das plataformas e certificadoras.</p>
 
             <nav class="filter-nav" aria-label="Filtrar por nicho">
+                <a href="#melhores">Guia dos Melhores</a>
+                <a href="#novidades">Novos Cursos</a>
                 <a href="#comunidade">Guias da Comunidade</a>
                 <a href="#empresas">Empresas e Plataformas</a>
                 <a href="#cloud">Cloud e Provedores</a>
@@ -60,6 +62,134 @@
                 <a href="#webinars">Webinars e Seminários</a>
                 <a href="#outros">Outros Recursos</a>
             </nav>
+
+            <!-- GUIA DOS MELHORES CURSOS GRATUITOS -->
+            <section class="best-guide" id="melhores" aria-labelledby="melhores-title">
+                <p class="guide-kicker">Escolhas da comunidade</p>
+                <h3 id="melhores-title">Guia dos melhores cursos gratuitos</h3>
+                <p class="guide-intro">Não dá para aprender tudo de uma vez. Escolha um objetivo, comece pela opção gratuita e avance quando se sentir pronto. As condições de cada curso podem mudar, então confirme sempre na página oficial.</p>
+
+                <ol class="guide-picks">
+                    <li class="guide-featured">
+                        <span class="guide-pick-badge">Destaque da comunidade</span>
+                        <h4>Vulcan Academy — trilhas com laboratório</h4>
+                        <p>O plano gratuito reúne cursos em português com aulas e laboratórios isolados: Fundamentos de Segurança Web, Secure Coding, Linux para operações seguras, Git e colaboração segura e Gestão de Políticas de IA.</p>
+                        <div class="guide-links">
+                            <a href="https://academy.vulcandefense.com.br" target="_blank" rel="noopener noreferrer">Ver cursos gratuitos <span aria-hidden="true">↗</span></a>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="guide-pick-badge">Para quem está começando</span>
+                        <h4>Hackers do Bem + certificação IBSEC Essencial</h4>
+                        <p>Trilhas gratuitas em português para entender o básico e uma prova curta para comprovar o aprendizado, sem custo.</p>
+                        <div class="guide-links">
+                            <a href="https://hackersdobem.org.br" target="_blank" rel="noopener noreferrer">Hackers do Bem <span aria-hidden="true">↗</span></a>
+                            <a href="https://ibsec.com.br/" target="_blank" rel="noopener noreferrer">Certificação gratuita <span aria-hidden="true">↗</span></a>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="guide-pick-badge">Fundamentos com reconhecimento</span>
+                        <h4>Google Career Certificate e Cisco Network Academy</h4>
+                        <p>Conteúdo gratuito para criar base em redes, Linux, risco e defesa. A Cisco tem um caminho específico para o CCST e a Google reúne nove cursos.</p>
+                        <div class="guide-links">
+                            <a href="https://grow.google/intl/pt/google-career-certificates/cybersecurity/" target="_blank" rel="noopener noreferrer">Google <span aria-hidden="true">↗</span></a>
+                            <a href="https://www.netacad.com/pt/career-paths/cybersecurity?courseLang=pt-BR" target="_blank" rel="noopener noreferrer">Cisco CCST <span aria-hidden="true">↗</span></a>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="guide-pick-badge">Prática com laboratórios</span>
+                        <h4>PortSwigger, TryHackMe e Hack The Box</h4>
+                        <p>Exercícios de aplicações web, laboratórios guiados e desafios. Comece pelos módulos gratuitos; alguns caminhos avançados exigem assinatura.</p>
+                        <div class="guide-links">
+                            <a href="https://portswigger.net/web-security" target="_blank" rel="noopener noreferrer">PortSwigger <span aria-hidden="true">↗</span></a>
+                            <a href="https://tryhackme.com/" target="_blank" rel="noopener noreferrer">TryHackMe <span aria-hidden="true">↗</span></a>
+                            <a href="https://www.hackthebox.com/" target="_blank" rel="noopener noreferrer">Hack The Box <span aria-hidden="true">↗</span></a>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="guide-pick-badge">Defesa e investigação</span>
+                        <h4>KC7 e LetsDefend</h4>
+                        <p>Casos investigativos para treinar análise de logs e resposta a incidentes. O KC7 é gratuito para sempre e o LetsDefend tem plano gratuito.</p>
+                        <div class="guide-links">
+                            <a href="https://www.kc7cyber.com/" target="_blank" rel="noopener noreferrer">KC7 <span aria-hidden="true">↗</span></a>
+                            <a href="https://letsdefend.io/" target="_blank" rel="noopener noreferrer">LetsDefend <span aria-hidden="true">↗</span></a>
+                        </div>
+                    </li>
+                    <li>
+                        <span class="guide-pick-badge">Nuvem</span>
+                        <h4>AWS SkillBuilder e Google Cloud no Coursera</h4>
+                        <p>Comece pelos fundamentos de segurança em nuvem e, depois, siga um programa mais completo. Na Coursera, a matrícula gratuita permite acompanhar as aulas; o certificado pode exigir pagamento ou auxílio financeiro.</p>
+                        <div class="guide-links">
+                            <a href="https://explore.skillbuilder.aws/learn/course/126/aws-security-fundamentals" target="_blank" rel="noopener noreferrer">AWS <span aria-hidden="true">↗</span></a>
+                            <a href="https://www.coursera.org/professional-certificates/google-cloud-cybersecurity-certificate" target="_blank" rel="noopener noreferrer">Google Cloud <span aria-hidden="true">↗</span></a>
+                        </div>
+                    </li>
+                </ol>
+
+                <p class="guide-more">Quer um passo a passo mais detalhado? Abra o <a href="docs/melhores-cursos-gratuitos.md">guia completo dos melhores cursos gratuitos</a>.</p>
+            </section>
+
+            <!-- NOVOS CURSOS GRATUITOS -->
+            <section class="new-courses" id="novidades" aria-labelledby="novidades-title">
+                <h3 id="novidades-title">Novos cursos gratuitos</h3>
+                <p class="new-courses-intro">Incluídos nesta atualização do catálogo. Verifique sempre as condições na página oficial.</p>
+                <ul class="new-course-list">
+                    <li>
+                        <a href="https://academy.vulcandefense.com.br" target="_blank" rel="noopener noreferrer" data-tooltip="Plano gratuito com cursos em português e laboratórios isolados: fundamentos web, código seguro, Linux, Git e governança de IA.">
+                            <span class="new-pill">Novo</span>
+                            <span class="cert-badge">Vulcan Academy</span> Cursos gratuitos com laboratório
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://app.santanderopenacademy.com/pt-BR/program/ciberseguranca-do-zero-a-pratica" target="_blank" rel="noopener noreferrer" data-tooltip="Trilha gratuita do Santander Open Academy com a DIO: 37 horas de IA, Linux, redes, testes de invasão e defesa.">
+                            <span class="new-pill">Novo</span>
+                            <span class="cert-badge">Santander + DIO</span> Cibersegurança do Zero à Prática
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://ibsec.com.br/" target="_blank" rel="noopener noreferrer" data-tooltip="Certificação de nível Essencial 100% gratuita e permanente, com prova online curta. Nos demais níveis, é gratuita uma vez por ano.">
+                            <span class="new-pill">Novo</span>
+                            <span class="cert-badge">IBSEC</span> Certificação Essencial gratuita
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.netacad.com/pt/career-paths/cybersecurity?courseLang=pt-BR" target="_blank" rel="noopener noreferrer" data-tooltip="Caminho de carreira gratuito da Cisco para o CCST Cybersecurity e curso introdutório em português.">
+                            <span class="new-pill">Novo</span>
+                            <span class="cert-badge">Cisco</span> Caminho CCST Cybersecurity
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.coursera.org/professional-certificates/google-cloud-cybersecurity-certificate" target="_blank" rel="noopener noreferrer" data-tooltip="Programa de cinco cursos do Google Cloud com laboratórios. A matrícula gratuita permite acompanhar as aulas; o certificado pode exigir pagamento ou auxílio financeiro.">
+                            <span class="new-pill">Novo</span>
+                            <span class="cert-badge">Google Cloud</span> Cybersecurity Professional Certificate
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.theforage.com/" target="_blank" rel="noopener noreferrer" data-tooltip="Simulações de vagas em cibersegurança feitas por empresas. São gratuitas, no seu ritmo, e você recebe um certificado ao concluir.">
+                            <span class="new-pill">Novo</span>
+                            <span class="cert-badge">Forage</span> Simulações de vagas em segurança
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://www.kc7cyber.com/" target="_blank" rel="noopener noreferrer" data-tooltip="Cases gratuitos de investigação: você lê logs, conecta pistas e aprende análise de ameaças como em um SOC.">
+                            <span class="new-pill">Novo</span>
+                            <span class="cert-badge">KC7</span> Investigação guiada de incidentes
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://breachlab.org/" target="_blank" rel="noopener noreferrer" data-tooltip="Plataforma de laboratórios reais para começar de graça, com trilhas de Linux, web, nuvem, Active Directory e defesa.">
+                            <span class="new-pill">Novo</span>
+                            <span class="cert-badge">BreachLab</span> Laboratórios práticos gratuitos
+                        </a>
+                    </li>
+                    <li>
+                        <a href="https://tryhackme.com/" target="_blank" rel="noopener noreferrer" data-tooltip="Novos caminhos de 2026 incluem defesa em AWS e segurança com IA. Há conteúdo gratuito; recursos avançados podem exigir plano pago.">
+                            <span class="new-pill">Novo</span>
+                            <span class="cert-badge">TryHackMe</span> Caminhos de IA e defesa em nuvem
+                        </a>
+                    </li>
+                </ul>
+            </section>
 
             <!-- GUIAS DA COMUNIDADE -->
             <div class="cert-category" id="comunidade">
