@@ -858,7 +858,7 @@ function Dashboard({ profile, completed, enrolledCourses, progress, score, openM
   const courseFinished=Boolean(firstEnrollment)&&enrollmentProgress===100;
   return <div className="page dashboard">
     <header className="student-command-header">
-      <div><p>Painel do aluno</p><h1>Olá, {profile.name.split(" ")[0]}.</h1><span>{courseFinished?"Formação concluída. Escolha seu próximo desafio.":firstEnrollment?"Sua próxima missão está pronta para continuar.":"Escolha uma formação para iniciar sua jornada."}</span></div>
+      <div><p>Painel do aluno</p><h1>Olá, {profile.name.trim()?profile.name.split(" ")[0]:"aluno"}.</h1><span>{courseFinished?"Formação concluída. Escolha seu próximo desafio.":firstEnrollment?"Sua próxima missão está pronta para continuar.":"Escolha uma formação para iniciar sua jornada."}</span></div>
       <button className="outline-button" onClick={() => go(firstEnrollment?"matriculas":"trilha")}>{firstEnrollment?"Ver matrículas":"Explorar catálogo"}</button>
     </header>
 

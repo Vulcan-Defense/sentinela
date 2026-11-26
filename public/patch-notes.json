@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-25T00:46:42.529Z",
+  "generatedAt": "2026-11-26T23:36:29.445Z",
   "repository": "https://github.com/Vulcan-Defense/vulcan-academy",
   "highlights": [
     {
@@ -19,7 +19,8 @@
         "Vulcan Protect agora pode ser baixado diretamente na Google Play, sem precisar participar de testes fechados.",
         "Página de testes mobile ganhou um painel com estrelas, issues e commits recentes do projeto open source CriptoChat Android.",
         "Página de testes mobile agora reúne os projetos da comunidade com links para baixar e contribuir, incluindo o CriptoChat Android e o antivírus Vulcan Protect.",
-        "Página de cursos gratuitos ganhou um guia com as melhores opções por objetivo e uma lista de novos treinamentos, incluindo a Vulcan Academy."
+        "Página de cursos gratuitos ganhou um guia com as melhores opções por objetivo e uma lista de novos treinamentos, incluindo a Vulcan Academy.",
+        "Topo da página de cursos gratuitos ficou mais direto, com atalhos para começar e leitura mais confortável no celular."
       ]
     },
     {
@@ -80,6 +81,16 @@
     }
   ],
   "commits": [
+    {
+      "hash": "178cc81375ca07cf08ed829efb55640f59510976",
+      "shortHash": "178cc81",
+      "date": "2026-11-24T21:50:37-03:00",
+      "message": "Atualização da plataforma",
+      "areas": [
+        "Projeto"
+      ],
+      "filesChanged": 6
+    },
     {
       "hash": "820ddf5164717123b210083e730c1154690ca8cd",
       "shortHash": "820ddf5",
@@ -263,16 +274,6 @@
       "hash": "ff4b449df33cb2bbfcf6d13980e384f62d143e21",
       "shortHash": "ff4b449",
       "date": "2026-11-24T12:38:02-03:00",
-      "message": "Atualização da plataforma",
-      "areas": [
-        "Projeto"
-      ],
-      "filesChanged": 15
-    },
-    {
-      "hash": "e01c3cd048d22c853c9321cf62e588660fda0d59",
-      "shortHash": "e01c3cd",
-      "date": "2026-11-24T12:29:46-03:00",
       "message": "Atualização da plataforma",
       "areas": [
         "Projeto"

@@ -7,6 +7,7 @@
             --text: #e2e8f0;
             --text-muted: #94a3b8;
             --border: #1e293b;
+            --sticky-top: calc(4.75rem + env(safe-area-inset-top, 0px));
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { -webkit-text-size-adjust: 100%; }
@@ -35,7 +36,7 @@
         }
         .featured-aside {
             position: sticky;
-            top: calc(3.35rem + env(safe-area-inset-top, 0px));
+            top: var(--sticky-top);
             z-index: 5;
         }
         .featured-aside-card {
@@ -180,6 +181,14 @@
             font-size: 0.9rem;
             color: var(--text-muted);
         }
+        .guide-eyebrow {
+            margin-bottom: 0.55rem;
+            color: var(--accent);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
         .free-badge {
             display: inline-block;
             font-size: 0.65rem;
@@ -189,17 +198,48 @@
             color: var(--accent-free);
             font-weight: 600;
             margin-left: 0.5rem;
+            vertical-align: middle;
         }
         .cert-guide h2 {
-            font-size: 1.35rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
+            max-width: 54rem;
+            font-size: clamp(1.4rem, 3vw, 1.85rem);
+            font-weight: 650;
+            line-height: 1.2;
+            margin-bottom: 0.65rem;
         }
         .cert-guide .subtitle {
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: var(--text-muted);
-            margin-bottom: 2rem;
+            line-height: 1.55;
         }
+        .guide-lead { margin-bottom: 1rem; }
+        .guide-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.65rem;
+            margin-bottom: 1.35rem;
+        }
+        .guide-actions a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 2.5rem;
+            padding: 0.55rem 1rem;
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            color: var(--bg-dark);
+            background: var(--accent);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .guide-actions a + a {
+            color: var(--accent);
+            background: transparent;
+            border-color: rgba(0, 255, 136, 0.35);
+        }
+        .guide-actions a:hover { filter: brightness(1.08); }
+        .guide-actions a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
         .cert-category {
             margin-bottom: 1.75rem;
             scroll-margin-top: 5rem;
@@ -308,7 +348,7 @@
             display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem;
             margin-bottom: 2rem; padding: 1rem; background: var(--bg-card); border: 1px solid var(--border);
             border-radius: 10px; position: sticky;
-            top: calc(3.35rem + env(safe-area-inset-top, 0px));
+            top: var(--sticky-top);
             z-index: 10;
         }
         .filter-nav a {
@@ -474,4 +514,30 @@
         }
         @media (max-width: 380px) {
             .filter-nav a { font-size: 0.7rem; padding: 0.35rem 0.5rem; }
+        }
+        @media (max-width: 1024px) {
+            .page-with-sidebar .featured-aside {
+                position: static;
+                order: 0;
+                margin-bottom: 1.5rem;
+            }
+            .featured-aside-card {
+                padding: 1rem 1.1rem;
+            }
+            .featured-aside-lead {
+                margin-bottom: 0.65rem;
+                font-size: 0.8rem;
+            }
+            .featured-aside-list {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+                gap: 0.35rem 1rem;
+                margin-bottom: 0.85rem;
+            }
+            .featured-aside-list li { margin-bottom: 0; }
+            .guide-actions a { flex: 1 1 auto; }
+        }
+        @media (max-width: 600px) {
+            .guide-actions { display: grid; }
+            .featured-aside-list { grid-template-columns: 1fr; }
         }
