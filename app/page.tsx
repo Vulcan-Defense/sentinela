@@ -856,9 +856,13 @@ function Dashboard({ profile, completed, enrolledCourses, progress, score, openM
   const nextModule=firstEnrollment?.modules.find(module=>!completed.includes(module.id))||firstEnrollment?.modules[0];
   const totalModules=courses.reduce((total,course)=>total+course.modules.length,0);
   const courseFinished=Boolean(firstEnrollment)&&enrollmentProgress===100;
+  const nameParts=profile.name.trim().split(/\s+/).filter(Boolean);
+  const firstName=nameParts[0]||"";
+  const genericFirstName=/^(ops?|alun[oa]|estudante|user|usuario|conta|teste)$/i.test(firstName);
+  const greetingName=genericFirstName?(nameParts.slice(1).join(" ")||"aluno"):(firstName||"aluno");
   return <div className="page dashboard">
     <header className="student-command-header">
-      <div><p>Painel do aluno</p><h1>Olá, {profile.name.trim()?profile.name.split(" ")[0]:"aluno"}.</h1><span>{courseFinished?"Formação concluída. Escolha seu próximo desafio.":firstEnrollment?"Sua próxima missão está pronta para continuar.":"Escolha uma formação para iniciar sua jornada."}</span></div>
+      <div><p>Painel do aluno</p><h1>Olá, {greetingName}.</h1><span>{courseFinished?"Formação concluída. Escolha seu próximo desafio.":firstEnrollment?"Sua próxima missão está pronta para continuar.":"Escolha uma formação para iniciar sua jornada."}</span></div>
       <button className="outline-button" onClick={() => go(firstEnrollment?"matriculas":"trilha")}>{firstEnrollment?"Ver matrículas":"Explorar catálogo"}</button>
     </header>
 
